@@ -1,3 +1,8 @@
+from lexer.rgx_engine import Regex
+from lexer.automatons import State
+from lexer.utils import Token
+import math
+
 class Lexer:
     def __init__(self, table, eof):
         self.eof = eof
