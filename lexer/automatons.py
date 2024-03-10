@@ -1,4 +1,7 @@
 #TODO: Organize and polish all the code.
+#FIXME: All the import shenanigans
+from lexer.utils import ContainerSet
+from lexer.utils import DisjointSet
 #FIXME: Fix operations between automatas. Closure is the most correct one.
 
 #region Automaton implementations
@@ -297,7 +300,7 @@ def epsilon_closure(automaton, states) -> set:
         pending.extend(new_states - closure)
         closure.update(new_states)
         
-    return set(*closure)
+    return ContainerSet(*closure)
 
 def nfa_to_dfa(automaton) -> DFA:
     transitions = {}
@@ -355,7 +358,7 @@ def nfa_to_dfa(automaton) -> DFA:
 
 #region Operation between automatons
 
-def automata_union(a1:NFA, a2:NFA):
+def automaton_union(a1:NFA, a2:NFA):
     transitions = {}
     
     start = 0
@@ -393,7 +396,7 @@ def automata_union(a1:NFA, a2:NFA):
     
     return NFA(states, finals, transitions, start)
 
-def automata_concatenation(a1, a2):
+def automaton_concatenation(a1, a2):
     transitions = {}
     
     start = 0
@@ -428,7 +431,7 @@ def automata_concatenation(a1, a2):
     
     return NFA(states, finals, transitions, start)
 
-def automata_closure(a1):
+def automaton_closure(a1):
     transitions = {}
     
     start = 0
@@ -504,7 +507,7 @@ def state_minimization(automaton):
         
     return partition
 
-def automata_minimization(automaton):
+def automaton_minimization(automaton):
     #(a|b)*abb
     # partition = state_minimization(automaton)
     #TODO: DELETE THIS!!!! TESTING PORPUSSES ONLY:

@@ -1,3 +1,5 @@
+from lexer.automatons import NFA, automaton_closure, automaton_concatenation, automaton_union
+
 EPSILON = 'ε'
 
 class Node:
@@ -49,16 +51,16 @@ class ClosureNode(UnaryNode):
     @staticmethod
     def operate(value: NFA):
         # Your code here!!!
-        return automata_closure(value)
+        return automaton_closure(value)
     
 class UnionNode(BinaryNode):
     @staticmethod
     def operate(lvalue, rvalue):
         # Your code here!!!
-        return automata_union(lvalue, rvalue)
+        return automaton_union(lvalue, rvalue)
     
 class ConcatNode(BinaryNode):
     @staticmethod
     def operate(lvalue, rvalue):
         # Your code here!!!
-        return automata_concatenation(lvalue, rvalue)
+        return automaton_concatenation(lvalue, rvalue)
