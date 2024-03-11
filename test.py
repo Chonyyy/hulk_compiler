@@ -40,9 +40,7 @@ uppercase_letters = '|'.join(chr(n) for n in range(ord('A'), ord('Z') + 1))
 valid_name_symbols = ['_']
 delim = ' |\t|\n' 
 
-
 lexer = Lexer([
-    # ('string', f'"(0|{all_symbols})*"'),
     ('string', f'"({letters}|{uppercase_letters}|0|{nonzero_digits}| |\t|\\\\")*"'),
     # SYMBOLS
     ('SEMICOLON', ';'),
