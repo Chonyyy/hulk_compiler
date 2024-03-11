@@ -1,4 +1,6 @@
-from lexer.automatons import NFA, automaton_closure, automaton_concatenation, automaton_union
+from cmp.tools.automata import NFA, DFA, nfa_to_dfa
+from cmp.tools.automata import automata_union, automata_concatenation, automata_closure, automata_minimization
+#TODO: Change import for our implementation
 
 EPSILON = 'ε'
 
@@ -46,21 +48,21 @@ class SymbolNode(AtomicNode):
         s = self.lex
         # Your code here!!!
         return NFA(2,[1],{(0,s):[1]})
-
+    
 class ClosureNode(UnaryNode):
     @staticmethod
     def operate(value: NFA):
         # Your code here!!!
-        return automaton_closure(value)
+        return automata_closure(value)
     
 class UnionNode(BinaryNode):
     @staticmethod
     def operate(lvalue, rvalue):
         # Your code here!!!
-        return automaton_union(lvalue, rvalue)
+        return automata_union(lvalue, rvalue)
     
 class ConcatNode(BinaryNode):
     @staticmethod
     def operate(lvalue, rvalue):
         # Your code here!!!
-        return automaton_concatenation(lvalue, rvalue)
+        return automata_concatenation(lvalue, rvalue)
