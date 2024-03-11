@@ -344,7 +344,7 @@ def nfa_to_dfa(automaton) -> DFA:
             
             # ...
             try:
-                transitions[state.id][symbol]
+                transitions[(state.id,symbol)]
                 # assert False, 'Invalid DFA!!!'
             except KeyError:
                 # Your code here
