@@ -1,5 +1,5 @@
 from lexer.rgx_engine import Regex
-from lexer.automatons import State
+from lexer.automatons import State, automaton_minimization
 from lexer.utils import Token
 import math
 
@@ -15,7 +15,7 @@ class Lexer:
             # Your code here!!!
             # - Remember to tag the final states with the token_type and priority.
             # - <State>.tag might be useful for that purpose ;-)
-            dfa = Regex(regex).automaton
+            dfa = Regex(regex).automaton #TODO: Minimize ?
             start_state, states = State.from_nfa(dfa, get_states= True)
             for state in dfa.finals:
                 final_state = states[state]
@@ -25,7 +25,6 @@ class Lexer:
                 }
 
             regexs.append(start_state)
-            pass
         return regexs
     
     def _build_automaton(self):
@@ -67,7 +66,6 @@ class Lexer:
             final_state, lex = self._walk(text[buffer_index:])
             buffer_index += len(lex)
             yield lex, final_state
-            pass
         # en of my input
         yield '$', self.eof
     
