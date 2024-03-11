@@ -45,6 +45,8 @@ class Lexer:
             # Your code here!!!
             lex += symbol
             if not (symbol in state.transitions):
+                if lex == '':
+                    raise NotImplementedError(f'symbol {symbol} not a valid lexer starter')
                 break
             state = state.transitions[symbol][0]
             if state.final:# this has a list of non deterministic final states, select the one with highest 
@@ -52,6 +54,7 @@ class Lexer:
                 for nd_state in state.state:
                     if nd_state.final and nd_state.tag['priority'] < max_priority:
                         final = nd_state.tag['token_type']
+                        max_priority = nd_state.tag['priority']
                 final_lex = lex
             
         return final, final_lex
