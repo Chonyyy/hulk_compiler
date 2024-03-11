@@ -362,9 +362,9 @@ def automaton_union(a1:NFA, a2:NFA):
     transitions = {}
     
     start = 0
-    d1 = 1 # displacement of a1 ?
-    d2 = a1.states + d1 # displacement of a2 ?
-    final = a2.states + d2 # final state ?
+    d1 = 1 # displacement of a1 
+    d2 = a1.states + d1 # displacement of a2 
+    final = a2.states + d2 # final state
 
     for (origin, symbol), destinations in a1.map.items():
         ## Relocate a1 transitions ...
@@ -387,9 +387,16 @@ def automaton_union(a1:NFA, a2:NFA):
     ## Add transitions to final state ...
     # Your code here
     for final_state in a1.finals:
-        transitions[(final_state + d1, '')] = [final]
+        if not transitions[(final_state + d1, '')]: 
+            transitions[(final_state + d1, '')] = [final]
+        else:
+            transitions[(final_state + d1, '')] += [final]
+            
     for final_state in a2.finals:
-        transitions[(final_state + d2, '')] = [final]
+        if not transitions[(final_state + d2, '')]:
+            transitions[(final_state + d2, '')] = [final]
+        else:
+            transitions[(final_state + d2, '')] += [final]
 
     states = a1.states + a2.states + 2
     finals = { final }
@@ -421,10 +428,16 @@ def automaton_concatenation(a1, a2):
     ## Add transitions to final state ...
     # Your code here
     for final_state in a1.finals:
-        transitions[(final_state + d1, '')] = [a2.start + d2]
+        if (final_state + d1, '') in transitions.keys(): 
+            transitions[(final_state + d1, '')] = [a2.start + d2]
+        else:
+            transitions[(final_state + d1, '')] += [a2.start + d2]
 
     for final_state in a2.finals:
-        transitions[(final_state + d2, '')] = [final]
+        if (final_state + d2, '') in transitions.keys():
+            transitions[(final_state + d2, '')] = [final]
+        else:
+            transitions[(final_state + d2, '')] += [final]
     
     states = a1.states + a2.states + 1
     finals = { final }
@@ -452,9 +465,10 @@ def automaton_closure(a1):
     ## Add transitions to final state and to start state ...
     # Your code here
     for final_state in a1.finals:
-        if not (final_state + d1, '') in transitions:
+        if not (final_state + d1, '') in transitions.keys():
             transitions[(final_state + d1, '')] = [final]
-        transitions[(final_state + d1, '')] += [final]
+        else:
+            transitions[(final_state + d1, '')] += [final]
     transitions[(final, '')] = [start]
             
     states = a1.states +  2
