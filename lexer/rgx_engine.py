@@ -5,7 +5,7 @@ from lexer.pycompiler import Grammar
 from lexer import G
 from cmp.tools.parsing import metodo_predictivo_no_recursivo #FIXME: Change for actual parser later
 from cmp.tools.evaluation import evaluate_parse
-
+# TODO: change parsing tools for ours
 def regex_tokenizer(text:str, G:Grammar, skip_whitespaces=True):
     tokens = []
     # > fixed_tokens = ???
