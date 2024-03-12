@@ -19,9 +19,9 @@ item = Item(E.productions[0], 0, lookaheads=[G.EOF])
 
 firsts = compute_firsts(G)
 firsts[G.EOF] = ContainerSet(G.EOF)
-print("FFFF")
-print(firsts)
-print(" ")
+# print("FFFF")
+# print(firsts)
+# print(" ")
 
 # follows = compute_follows(G,firsts)
 # print(" ")

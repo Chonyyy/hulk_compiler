@@ -165,20 +165,26 @@ def compute_follows(G, firsts):
                     if i < len(alpha) - 1:
                         # If the next symbol is a terminal add it
                         if alpha[i + 1] in G.terminals:
-                            follows[alpha[i]].add(alpha[i + 1])
+                            if alpha[i + 1] not in follows[alpha[i]]:
+                                follows[alpha[i]].add(alpha[i + 1])
+                                change = True
                         # If the next symbol is a non terminal add its first set (without epsilon)
                         else:
                             first_i = firsts[alpha[i + 1]]
-                            follows[alpha[i]].update(first_i )
+                            if not first_i.set.issubset(follows[alpha[i]]):
+                                follows[alpha[i]].update(first_i )
+                                change = True
 
                             if first_i.contains_epsilon:
-                                follows[alpha[i]].update(follow_X)
+                                if not follow_X.set.issubset(follows[alpha[i]]):
+                                    follows[alpha[i]].update(follow_X)
+                                    change = True
 
                     # For the last non-terminal symbol add follow_X
                     else:
                         if follow_X != follows[alpha[i]] :
                             follows[alpha[i]].update(follow_X)
-                            change = True
+                            #change = True
                         # if follow_symbol != follows[alpha[i]]:
                         #     change = True
                     
