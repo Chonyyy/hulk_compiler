@@ -1,5 +1,5 @@
-from cmp.pycompiler import Grammar
-from cmp.utils import ContainerSet
+from cmp_parser.pycompiler import Grammar
+from cmp_parser.utils import ContainerSet
 
 
 # # Test

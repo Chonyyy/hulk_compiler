@@ -1,8 +1,8 @@
-from cmp.tools import compute_firsts, compute_follows, compute_local_first
-from cmp.pycompiler import Grammar
-from cmp.pycompiler import Item
-from cmp.utils import ContainerSet
-from cmp.automata import State, multiline_formatter
+from cmp_parser.tools import compute_firsts, compute_follows, compute_local_first
+from cmp_parser.pycompiler import Grammar
+from cmp_parser.pycompiler import Item
+from cmp_parser.utils import ContainerSet
+from cmp_parser.automata import State, multiline_formatter
 from pandas import DataFrame
 
 G = Grammar()
