@@ -1,0 +1,17 @@
+let a = 10 in while (a >= 0) {
+    print(a);
+    a := a - 1;
+}
+gcd(a, b) => while (a > 0)
+    let m = a % b in {
+        b := a;
+        a := m;
+    };
+for (x in range(0, 10)) print(x);
+gcd(a, b) => while (a > 0)
+    let m = a % b in {
+        b := a;
+        a := m;
+    };
+for (x in range(0, 10)) print(x);
+for (x in range(0, 10)) print(x);
