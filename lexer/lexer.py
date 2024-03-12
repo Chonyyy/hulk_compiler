@@ -64,6 +64,8 @@ class Lexer:
         buffer_index = 0
         while buffer_index < len(text):
             final_state, lex = self._walk(text[buffer_index:])
+            if lex == '':
+                raise NotImplementedError(f'No valid token found for {text[buffer_index:]}')
             buffer_index += len(lex)
             yield lex, final_state
         # en of my input
