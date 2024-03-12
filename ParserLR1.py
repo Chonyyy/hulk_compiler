@@ -41,7 +41,6 @@ def expand(item, firsts):
     for preview in prev:
         lookaheads.extend(firsts[preview[0]])
         
-    # Your code here!!! (Compute lookahead for child items)
     assert not lookaheads.contains_epsilon
     
     result = []
@@ -76,7 +75,6 @@ def closure_lr1(items, firsts):
         for itm in closure:
             new_items.extend(expand(itm,firsts) )
         
-        # Your code here!!!
         changed = closure.update(new_items)
         
     return compress(closure)
@@ -108,7 +106,7 @@ def build_LR1_automaton(G):
         current_state = visited[current]    
         
         for symbol in G.terminals + G.nonTerminals:
-            # Your code here!!! (Get/Build `next_state`)
+            
             set = frozenset(goto_lr1(current_state.state, symbol, firsts))
             if len(set) == 0: continue
             next_state = State(set, True)
@@ -215,27 +213,7 @@ class LR1Parser(ShiftReduceParser):
                         k = G.Productions.index(item.production)
                         self._register(self.action, (idx,l),  (self.REDUCE, k))
                           
-                
-                # if next_symbol is None: 
-                #     for l in item.lookaheads:
-                #         if item.production.Left == G.startSymbol and l == G.EOF:
-                #             LR1Parser._register(self.action, (idx,l), (ShiftReduceParser.OK, None))
-                #             continue
-                #         k = G.Productions.index(item.production)
-                #         self._register(self.action, (idx,l),  (ShiftReduceParser.REDUCE, k))
-                        
-                # elif next_symbol.IsNonTerminal:
-                #     transit = node.transitions.get(next_symbol.Name)
-                #     if transit:
-                #         self._register(self.goto, (idx,next_symbol),  (None, transit[0].idx))
-
-                # else: 
-                    
-                #     transit = node.transitions.get(next_symbol.Name)
-                #     if transit:
-                #         self._register(self.action, (idx,next_symbol), (ShiftReduceParser.SHIFT, transit[0].idx))
-                        
-                # pass
+            
         
     @staticmethod
     def _register(table, key, value):
