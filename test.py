@@ -9,12 +9,15 @@ nonzero_digits = '|'.join(str(n) for n in range(1,10))
 letters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1))
 uppercase_letters = '|'.join(chr(n) for n in range(ord('A'), ord('Z') + 1))
 valid_string_symbols = '|'.join(c for c in " : ' ; , . _ - + / ^ % & ! = < > \\( \\) { } [ ] @".split())
-valid_name_symbols = ['_']
+valid_id_symbols = ['_']
 delim = ' |\t|\n' 
+natural_numbers = f'{nonzero_digits}({nonzero_digits}|0)*'
+natural_aster_numbers = f'{natural_numbers}|0'
+floating_point_numbers = f'({natural_aster_numbers}).({natural_aster_numbers}({natural_aster_numbers})*)'
 
 lexer = Lexer([
     # SYMBOLS
-    ('comment_line', f'//({letters}|{uppercase_letters}|0|{nonzero_digits}|\t| |\\\\")*\n'),#TODO: Add more symbols to this; Why // not final state ?
+    ('comment_line', f'//({letters}|{uppercase_letters}|0|{nonzero_digits}|\t| |\\\\")*(\n)*'),#TODO: Add more symbols to this; Why // not final state ?; Fix how ne_line orks 
     ('SEMICOLON', ';'),
     ('OPAR', '\('),
     ('CPAR', '\)'),
@@ -86,8 +89,8 @@ lexer = Lexer([
     ('RANGE', 'Range'),
     # OTHERS
     ('string', f'"({letters}|{uppercase_letters}|0|{nonzero_digits}|{valid_string_symbols}|\t| |\\\\")*"'),#TODO: Add more symbols to this
-    ('id', f'({letters}|{uppercase_letters})({letters}|0|{nonzero_digits}|{valid_name_symbols})*'),
-    ('num', f'({nonzero_digits})(0|{nonzero_digits})*|0'),
+    ('id', f'({letters}|{uppercase_letters})({letters}|{uppercase_letters}|0|{nonzero_digits}|{valid_id_symbols})*'),
+    ('num', f'({natural_aster_numbers}|{floating_point_numbers})'),
     ('ws', f'({delim})({delim})*'),
 ], 'eof')
 
