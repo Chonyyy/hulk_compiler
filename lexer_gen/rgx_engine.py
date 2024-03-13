@@ -1,11 +1,11 @@
 from typing import Any
 from cmp.utils import Token
 from lexer_gen.automatons import DFA, nfa_to_dfa
-from lexer_gen.pycompiler import Grammar
+from tools.pycompiler import Grammar
 from lexer_gen import G
 from cmp.tools.parsing import metodo_predictivo_no_recursivo #FIXME: Change for actual parser later
 from parser_gen.parser_lr1 import LR1Parser
-from cmp.tools.evaluation import evaluate_parse
+from tools.evaluation import evaluate_reverse_parse
 # TODO: change parsing tools for ours
 
 def regex_tokenizer(text:str, G:Grammar, skip_whitespaces=True):
@@ -36,7 +36,7 @@ class Regex:
         parser = LR1Parser(G)
         right_parse = parser(tokens)
         right_parse.reverse()
-        ast = evaluate_parse(right_parse, tokens)# FIXME: change for right parse evaluator
+        ast = evaluate_reverse_parse(right_parse, tokens)# FIXME: change for right parse evaluator
         nfa = ast.evaluate()
         self.automaton = nfa_to_dfa(nfa)
     
