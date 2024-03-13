@@ -126,6 +126,7 @@ class ShiftReduceParser:
         stack = [0]
         cursor =  0
         output = []
+        operations = []
         
         while True:
             state = stack[-1]
@@ -137,6 +138,7 @@ class ShiftReduceParser:
                 if self.verbose: print("Error: No se puede reconocer la cadena.")
                 return False
             action, tag = self.action.get((state, lookahead), (None, None))
+            operations.append(action)
             
             # Shift case
             if action == self.SHIFT:
@@ -158,12 +160,12 @@ class ShiftReduceParser:
             # OK case
             elif action == self.OK:
                 if self.verbose: print("OK")
-                return output
+                return output , operations
             
             # Invalid case
             else:
                 if self.verbose: print("Error: Acción inválida.")
-                return False
+                # return False
         
 class LR1Parser(ShiftReduceParser):
     def _build_parsing_table(self):
