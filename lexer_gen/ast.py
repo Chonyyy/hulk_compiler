@@ -1,5 +1,7 @@
-from cmp.tools.automata import NFA, DFA, nfa_to_dfa
-from cmp.tools.automata import automata_union, automata_concatenation, automata_closure, automata_minimization
+# from cmp.tools.automata import NFA, DFA, nfa_to_dfa
+# from cmp.tools.automata import automaton_union, automaton_concatenation, automaton_closure, automaton_minimization
+from lexer_gen.automatons import NFA, DFA, nfa_to_dfa
+from lexer_gen.automatons import automaton_union, automaton_concatenation, automaton_closure, automaton_minimization
 #TODO: Change import for our implementation
 
 EPSILON = 'ε'
@@ -53,16 +55,16 @@ class ClosureNode(UnaryNode):
     @staticmethod
     def operate(value: NFA):
         # Your code here!!!
-        return automata_closure(value)
+        return automaton_closure(value)
     
 class UnionNode(BinaryNode):
     @staticmethod
     def operate(lvalue, rvalue):
         # Your code here!!!
-        return automata_union(lvalue, rvalue)
+        return automaton_union(lvalue, rvalue)
     
 class ConcatNode(BinaryNode):
     @staticmethod
     def operate(lvalue, rvalue):
         # Your code here!!!
-        return automata_concatenation(lvalue, rvalue)
+        return automaton_concatenation(lvalue, rvalue)

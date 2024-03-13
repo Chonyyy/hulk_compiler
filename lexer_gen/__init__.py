@@ -1,10 +1,10 @@
 '''
 Lexer Module description
 '''
-from lexer import *
-from lexer.utils import *
+from lexer_gen import *
+from lexer_gen.utils import *
 from typing import Any, Dict, Iterable, List, Set, Tuple, Union
-from lexer.ast import UnionNode, ConcatNode, ClosureNode, SymbolNode, EpsilonNode
+from lexer_gen.ast import UnionNode, ConcatNode, ClosureNode, SymbolNode, EpsilonNode
 from cmp.pycompiler import Grammar
 import pydot
 import math

@@ -1,6 +1,6 @@
-from lexer.rgx_engine import Regex
-from lexer.automatons import State, automaton_minimization
-from lexer.utils import Token
+from lexer_gen.rgx_engine import Regex
+from lexer_gen.automatons import State, automaton_minimization
+from lexer_gen.utils import Token
 import math
 
 class Lexer:

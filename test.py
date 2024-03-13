@@ -1,4 +1,4 @@
-from lexer.lexer import Lexer
+from lexer_gen.lexer import Lexer
 import os
 
 # TESTING WITH HULK #

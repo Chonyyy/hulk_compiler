@@ -15,7 +15,7 @@ assertNotIsInstance
 '''
 
 import unittest
-from lexer.automatons import *
+from lexer_gen.automatons import *
 
 class TestAutomaton(unittest.TestCase):  
     def setUp(self):

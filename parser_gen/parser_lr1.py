@@ -5,30 +5,6 @@ from cmp_parser.utils import ContainerSet
 from cmp_parser.automata import State, multiline_formatter
 from pandas import DataFrame
 
-G = Grammar()
-E = G.NonTerminal('E', True)
-A= G.NonTerminal('A')
-
-equal, plus, num = G.Terminals('= + int')
-
-E %=  A + equal + A | num
-A %= num + plus + A | num
-
-item = Item(E.productions[0], 0, lookaheads=[G.EOF])
-
-
-firsts = compute_firsts(G)
-firsts[G.EOF] = ContainerSet(G.EOF)
-# print("FFFF")
-# print(firsts)
-# print(" ")
-
-# follows = compute_follows(G,firsts)
-# print(" ")
-# print("FFFF")
-# print(follows)
-# print(" ")
-
 def expand(item, firsts):
     next_symbol = item.NextSymbol
     if next_symbol is None or not next_symbol.IsNonTerminal:
@@ -37,9 +13,18 @@ def expand(item, firsts):
     lookaheads = ContainerSet()
     
     prev = item.Preview()
+    # for preview in prev:
+    #     lookaheads.extend(firsts[preview[0]])
 
     for preview in prev:
-        lookaheads.extend(firsts[preview[0]])
+        for i in range(len(preview)):
+            if preview[i].IsTerminal:
+                lookaheads.extend(firsts[preview[i]])
+                break
+            elif preview[i].IsNonTerminal:
+                lookaheads.extend(firsts[preview[i]])
+                if not any(item.IsEpsilon for item in preview[i].productions):# TODO: me parece que los IsEpsilon se estan guardando mal porque X se va a epsilon y aqui me da false
+                    break
         
     assert not lookaheads.contains_epsilon
     
@@ -144,7 +129,7 @@ class ShiftReduceParser:
         
         while True:
             state = stack[-1]
-            lookahead = w[cursor]
+            lookahead = w[cursor].token_type
             if self.verbose: print(stack, '<---||--->', w[cursor:])
             
             # Detect error
@@ -161,12 +146,12 @@ class ShiftReduceParser:
             
             # Reduce case
             elif action == self.REDUCE:
-                body_size = len(G.Productions[tag].Right)
+                body_size = len(self.G.Productions[tag].Right)
                 for _ in range(body_size):
                     stack.pop()
                     
-                stack.append(self.goto[(stack[-1],G.Productions[tag].Left)])
-                output.append(G.Productions[tag])
+                stack.append(self.goto[(stack[-1],self.G.Productions[tag].Left)])
+                output.append(self.G.Productions[tag])
                 
                 if self.verbose: print("Reduce", tag)
             
@@ -220,7 +205,6 @@ class LR1Parser(ShiftReduceParser):
         assert key not in table or table[key] == value, 'Shift-Reduce or Reduce-Reduce conflict!!!'
         table[key] = value
         
-parser = LR1Parser(G, verbose=False)
 
 def encode_value(value):
     try:
@@ -247,9 +231,33 @@ def table_to_dataframe(table):
 
     return DataFrame.from_dict(d, orient='index', dtype=str)
 
+if __name__ == "__main__":
+    G = Grammar()
+    E = G.NonTerminal('E', True)
+    A= G.NonTerminal('A')
 
-derivation = parser([num, plus, num, equal, num, plus, num, G.EOF])
+    equal, plus, num = G.Terminals('= + int')
 
-assert str(derivation) == '[A -> int, A -> int + A, A -> int, A -> int + A, E -> A = A]'
+    E %=  A + equal + A | num
+    A %= num + plus + A | num
 
-print(derivation)
+    item = Item(E.productions[0], 0, lookaheads=[G.EOF])
+
+
+    firsts = compute_firsts(G)
+    firsts[G.EOF] = ContainerSet(G.EOF)
+    parser = LR1Parser(G, verbose=False)
+    # print("FFFF")
+    # print(firsts)
+    # print(" ")
+
+    # follows = compute_follows(G,firsts)
+    # print(" ")
+    # print("FFFF")
+    # print(follows)
+    # print(" ")
+    derivation = parser([num, plus, num, equal, num, plus, num, G.EOF])
+
+    assert str(derivation) == '[A -> int, A -> int + A, A -> int, A -> int + A, E -> A = A]'
+
+    print(derivation)
