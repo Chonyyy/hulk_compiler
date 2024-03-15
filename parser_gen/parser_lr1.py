@@ -32,7 +32,6 @@ def expand(item, firsts):
     for i in next_symbol.productions:
         itm = Item(i, 0, lookaheads=lookaheads)
         result.append(itm)
-        result += expand(itm, firsts)
     return result
 
 def compress(items):
