@@ -164,6 +164,7 @@ class ShiftReduceParser:
             # Invalid case
             else:
                 if self.verbose: print("Error: Acción inválida.")
+                raise NotImplementedError("Invalid")
                 # return False
         
 class LR1Parser(ShiftReduceParser):
