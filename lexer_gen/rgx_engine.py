@@ -34,9 +34,9 @@ class Regex:
     def __init__(self, rgx):
         tokens = regex_tokenizer(rgx, G, skip_whitespaces=False)
         parser = LR1Parser(G)
-        right_parse = parser(tokens)
-        right_parse.reverse()
-        ast = evaluate_reverse_parse(right_parse, tokens)# FIXME: change for right parse evaluator
+        right_parse, operations = parser(tokens)
+        # right_parse.reverse()
+        ast = evaluate_reverse_parse(right_parse, operations, tokens)# FIXME: change for right parse evaluator
         nfa = ast.evaluate()
         self.automaton = nfa_to_dfa(nfa)
     
