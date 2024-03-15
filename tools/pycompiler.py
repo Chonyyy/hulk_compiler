@@ -1,44 +1,116 @@
+'''
+This module contains implementation of several Grammar related concepts
+'''
 import json
 
 class Symbol(object):
-    def __init__(self, name, grammar):
+    '''
+    Symbol class, base class for grammar symbols
+
+    Attributes:
+        Name: str - the name of the symbol
+        Grammar: Grammar - the grammar to which the symbol belongs
+        IsEpsilon: bool - contains if the symbol is epsilon
+    '''
+    def __init__(self, name: str, grammar: 'Grammar'):
+        '''
+        The constructor for the Symbol class.
+
+        Params:
+            name: str - The name of the symbol
+            grammar: Grammar - The grammar to which the symbol belongs
+        ''' 
         self.Name = name
         self.Grammar = grammar
 
     def __str__(self):
+        '''
+        Returns the string representation of the Symbol object.
+
+        Returns:
+            str - The name of the symbol
+        '''
         return self.Name
 
     def __repr__(self):
+        '''
+        Returns the string representation of the Symbol object.
+
+        Returns:
+            str - The name of the symbol
+        '''
         return repr(self.Name)
 
-    def __add__(self, other):
+    def __add__(self, other: 'Symbol') -> 'Sentence':
+        '''
+        Overloads the addition operator for Symbol objects.
+
+        Parameters:
+            other: Symbol - The other Symbol object
+
+        Returns:
+            Sentence - A Sentence object created from the two Symbol objects
+
+        Raises:
+            TypeError - If the other object is not a Symbol
+        '''
         if isinstance(other, Symbol):
             return Sentence(self, other)
 
         raise TypeError(other)
 
-    def __or__(self, other):
+    def __or__(self, other: 'Sentence') -> 'SentenceList':
+        '''
+        Overloads the or operator for Symbol object.
 
+        Parameters:
+        other: SentenceList - The other SentenceList object
+        '''
         if isinstance(other, (Sentence)):
             return SentenceList(Sentence(self), other)
 
         raise TypeError(other)
 
     @property
-    def IsEpsilon(self):
+    def IsEpsilon(self) -> bool:
         return False
 
     def __len__(self):
+        '''
+        Returns 1, which is the length of the symbol
+        '''
         return 1
 
 class NonTerminal(Symbol):
-    def __init__(self, name, grammar):
+    '''
+    NonTerminal class, derived from Symbol class
+
+    Attributes:
+        Name: str - the name of the symbol
+        Grammar: Grammar - the grammar to which the symbol belongs
+        IsEpsilon: bool - contains if the symbol is epsilon
+        IsTerminal: bool - contains if the symbol is terminal
+        IsNonTerminal: bool - contains if the symbol is non-terminal
+    '''
+    def __init__(self, name: str, grammar: 'Grammar'):
+        '''
+        The constructor for the NonTerminal class.
+
+        Params:
+            name: str - The name of the symbol
+            grammar: Grammar - The grammar to which the symbol belongs
+        '''
         super().__init__(name, grammar)
         self.productions = []
 
 
-    def __imod__(self, other):
+    def __imod__(self, other: 'Sentence') -> 'NonTerminal':
+        '''
+        Overloads the modulo operator for NonTerminal objects.
 
+        Parameters:
+            other: Sentence - The Sentence object
+        '''
         if isinstance(other, (Sentence)):
             p = Production(self, other)
             self.Grammar.Add_Production(p)
@@ -89,8 +161,24 @@ class NonTerminal(Symbol):
         return False
 
 class Terminal(Symbol):
+    '''
+    Terminal class, derived from Symbol class
 
-    def __init__(self, name, grammar):
+    Attributes:
+        Name: str - the name of the symbol
+        Grammar: Grammar - the grammar to which the symbol belongs
+        IsEpsilon: bool - contains if the symbol is epsilon
+        IsTerminal: bool - contains if the symbol is terminal
+        IsNonTerminal: bool - contains if the symbol is non-terminal
+    '''
+    def __init__(self, name: str, grammar: 'Grammar'):
+        '''
+        The constructor for the Terminal class.
+
+        Params:
+            name: str - The name of the symbol
+            grammar: Grammar - The grammar to which the symbol belongs
+        '''
         super().__init__(name, grammar)
 
     @property
@@ -106,20 +194,56 @@ class Terminal(Symbol):
         return False
 
 class EOF(Terminal):
+    '''
+    EOF class, derived from Terminal class
 
-    def __init__(self, Grammar):
+    Attributes:
+        Name: str - the name of the symbol
+        Grammar: Grammar - the grammar to which the symbol belongs
+        IsEpsilon: bool - contains if the symbol is epsilon
+        IsTerminal: bool - contains if the symbol is terminal
+        IsNonTerminal: bool - contains if the symbol is non-terminal
+    '''
+    def __init__(self, Grammar: 'Grammar'):
+        '''
+        The constructor for the EOF class.
+
+        Params:
+            Grammar: Grammar - The grammar to which the symbol belongs
+        '''
         super().__init__('$', Grammar)
 
 class Sentence(object):
+    '''
+    Sentence class, represents a sequence of symbols
 
+    Attributes:
+        _symbols: tuple[Symbol] - the sequence of symbols
+        hash: int - the hash of the sequence of symbols
+    '''
     def __init__(self, *args):
+        '''
+        The constructor for the Sentence class.
+
+        Params:
+            *args: Symbol - The sequence of symbols
+        '''
         self._symbols = tuple(x for x in args if not x.IsEpsilon)
         self.hash = hash(self._symbols)
 
     def __len__(self):
+        '''
+        Returns the length of the sequence of symbols
+        '''
         return len(self._symbols)
 
-    def __add__(self, other):
+    def __add__(self, other: Symbol) -> 'Sentence':
+        '''
+        Overloads the addition operator for Sentence objects.
+
+        Parameters:
+            other: Symbol - The other Symbol object
+        '''
         if isinstance(other, Symbol):
             return Sentence(*(self._symbols + (other,)))
 
@@ -129,6 +253,7 @@ class Sentence(object):
         raise TypeError(other)
 
     def __or__(self, other):
+        #TODO: continue type annotation and docstring
         if isinstance(other, Sentence):
             return SentenceList(self, other)
 
