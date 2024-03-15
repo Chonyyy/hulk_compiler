@@ -18,8 +18,8 @@ prinr_stat, protocol, def_func = G.NonTerminals('<print-stat> <protocol> <def-fu
 # Expressions Non Terminals
 block_expr, simple_expr = G.NonTerminals('<block-expr> <simple-expr>')
 # Simple Expression Non Terminals
-let_var, call_expr, str_expr, arthmetic_expr, dest_expr = G.NonTerminals('<call-expr> <str-expr> <arithmetic-expr> <dest-expr>') 
-conditional_expr, loop_expr = G.NonTerminals('<conditional-expr> <loop-expr> <param>')
+let_var, call_expr, str_expr, arthmetic_expr, dest_expr = G.NonTerminals('<let-var> <call-expr> <str-expr> <arithmetic-expr> <dest-expr>') 
+conditional_expr, loop_expr = G.NonTerminals('<conditional-expr> <loop-expr>')
 # Function Call Non Terminals
 param, param_list = G.NonTerminals('<param> <param-list>')
 # Statement Non Terminals
