@@ -14,16 +14,29 @@ type_anoted, ntype = G.NonTerminals('<type-anoted> <ntype>')
 # Code Non Terminals
 stat_list, stat, expr, expr_list, code_list = G.NonTerminals('<stat_list> <stat> <expr> <expr-list> <code-list>')
 # Statement Non Terminals
-prinr_expr, protocol, def_func = G.NonTerminals('<print-stat> <protocol> <def-func>')
+prinr_stat, protocol, def_func = G.NonTerminals('<print-stat> <protocol> <def-func>')
 # Expressions Non Terminals
 block_expr, simple_expr = G.NonTerminals('<block-expr> <simple-expr>')
 # Simple Expression Non Terminals
 let_var, call_expr, str_expr, arthmetic_expr, dest_expr = G.NonTerminals('<call-expr> <str-expr> <arithmetic-expr> <dest-expr>') 
-conditional_expr, loop_expr, param = G.NonTerminals('<conditional-expr> <loop-expr> <param>')
-method_list, method = G.NonTerminals('<metod-list> <method>')
-var_corpse, branches, branch, while_loop, for_loop = G.NonTerminals('<var-corpse> <branches> <branch> <while-loop> <for-loop>')
+conditional_expr, loop_expr = G.NonTerminals('<conditional-expr> <loop-expr> <param>')
+# Function Call Non Terminals
+param, param_list = G.NonTerminals('<param> <param-list>')
+# Statement Non Terminals
+def_type, new_expr, func_call = G.NonTerminals('<def-type> <new-expr> <func-call>')
+method_list, method, prop_list = G.NonTerminals('<metod-list> <method> <prop-list>')
+# Property list Non Terminals
+prop = G.NonTerminal('<prop>')
+# Let Expression Non Terminals
+var_corpse = G.NonTerminals('<var-corpse>')
+# Conditional Expression Non Terminals
+branches, branch = G.NonTerminals('<branches> <branch>')
+# Loop Expression Non Terminals
+while_loop, for_loop = G.NonTerminals('<while-loop> <for-loop>')
+# Others Non Terminals
 type_set, protocol_set, protocol_sand = G.NonTerminals('<type-set> <protocol-set> <protocol-sand>')
-def_type, new_expr, func_call, param_list = G.NonTerminals('<def-type> <new-expr> <func-call> <param-list>')
+# Type Declaration Non Terminals
+type_body = G.NonTerminal('<type-body>')
 
 
 
@@ -41,7 +54,6 @@ isx, asx = G.Terminals('is as')
 idx, num = G.Terminals('id int')
 sqrt, sin, cos, exp, log, rand = G.Terminals('')
 boolx = G.Terminals('bool')
-nline = G.Terminal(r'\n')
 
 # HULK's Program
 program %= code_list, None #TODO
@@ -61,7 +73,21 @@ expr_list %= expr + expr_list, lambda h,s: s[1] + s[2]
 # Statement
 stat %= def_func, lambda h,s: s[1]
 stat %= protocol, lambda h,s: s[1]
-stat %= prinr_expr + semi, None #TODO
+stat %= def_type, lambda h,s: s[1]
+stat %= prop_list, lambda h,s: s[1]
+stat %= method_list, lambda h,s: s[1]
+stat %= prinr_stat + semi, lambda h,s: s[1]
+
+# Type Definition
+def_type %= typex + idx + okey + stat_list + ckey, None #TODO
+def_type %= typex + idx + opar + arg_list + cpar + okey + stat_list + ckey, None #TODO
+
+# Properties List
+prop_list %= prop + semi, None #TODO
+prop_list %= prop + semi + prop_list, None # TODO
+
+# Property
+prop %= idx + equal + expr, None #TODO
 
 # Expressions
 expr %= simple_expr + semi, lambda h,s: s[1]
@@ -86,6 +112,7 @@ simple_expr %= conditional_expr, None #TODO
 block_expr %= block_expr + expr_list, None #TODO
 block_expr %= block_expr + stat_list, None #TODO
 
+# Multiple Variables Declaration
 var_corpse %= type_anoted + equal + expr, None #TODO
 var_corpse %= type_anoted + equal + expr + comma + var_corpse, None #TODO
 
@@ -102,14 +129,17 @@ call_expr %= call_expr + obracket + call_expr + cbracket, None #TODO
 type_set %= idx, None #TODO
 type_set %= idx + lor + type_set, None #TODO
 
+# Protocol Statement
 protocol_set %= protocol_sand, None #TODO
 protocol_set %= protocol_set + lor + protocol_sand, None #TODO
 
 protocol_sand %= idx, None #TODO
 protocol_sand %= protocol_sand + land + idx, None #TODO
 
+# Destructive Asigantion Expression
 dest_expr %= call_expr + dest + expr, None #TODO
 
+# Conditional Expression
 conditional_expr %= ifx + opar + expr + cpar + expr + elifx + expr, None # TODO
 conditional_expr %= ifx + opar + expr + cpar + expr + branches + elsex + expr, None #TODO
 
@@ -118,21 +148,29 @@ branches %= branches + branch, None #TODO
 
 branch %= elifx + opar + expr + cpar + expr, None #TODO
 
-prinr_expr %= printx + expr, None # TODO
+# Print Statement
+prinr_stat %= printx + expr, None # TODO
 
+# Function Call Expression
 func_call %= call_expr + opar + cpar, None #TODO
 func_call %= call_expr + opar + param_list + cpar, None # TODO
 
 param_list %= param, None #TODO
 param_list %= param + comma + param_list, None #TODO
 
+# Expression List
 expr_list %= expr, None # TODO
-expr_list %= expr + comma + expr_list, None # TODO
+expr_list %= expr + semi + expr_list, None # TODO
 
+# Protocol Statement
 protocol %= protocolx + idx + okey + method_list + ckey, None #TODO
 
+# Methods 
 method_list %= method + semi, None #TODO
 method_list %= method + semi + method_list, None #TODO
+
+# Method Declaration
+method %= idx + opar + arg_list + cpar + ntype + expr
 
 # Function Definition Statement
 def_func %= defx + idx + iline + simple_expr + semi, None # TODO
