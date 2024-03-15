@@ -28,7 +28,7 @@ method_list, method, prop_list = G.NonTerminals('<metod-list> <method> <prop-lis
 # Property list Non Terminals
 prop = G.NonTerminal('<prop>')
 # Let Expression Non Terminals
-var_corpse = G.NonTerminals('<var-corpse>')
+var_corpse = G.NonTerminal('<var-corpse>')
 # Conditional Expression Non Terminals
 branches, branch = G.NonTerminals('<branches> <branch>')
 # Loop Expression Non Terminals
@@ -52,7 +52,7 @@ asignment, dest = G.Terminals('= :=')
 land, lor, lnot, equal, nequal = G.Terminals('& | ! == !=')
 isx, asx = G.Terminals('is as')
 idx, num = G.Terminals('id int')
-sqrt, sin, cos, exp, log, rand = G.Terminals('')
+# sqrt, sin, cos, exp, log, rand = G.Terminals('sqrt sin ')
 boolx = G.Terminals('bool')
 
 # HULK's Program
@@ -170,7 +170,7 @@ method_list %= method + semi, None #TODO
 method_list %= method + semi + method_list, None #TODO
 
 # Method Declaration
-method %= idx + opar + arg_list + cpar + ntype + expr
+method %= idx + opar + arg_list + cpar + ntype + expr, None #TODO
 
 # Function Definition Statement
 def_func %= defx + idx + iline + simple_expr + semi, None # TODO
