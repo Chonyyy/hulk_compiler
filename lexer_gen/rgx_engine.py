@@ -4,8 +4,9 @@ from lexer_gen.automatons import DFA, nfa_to_dfa
 from tools.pycompiler import Grammar
 from lexer_gen import G
 from cmp.tools.parsing import metodo_predictivo_no_recursivo #FIXME: Change for actual parser later
-from parser_gen.parser_lr1 import LR1Parser
-from tools.evaluation import evaluate_reverse_parse
+# from cmp.tools.evaluation import evaluate_parse
+# from parser_gen.parser_lr1 import LR1Parser
+from tools.evaluation import evaluate_reverse_parse, evaluate_parse
 # TODO: change parsing tools for ours
 
 def regex_tokenizer(text:str, G:Grammar, skip_whitespaces=True):
@@ -33,10 +34,12 @@ def regex_tokenizer(text:str, G:Grammar, skip_whitespaces=True):
 class Regex:
     def __init__(self, rgx):
         tokens = regex_tokenizer(rgx, G, skip_whitespaces=False)
-        parser = LR1Parser(G)
-        right_parse, operations = parser(tokens)
-        # right_parse.reverse()
-        ast = evaluate_reverse_parse(right_parse, operations, tokens)# FIXME: change for right parse evaluator
+        # parser = LR1Parser(G)
+        parser = metodo_predictivo_no_recursivo(G)
+        left_parse = parser(tokens)
+        ast = evaluate_parse(left_parse, tokens)
+        # right_parse, operations = parser(tokens)
+        # ast = evaluate_reverse_parse(right_parse, operations, tokens)# FIXME: change for right parse evaluator
         nfa = ast.evaluate()
         self.automaton = nfa_to_dfa(nfa)
     
