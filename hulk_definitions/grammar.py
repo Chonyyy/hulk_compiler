@@ -48,8 +48,8 @@ semi, comma, opar, cpar, okey, ckey, obracket, cbracket, dot, ddot, iline = G.Te
 ifx, elsex, elifx = G.Terminals('if else elif')
 plus, minus, star, pow, dstar, div = G.Terminals('+ - * ^ ** /')
 dquote, strx = G.Terminals('" str')
-asignment, dest = G.Terminals('= :=')
-land, lor, lnot, equal, nequal = G.Terminals('& | ! == !=')
+equal, dest = G.Terminals('= :=')
+land, lor, lnot, cequal, nequal = G.Terminals('& | ! == !=')
 isx, asx = G.Terminals('is as')
 idx, num = G.Terminals('id int')
 # sqrt, sin, cos, exp, log, rand = G.Terminals('sqrt sin ')
@@ -204,7 +204,7 @@ and_expr %= and_expr + land + batom, None #TODO
 batom %= boolx, None #TODO
 batom %= call_expr, None #TODO
 batom %= lnot + batom, None #TODO
-batom %= batom + equal + batom, None #TODO
+batom %= batom + cequal + batom, None #TODO
 batom %= batom + nequal + batom, None #TODO
 batom %= call_expr + isx + idx, None #TODO
 batom %= opar + bool_expr + cpar, None #TODO
