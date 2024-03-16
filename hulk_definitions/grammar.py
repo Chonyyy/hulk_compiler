@@ -196,6 +196,8 @@ str_expr %= dquote + strx + dquote, None #TODO
 
 # Boolean Expression
 bool_expr %= and_expr + lor + bool_expr, None #TODO
+bool_expr %= and_expr + cequal + bool_expr, None #TODO
+bool_expr %= and_expr + nequal + batom, None #TODO
 bool_expr %= and_expr, None #TODO
 
 and_expr %= batom, None #TODO
@@ -204,8 +206,6 @@ and_expr %= and_expr + land + batom, None #TODO
 batom %= boolx, None #TODO
 batom %= call_expr, None #TODO
 batom %= lnot + batom, None #TODO
-batom %= batom + cequal + batom, None #TODO
-batom %= batom + nequal + batom, None #TODO
 batom %= call_expr + isx + idx, None #TODO
 batom %= opar + bool_expr + cpar, None #TODO
 
