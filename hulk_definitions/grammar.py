@@ -6,7 +6,7 @@ program = G.NonTerminal('<program>', startSymbol=True)
 # Arithmetic Expression Non Terminal
 arit_expr, term, factor, power, atom = G.NonTerminals('<arit-expr> <term> <factor> <power> <atom>')
 # Boolean Expression Non Terminals
-bool_expr, and_expr, batom = G.NonTerminals('<bool-expr> <and-expr> <batom>')
+bool_expr, and_expr, batom, rel_expr, rel_term = G.NonTerminals('<bool-expr> <and-expr> <batom> <rel-expr> <rel-term>')
 # Function Definition Non Terminals
 arg_list, func_type = G.NonTerminals('<arg-list> <func-type>')
 # Type Anotation Non Terminals
@@ -49,7 +49,7 @@ ifx, elsex, elifx = G.Terminals('if else elif')
 plus, minus, star, pow, dstar, div = G.Terminals('+ - * ^ ** /')
 dquote, strx = G.Terminals('" str')
 equal, dest = G.Terminals('= :=')
-land, lor, lnot, cequal, nequal = G.Terminals('& | ! == !=')
+land, lor, lnot, cequal, nequal, gthan, lthan, mequal, lequal = G.Terminals('& | ! == != > < >= <=')
 isx, asx = G.Terminals('is as')
 idx, num = G.Terminals('id int')
 # sqrt, sin, cos, exp, log, rand = G.Terminals('sqrt sin ')
@@ -184,19 +184,27 @@ let_var %= let + var_corpse + inx + opar + block_expr + cpar, None #TODO
 str_expr %= dquote + strx + dquote, None #TODO
 
 # Boolean Expression
-bool_expr %= and_expr + lor + bool_expr, None #TODO
 bool_expr %= and_expr, None #TODO
+bool_expr %= and_expr + lor + bool_expr, None #TODO
 
 and_expr %= batom, None #TODO
 and_expr %= and_expr + land + batom, None #TODO
 
-batom %= boolx, None #TODO
-batom %= call_expr, None #TODO
+batom %= rel_expr, None #TODO
 batom %= lnot + batom, None #TODO
-batom %= batom + isx + idx, None #TODO
 batom %= opar + bool_expr + cpar, None #TODO
-batom %= bool_expr + cequal + batom, None # TODO
-batom %= bool_expr + nequal + batom, None # TODO
+
+rel_expr %= rel_expr + isx + rel_term, None #TODO
+rel_expr %= rel_expr + lthan + rel_term, None # TODO
+rel_expr %= rel_expr + gthan + rel_term, None # TODO
+rel_expr %= rel_expr + cequal + rel_term, None # TODO
+rel_expr %= rel_expr + nequal + rel_term, None # TODO
+rel_expr %= rel_expr + lequal + rel_term, None # TODO
+rel_expr %= rel_expr + mequal + rel_term, None # TODO
+
+rel_term %= num, None # TODO
+rel_term %= boolx, None # TODO
+rel_term %= call_expr, None # TODO
 
 # Arithmetic Expression
 arit_expr %= term, None # TODO
