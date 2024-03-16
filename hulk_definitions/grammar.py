@@ -121,20 +121,9 @@ call_expr %= idx, None #TODO
 call_expr %= func_call, None #TODO
 call_expr %= create + func_call, None #TODO
 call_expr %= call_expr + dot + idx, None #TODO
-call_expr %= call_expr + asx + type_set, None #TODO
 call_expr %= call_expr + dot + func_call, None #TODO
+call_expr %= call_expr + asx + bool_expr, None #TODO
 call_expr %= call_expr + obracket + call_expr + cbracket, None #TODO
-
-# Set of types
-type_set %= idx, None #TODO
-type_set %= idx + lor + type_set, None #TODO
-
-# Protocol Statement
-protocol_set %= protocol_sand, None #TODO
-protocol_set %= protocol_set + lor + protocol_sand, None #TODO
-
-protocol_sand %= idx, None #TODO
-protocol_sand %= protocol_sand + land + idx, None #TODO
 
 # Destructive Asigantion Expression
 dest_expr %= call_expr + dest + expr, None #TODO
@@ -196,8 +185,6 @@ str_expr %= dquote + strx + dquote, None #TODO
 
 # Boolean Expression
 bool_expr %= and_expr + lor + bool_expr, None #TODO
-bool_expr %= and_expr + cequal + bool_expr, None #TODO
-bool_expr %= and_expr + nequal + batom, None #TODO
 bool_expr %= and_expr, None #TODO
 
 and_expr %= batom, None #TODO
@@ -206,8 +193,10 @@ and_expr %= and_expr + land + batom, None #TODO
 batom %= boolx, None #TODO
 batom %= call_expr, None #TODO
 batom %= lnot + batom, None #TODO
-batom %= call_expr + isx + idx, None #TODO
+batom %= batom + isx + idx, None #TODO
 batom %= opar + bool_expr + cpar, None #TODO
+batom %= bool_expr + cequal + batom, None # TODO
+batom %= bool_expr + nequal + batom, None # TODO
 
 # Arithmetic Expression
 arit_expr %= term, None # TODO
