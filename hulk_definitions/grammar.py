@@ -41,7 +41,7 @@ type_body = G.NonTerminal('<type-body>')
 
 
 
-let, inx, defx, printx = G.Terminals('let in def print')
+let, inx, defx, printx = G.Terminals('let in function print')
 typex, create, inherits, protocolx = G.Terminals('type new inherits protocol')
 wloop, floop = G.Terminals('while for') 
 semi, comma, opar, cpar, okey, ckey, obracket, cbracket, dot, ddot, iline = G.Terminals('; , ( ) { } [ ] . : =>')
@@ -53,7 +53,7 @@ land, lor, lnot, equal, nequal = G.Terminals('& | ! == !=')
 isx, asx = G.Terminals('is as')
 idx, num = G.Terminals('id int')
 # sqrt, sin, cos, exp, log, rand = G.Terminals('sqrt sin ')
-boolx = G.Terminals('bool')
+boolx = G.Terminal('bool')
 
 # HULK's Program
 program %= code_list, None #TODO
@@ -149,7 +149,7 @@ branches %= branches + branch, None #TODO
 branch %= elifx + opar + expr + cpar + expr, None #TODO
 
 # Print Statement
-prinr_stat %= printx + expr, None # TODO
+prinr_stat %= printx + opar + expr + cpar, None # TODO
 
 # Function Call Expression
 func_call %= call_expr + opar + cpar, None #TODO
@@ -188,8 +188,8 @@ type_anoted %= idx + ntype, None #TODO
 ntype %= ddot + idx, None #TODO
 
 # let var Expression
-let_var %= let + var_corpse + inx + expr, None #TODO
-let_var %= let + var_corpse + inx + opar + expr_list + cpar, None #TODO
+let_var %= let + var_corpse + inx + simple_expr, None #TODO
+let_var %= let + var_corpse + inx + opar + block_expr + cpar, None #TODO
 
 # String Expression
 str_expr %= dquote + strx + dquote, None #TODO
