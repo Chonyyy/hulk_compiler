@@ -152,8 +152,8 @@ branch %= elifx + opar + expr + cpar + expr, None #TODO
 prinr_stat %= printx + opar + expr + cpar, None # TODO
 
 # Function Call Expression
-func_call %= call_expr + opar + cpar, None #TODO
-func_call %= call_expr + opar + param_list + cpar, None # TODO
+func_call %= idx + opar + cpar, None #TODO
+func_call %= idx + opar + param_list + cpar, None # TODO
 
 param_list %= param, None #TODO
 param_list %= param + comma + param_list, None #TODO
