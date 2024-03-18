@@ -1,6 +1,7 @@
 from cmp_parser.pycompiler import Grammar
 from cmp_parser.utils import ContainerSet
-
+import logging
+logger = logging.getLogger(__name__)
 
 # # Test
 # from pycompiler import Grammar
@@ -91,6 +92,7 @@ def compute_local_first(G,firsts, alpha: str):
 # Computes First(Vt) U First(Vn) U First(alpha)
 # P: X -> alpha
 def compute_firsts(G):
+    logger.info("Computing firsts")
     firsts = {}
     change = True
     
@@ -127,9 +129,12 @@ def compute_firsts(G):
             change |= first_X.hard_update(local_first)
                     
     # First(Vt) + First(Vt) + First(RightSides)
+    logger.info("Firsts computed")
+    logger.info("Grammar Firsts: %s", firsts)
     return firsts
 
 def compute_follows(G, firsts):
+    logger.info("Computing follows")
     follows = { }
     change = True
     
@@ -191,6 +196,8 @@ def compute_follows(G, firsts):
             ###################################################
 
     # Follow(Vn)
+    logger.info("Follows computed")
+    logger.info("Grammar Follows: %s", follows)
     return follows
 
 # firsts = compute_firsts(G)

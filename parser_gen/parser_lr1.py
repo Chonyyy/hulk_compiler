@@ -4,6 +4,8 @@ from cmp_parser.pycompiler import Item
 from cmp_parser.utils import ContainerSet
 from cmp_parser.automata import State, multiline_formatter
 from pandas import DataFrame
+import logging
+logger = logging.getLogger(__name__)
 
 def expand(item, firsts):
     next_symbol = item.NextSymbol
@@ -69,6 +71,7 @@ def goto_lr1(items, symbol, firsts=None, just_kernel=False):
     return items if just_kernel else closure_lr1(items, firsts)
 
 def build_LR1_automaton(G):
+    logger.info("Building LR1 automaton")
     assert len(G.startSymbol.productions) == 1, 'Grammar must be augmented'
     
     firsts = compute_firsts(G)
@@ -111,9 +114,8 @@ class ShiftReduceParser:
     REDUCE = 'REDUCE'
     OK = 'OK'
     
-    def __init__(self, G, verbose=False):
+    def __init__(self, G):
         self.G = G
-        self.verbose = verbose
         self.action = {}
         self.goto = {}
         self._build_parsing_table()
@@ -130,20 +132,23 @@ class ShiftReduceParser:
         while True:
             state = stack[-1]
             lookahead = w[cursor].token_type
-            if self.verbose: print(stack, '<---||--->', w[cursor:])
+            logger.info(f'Parsing {w[cursor:]}')
+            logger.info(f"State: {state}, Lookahead: {lookahead}, Stack: {stack}, Cursor: {cursor}")
             
             # Detect error
             if lookahead == '$' and state ==  0:
-                if self.verbose: print("Error: No se puede reconocer la cadena.")
+                logger.info("Error: No se puede reconocer la cadena.")
                 return False
+            a = list(self.action.keys())
             action, tag = self.action.get((state, lookahead), (None, None))
+            logger.info(f'Realizando {action} a {tag}')
             operations.append(action)
             
             # Shift case
             if action == self.SHIFT:
                 stack.append(tag)
                 cursor +=  1
-                if self.verbose: print("Shift", tag)
+                logger.info(f'Shift {tag}')
             
             # Reduce case
             elif action == self.REDUCE:
@@ -154,26 +159,30 @@ class ShiftReduceParser:
                 stack.append(self.goto[(stack[-1],self.G.Productions[tag].Left)])
                 output.append(self.G.Productions[tag])
                 
-                if self.verbose: print("Reduce", tag)
+                logger.info(f'Reduce {tag}')
             
             # OK case
             elif action == self.OK:
-                if self.verbose: print("OK")
+                logger.info("OK")
                 return output , operations
             
             # Invalid case
             else:
-                if self.verbose: print("Error: Acción inválida.")
-                raise NotImplementedError("Invalid")
+                logger.error("Error: Acción inválida.")
+                raise NotImplementedError(f'Invalid token {w[cursor].token_type}')
                 # return False
         
 class LR1Parser(ShiftReduceParser):
     def _build_parsing_table(self):
         G = self.G.AugmentedGrammar(True)
-        
         automaton = build_LR1_automaton(G)
+
+        logger.info("Building parsing table")
         for i, node in enumerate(automaton):
-            if self.verbose: print(i, '\t', '\n\t '.join(str(x) for x in node.state), '\n')
+            # logger.info(i, '\t', '\n\t '.join(str(x) for x in node.state), '\n')
+            logger.info(f'{i}')
+            for state in node.state:
+                logger.info(f'\t {state}')
             node.idx = i
 
         for node in automaton:
@@ -204,6 +213,7 @@ class LR1Parser(ShiftReduceParser):
         
     @staticmethod
     def _register(table, key, value):
+        logger.info(f"Registering {key} -> {value}")
         assert key not in table or table[key] == value, 'Shift-Reduce or Reduce-Reduce conflict!!!'
         table[key] = value
         
@@ -248,7 +258,7 @@ if __name__ == "__main__":
 
     firsts = compute_firsts(G)
     firsts[G.EOF] = ContainerSet(G.EOF)
-    parser = LR1Parser(G, verbose=False)
+    parser = LR1Parser(G)
     # print("FFFF")
     # print(firsts)
     # print(" ")
