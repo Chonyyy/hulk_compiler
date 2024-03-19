@@ -22,17 +22,20 @@ def main(debug = True, verbose = False):
         logging.basicConfig(filename='hulk_compiler.log', level=logging.DEBUG)
         files = os.listdir('./hulk_examples')
         logger.info('Program Started')
+        logger.info('=== Generating Parser ===')
+        # parser = LR1Parser(G, True)
+        my_parser = My_Parser(G)
         for file in files:
             with open(f'./hulk_examples/{file}', 'r') as f:
                 logger.info(f'=== Reading file: {file} ===')
                 text = f.read()
-                logger.info('=== Generating Parser ===')
-                # parser = LR1Parser(G, True)
-                my_parser = My_Parser(G)
-                logger.info('=== Generating Lexer ===')
+                logger.info('=== Tokenizing Text ===')
                 tokens = LEXER(text)
                 right_parse, operations = my_parser(tokens)
-                print(right_parse)
+                logger.info(f'=== Derivation Secuence for File {file} ===')
+                for derivation in right_parse:
+                    logger.info(f'{derivation}')
+                # print(right_parse)
                 # ast = evaluate_reverse_parse(right_parse, operations, tokens)
 
 if __name__ == "__main__":
