@@ -180,8 +180,8 @@ def_type %= typex + idx + opar + arg_list + cpar + obracket + type_corpse + cbra
 def_type %= typex + idx + obracket + cbracket, None # Your code here!!! (add rule)
 def_type %= typex + idx + opar + arg_list + cpar + obracket + cbracket, None # Your code here!!! (add rule)
 
-type_corpse %= properties + type_corpse, None # Your code here!!! (add rule)
-type_corpse %= methods + type_corpse, None # Your code here!!! (add rule)
+type_corpse %= type_corpse + properties, None # Your code here!!! (add rule)
+type_corpse %= type_corpse + methods, None # Your code here!!! (add rule)
 type_corpse %= properties, None # Your code here!!! (add rule)
 type_corpse %= methods, None # Your code here!!! (add rule)
 
@@ -196,6 +196,7 @@ atom %= selfx, None # Your code here!!! (add rule)
 prop %= idx + equal + atom, None # Your code here!!! (add rule)
 
 method %= idx + opar + arg_list + cpar + arrow + stat, None # Your code here!!! (add rule)
+method %= idx + opar + cpar + arrow + stat, None # Your code here!!! (add rule)
 
 stat_list %= def_type, None # Your code here!!! (add rule)
 

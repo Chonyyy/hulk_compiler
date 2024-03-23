@@ -79,7 +79,7 @@ class Lexer:
     def __call__(self, text):
         tokens = []
         for lex, ttype in self._tokenize(text):
-            if ttype in ['ws']:
+            if ttype in ['ws', 'comment_line']:
                 continue
             if lex == self.eof:
                 tokens.append(Token(lex, self.G.EOF))
