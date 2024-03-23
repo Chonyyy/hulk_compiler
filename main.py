@@ -9,7 +9,7 @@ import sys,logging
 
 logger = logging.getLogger(__name__)
 
-sys.setrecursionlimit(100000)
+sys.setrecursionlimit(1000000)
 
 def main(debug = True, verbose = False):
     file_path = './hulk_compiler.log'
@@ -25,7 +25,7 @@ def main(debug = True, verbose = False):
         logger.info('=== Generating Parser ===')
         # parser = LR1Parser(G, True)
         my_parser = My_Parser(G)
-        for file in files:
+        for i, file in enumerate(files):
             with open(f'./hulk_examples/{file}', 'r') as f:
                 logger.info(f'=== Reading file: {file} ===')
                 text = f.read()
@@ -35,7 +35,7 @@ def main(debug = True, verbose = False):
                 logger.info(f'=== Derivation Secuence for File {file} ===')
                 for derivation in right_parse:
                     logger.info(f'{derivation}')
-                # print(right_parse)
+                print(f'file {i} is parsed.')
                 # ast = evaluate_reverse_parse(right_parse, operations, tokens)
 
 if __name__ == "__main__":

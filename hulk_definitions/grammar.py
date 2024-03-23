@@ -10,7 +10,7 @@ G = Grammar()
 #region NonTerminals Definition
 program = G.NonTerminal('<program>', startSymbol=True)
 stat_list, stat = G.NonTerminals('<stat_list> <stat>')
-def_type, properties, methods, prop, method, type_corpse = G.NonTerminals('<def-type> <properties> <methods> <property> <method> <type-corpse>')
+def_type, properties, methods, prop, method, type_corpse, inheritance = G.NonTerminals('<def-type> <properties> <methods> <property> <method> <type-corpse> <inheritance>')
 loop_expr, while_expr, while_expr_block, for_expr, for_expr_block = G.NonTerminals('<loop-expr> <while-expr> <while-expr-block> <for-expr> <for-expr-block>')
 let_var, let_var_block, def_func, def_func_block, arg_list = G.NonTerminals('<let-var> <let-var-block> <def-func> <def-func-block> <arg-list>')
 assign, var_corpse = G.NonTerminals('<assign> <var-corpse>')
@@ -60,7 +60,7 @@ let_var %= let + var_corpse + inx + stat, None # Your code here!!! (add rule) 20
 let_var %= let + var_corpse + inx + def_func_block, None # Your code here!!! (add rule) 21
 let_var %= let + var_corpse + inx + let_var_block, None # Your code here!!! (add rule) 22
 let_var_block %= let + var_corpse + inx + block, None # Your code here!!! (add rule) 23
-assign %= idx + dassign + expr, None # Your code here!!! (add rule) 24
+assign %= atom + dassign + expr, None # Your code here!!! (add rule) 24
 
 var_corpse %= idx + equal + stat, None # Your code here!!! (add rule) 25
 var_corpse %= idx + equal + stat + comma + var_corpse, None # Your code here!!! (add rule) 26
@@ -174,22 +174,30 @@ def_func_block %= func + idx + opar + arg_list + cpar + for_expr_block, None # Y
 def_func %= func + idx + opar + arg_list + cpar + arrow + while_expr_block, None # Your code here!!! (add rule) 112
 def_func %= func + idx + opar + arg_list + cpar + arrow + for_expr_block, None # Your code here!!! (add rule) 113
 
-def_type %= typex + idx + obracket + type_corpse + cbracket, None # Your code here!!! (add rule)
-def_type %= typex + idx + opar + arg_list + cpar + obracket + type_corpse + cbracket, None # Your code here!!! (add rule)
-
 def_type %= typex + idx + obracket + cbracket, None # Your code here!!! (add rule)
+def_type %= typex + idx + inheritsx + idx + obracket + cbracket, None # Your code here!!! (add rule)
+def_type %= typex + idx + inheritsx + idx + opar + expr_list + cpar + obracket + cbracket, None # Your code here!!! (add rule)
+
 def_type %= typex + idx + opar + arg_list + cpar + obracket + cbracket, None # Your code here!!! (add rule)
+def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + obracket + cbracket, None # Your code here!!! (add rule)
+def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + opar + expr_list + cpar + obracket + cbracket, None # Your code here!!! (add rule)
 
-type_corpse %= type_corpse + properties, None # Your code here!!! (add rule)
-type_corpse %= type_corpse + methods, None # Your code here!!! (add rule)
-type_corpse %= properties, None # Your code here!!! (add rule)
-type_corpse %= methods, None # Your code here!!! (add rule)
+def_type %= typex + idx + obracket + type_corpse + cbracket, None # Your code here!!! (add rule)
+def_type %= typex + idx + inheritsx + idx + obracket + type_corpse + cbracket, None # Your code here!!! (add rule)
+def_type %= typex + idx + inheritsx + idx + opar + expr_list + cpar + obracket + type_corpse + cbracket, None # Your code here!!! (add rule)
 
-properties %= prop, None # Your code here!!! (add rule)
-properties %= prop + semi + properties, None # Your code here!!! (add rule)
+def_type %= typex + idx + opar + arg_list + cpar + obracket + type_corpse + cbracket, None # Your code here!!! (add rule)
+def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + obracket + type_corpse + cbracket, None # Your code here!!! (add rule)
+def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + opar + expr_list + cpar + obracket + type_corpse + cbracket, None # Your code here!!! (add rule)
 
-methods %= method, None # Your code here!!! (add rule)
-methods %= method + semi + methods, None # Your code here!!! (add rule)
+# inheritance %= inheritsx + idx + opar + expr_list + cpar, None # Your code here!!! (add rule)
+# inheritance %= inheritsx + idx + opar + cpar, None # Your code here!!! (add rule)
+# inheritance %= inheritsx + idx, None # Your code here!!! (add rule)
+
+type_corpse %= method + semi + type_corpse, None # Your code here!!! (add rule)
+type_corpse %= prop + semi + type_corpse, None # Your code here!!! (add rule)
+type_corpse %= method + semi, None # Your code here!!! (add rule)
+type_corpse %= prop + semi, None # Your code here!!! (add rule)
 
 atom %= selfx, None # Your code here!!! (add rule)
 
@@ -199,6 +207,9 @@ method %= idx + opar + arg_list + cpar + arrow + stat, None # Your code here!!! 
 method %= idx + opar + cpar + arrow + stat, None # Your code here!!! (add rule)
 
 stat_list %= def_type, None # Your code here!!! (add rule)
+stat_list %= def_type + stat_list, None # Your code here!!! (add rule)
+
+expr %= newx + func_call, None # Your code here!!! (add rule)
 
 #endregion
 #endregion
