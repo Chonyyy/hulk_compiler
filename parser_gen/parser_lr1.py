@@ -215,8 +215,7 @@ class LR1Parser(ShiftReduceParser):
     def _register(table, key, value):
         logger.info(f"Registering {key} -> {value}")
         assert key not in table or table[key] == value, 'Shift-Reduce or Reduce-Reduce conflict!!!'
-        table[key] = value
-        
+        table[key] = value        
 
 def encode_value(value):
     try:
