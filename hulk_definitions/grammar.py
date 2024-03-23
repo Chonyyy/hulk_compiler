@@ -10,6 +10,7 @@ G = Grammar()
 #region NonTerminals Definition
 program = G.NonTerminal('<program>', startSymbol=True)
 stat_list, stat = G.NonTerminals('<stat_list> <stat>')
+def_type, properties, methods, prop, method, type_corpse = G.NonTerminals('<def-type> <properties> <methods> <property> <method> <type-corpse>')
 loop_expr, while_expr, while_expr_block, for_expr, for_expr_block = G.NonTerminals('<loop-expr> <while-expr> <while-expr-block> <for-expr> <for-expr-block>')
 let_var, let_var_block, def_func, def_func_block, arg_list = G.NonTerminals('<let-var> <let-var-block> <def-func> <def-func-block> <arg-list>')
 assign, var_corpse = G.NonTerminals('<assign> <var-corpse>')
@@ -24,7 +25,7 @@ let, func, inx, ifx, elsex, elifx, whilex, forx, typex, selfx, newx = G.Terminal
 inheritsx, asx, proto, extends, iterx, dot = G.Terminals('INHERITS AS PROTOCOL EXTENDS ITERABLE DOT')
 printx, sinx, cosx, expx, sqrtx, logx, randx, rangex = G.Terminals('PRINT SIN COS EXP SQRT LOG RAND RANGE')
 semi, opar, cpar, obracket, cbracket, obrace, cbrace, arrow, comma = G.Terminals('SEMICOLON OPAR CPAR OBRACKET CBRACKET OBRACE CBRACE IMPLICATION COMMA')
-equal, plus, minus, star, div, pow, dstar, atx, modx, dassign = G.Terminals('EQUAL PLUS MINUS ASTERISK SLASH CIRCUMFLEX POTENCIAL AT PERCENT DESTRUCTIVE_ASSIGNMENT')
+equal, plus, minus, star, div, pow, dstar, atx, datx, modx, dassign = G.Terminals('EQUAL PLUS MINUS ASTERISK SLASH CIRCUMFLEX POTENCIAL AT DOUBLE_AT PERCENT DESTRUCTIVE_ASSIGNMENT')
 dequal, nequal, gt, lt, gte, lte, isx, andx, orx, notx = G.Terminals('COMP_EQ COMP_NEQ COMP_GT COMP_LT COMP_GTE COMP_LTE IS AND OR NOT')
 idx, num, string, true, false, pi, e = G.Terminals('id num string TRUE FALSE PI E')
 strx, numx, objx, boolx = G.Terminals('String Number Object Boolean')
@@ -91,6 +92,7 @@ if_br %= elifx + opar + expr + cpar + def_func_block + if_br, None # Your code h
 
 expr %= term, None # Your code here!!! (add rule) 47
 expr %= expr + atx + term, None # Your code here!!! (add rule) 48
+expr %= expr + datx + term, None # Your code here!!! (add rule) 48
 expr %= expr + orx + term, None # Your code here!!! (add rule) 49
 expr %= expr + plus + term, None # Your code here!!! (add rule) 50
 expr %= expr + minus + term, None # Your code here!!! (add rule) 51
@@ -161,17 +163,41 @@ stat %= loop_expr, None # Your code here!!! (add rule) 103
 
 atom %= atom + dot + idx, None # Your code here!!! (add rule) 104
 atom %= atom + dot + func_call, None # Your code here!!! (add rule) 105
-# atom %= atom + obrace + atom + cbrace, None # Your code here!!! (add rule) 106
-# atom %= atom + dot + atom + obrace + atom + cbrace, None # Your code here!!! (add rule) 107
+atom %= atom + obrace + atom + cbrace, None # Your code here!!! (add rule) 106
 
-func_call %= idx + opar + cpar, None # Your code here!!! (add rule) 108
+func_call %= idx + opar + cpar, None # Your code here!!! (add rule) 107
 
-let_var_block %= let + var_corpse + inx + while_expr_block, None # Your code here!!! (add rule) 23
-let_var_block %= let + var_corpse + inx + for_expr_block, None # Your code here!!! (add rule) 23
-def_func_block %= func + idx + opar + arg_list + cpar + while_expr_block, None # Your code here!!! (add rule)
-def_func_block %= func + idx + opar + arg_list + cpar + for_expr_block, None # Your code here!!! (add rule)
-def_func %= func + idx + opar + arg_list + cpar + arrow + while_expr_block, None # Your code here!!! (add rule) 29
-def_func %= func + idx + opar + arg_list + cpar + arrow + for_expr_block, None # Your code here!!! (add rule) 29
+let_var_block %= let + var_corpse + inx + while_expr_block, None # Your code here!!! (add rule) 108
+let_var_block %= let + var_corpse + inx + for_expr_block, None # Your code here!!! (add rule) 109
+def_func_block %= func + idx + opar + arg_list + cpar + while_expr_block, None # Your code here!!! (add rule) 110
+def_func_block %= func + idx + opar + arg_list + cpar + for_expr_block, None # Your code here!!! (add rule) 111
+def_func %= func + idx + opar + arg_list + cpar + arrow + while_expr_block, None # Your code here!!! (add rule) 112
+def_func %= func + idx + opar + arg_list + cpar + arrow + for_expr_block, None # Your code here!!! (add rule) 113
+
+def_type %= typex + idx + obracket + type_corpse + cbracket, None # Your code here!!! (add rule)
+def_type %= typex + idx + opar + arg_list + cpar + obracket + type_corpse + cbracket, None # Your code here!!! (add rule)
+
+def_type %= typex + idx + obracket + cbracket, None # Your code here!!! (add rule)
+def_type %= typex + idx + opar + arg_list + cpar + obracket + cbracket, None # Your code here!!! (add rule)
+
+type_corpse %= properties + type_corpse, None # Your code here!!! (add rule)
+type_corpse %= methods + type_corpse, None # Your code here!!! (add rule)
+type_corpse %= properties, None # Your code here!!! (add rule)
+type_corpse %= methods, None # Your code here!!! (add rule)
+
+properties %= prop, None # Your code here!!! (add rule)
+properties %= prop + semi + properties, None # Your code here!!! (add rule)
+
+methods %= method, None # Your code here!!! (add rule)
+methods %= method + semi + methods, None # Your code here!!! (add rule)
+
+atom %= selfx, None # Your code here!!! (add rule)
+
+prop %= idx + equal + atom, None # Your code here!!! (add rule)
+
+method %= idx + opar + arg_list + cpar + arrow + stat, None # Your code here!!! (add rule)
+
+stat_list %= def_type, None # Your code here!!! (add rule)
 
 #endregion
 #endregion
