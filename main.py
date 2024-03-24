@@ -9,7 +9,7 @@ import sys,logging
 
 logger = logging.getLogger(__name__)
 
-sys.setrecursionlimit(1000000)
+sys.setrecursionlimit(10000000)
 
 def main(debug = True, verbose = False):
     file_path = './hulk_compiler.log'
