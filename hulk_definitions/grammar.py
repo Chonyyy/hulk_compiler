@@ -26,7 +26,7 @@ let, func, inx, ifx, elsex, elifx, whilex, forx, typex, selfx, newx = G.Terminal
 inheritsx, asx, proto, extends, iterx, dot = G.Terminals('INHERITS AS PROTOCOL EXTENDS ITERABLE DOT')
 printx, sinx, cosx, expx, sqrtx, logx, randx, rangex = G.Terminals('PRINT SIN COS EXP SQRT LOG RAND RANGE')
 semi, opar, cpar, obracket, cbracket, obrace, cbrace, arrow, comma = G.Terminals('SEMICOLON OPAR CPAR OBRACKET CBRACKET OBRACE CBRACE IMPLICATION COMMA')
-equal, plus, minus, star, div, pow, dstar, atx, datx, modx, dassign, colon = G.Terminals('EQUAL PLUS MINUS ASTERISK SLASH CIRCUMFLEX POTENCIAL AT DOUBLE_AT PERCENT DESTRUCTIVE_ASSIGNMENT COLON')
+equal, plus, minus, star, div, pow, dstar, atx, datx, modx, dassign, colon, dpipe = G.Terminals('EQUAL PLUS MINUS ASTERISK SLASH CIRCUMFLEX POTENCIAL AT DOUBLE_AT PERCENT DESTRUCTIVE_ASSIGNMENT COLON DOUBLE_PIPE')
 dequal, nequal, gt, lt, gte, lte, isx, andx, orx, notx = G.Terminals('COMP_EQ COMP_NEQ COMP_GT COMP_LT COMP_GTE COMP_LTE IS AND OR NOT')
 idx, num, string, true, false, pi, e = G.Terminals('id num string TRUE FALSE PI E')
 strx, numx, objx, boolx = G.Terminals('STRING NUMBER OBJECT BOOLEAN')
@@ -185,6 +185,7 @@ atom %= atom + asx + numx, None # Your code here!!! (add rule) 124
 atom %= atom + asx + objx, None # Your code here!!! (add rule) 125
 atom %= atom + asx + boolx, None # Your code here!!! (add rule) 126
 atom %= obrace + expr_list + cbrace, None # Your code here!!! (add rule) 127
+atom %= obrace + expr + dpipe + idx + inx + expr + cbrace, None # Your code here!!! (add rule) 127
 
 built_in %= sinx + opar + expr_list + cpar, None # Your code here!!! (add rule) 128
 built_in %= cosx + opar + expr_list + cpar, None # Your code here!!! (add rule) 129
