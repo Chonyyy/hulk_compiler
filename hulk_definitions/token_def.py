@@ -54,6 +54,7 @@ LEXER = Lexer([
     ('COMP_GTE', '>='),
     ('COMP_LTE', '<='),
     ('DOUBLE_AT', '@@'),
+    ('DOUBLE_PIPE', '\|\|'),
     # BUILT IN FUNCTIONS
     ('PRINT', 'print'),
     ('SQRT', 'sqrt'),
