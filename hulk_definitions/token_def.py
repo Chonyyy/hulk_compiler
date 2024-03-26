@@ -61,7 +61,7 @@ LEXER = Lexer([
     ('SIN', 'sin'),
     ('COS', 'cos'),
     ('COT', 'cot'),
-    ('TAN', 'tan')
+    ('TAN', 'tan'),
     ('EXP', 'exp'),
     ('LOG', 'log'),
     ('RAND', 'rand'),
