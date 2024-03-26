@@ -185,6 +185,14 @@ class Indexing(Atom):
 class Sin(Call):
     def __init__(self, args):
         super().__init__("sin",args)
+        
+class Tan(Call):
+    def __init__(self, args):
+        super().__init__("tan",args)
+
+class Cot(Call):
+    def __init__(self, args):
+        super().__init__("cot",args)
 
 class Cos(Call):
     def __init__(self, args):

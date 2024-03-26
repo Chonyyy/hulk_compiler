@@ -26,7 +26,11 @@ class FormatVisitor(object):
 
     @when(Block)
     def visit(self, node: Block, tabs=0):
-        ans = '\t' * tabs + f'\\__Block: {len(node.body)} statements'
+        if node.body:
+            ans = '\t' * tabs + f'\\__Block: {len(node.body)} statements'
+        else:
+            ans = '\t' * tabs + f'\\__Block: {0} statements'
+        print(type(node.body))
         body = ''.join(self.visit(node.body, tabs + 1))
         return f'{ans}\n{body}'
 
@@ -316,6 +320,28 @@ class FormatVisitor(object):
     @when(Cos)
     def visit(self, node:Cos, tabs=0):
         ans = '\t' * tabs + f'\\__Cos:(<args>)'
+        # args = ''.join(self.visit(arg, tabs + 1) for arg in node.args)
+        args = ''
+        for arg in node.args: #TODO parche
+            if not arg:
+                continue
+            args += str(self.visit(arg,tabs + 1))
+        return f'{ans}\n{args}'
+    
+    @when(Tan)
+    def visit(self, node:Tan, tabs=0):
+        ans = '\t' * tabs + f'\\__Tan:(<args>)'
+        # args = ''.join(self.visit(arg, tabs + 1) for arg in node.args)
+        args = ''
+        for arg in node.args: #TODO parche
+            if not arg:
+                continue
+            args += str(self.visit(arg,tabs + 1))
+        return f'{ans}\n{args}'
+    
+    @when(Cot)
+    def visit(self, node:Cot, tabs=0):
+        ans = '\t' * tabs + f'\\__Cot:(<args>)'
         # args = ''.join(self.visit(arg, tabs + 1) for arg in node.args)
         args = ''
         for arg in node.args: #TODO parche
