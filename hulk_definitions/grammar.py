@@ -25,7 +25,7 @@ func_call, expr_list = G.NonTerminals('<func-call> <expr-list>')
 #region Terminals Definition
 let, func, inx, ifx, elsex, elifx, whilex, forx, typex, selfx, newx = G.Terminals('LET FUNCTION IN IF ELSE ELIF WHILE FOR TYPE SELF NEW')
 inheritsx, asx, proto, extends, iterx, dot = G.Terminals('INHERITS AS PROTOCOL EXTENDS ITERABLE DOT')
-printx, sinx, cosx, expx, sqrtx, logx, randx, rangex = G.Terminals('PRINT SIN COS EXP SQRT LOG RAND RANGE')
+printx, sinx, cosx, tanx,cotx, expx, sqrtx, logx, randx, rangex = G.Terminals('PRINT SIN COS TAN COT EXP SQRT LOG RAND RANGE')
 semi, opar, cpar, obracket, cbracket, obrace, cbrace, arrow, comma = G.Terminals('SEMICOLON OPAR CPAR OBRACKET CBRACKET OBRACE CBRACE IMPLICATION COMMA')
 equal, plus, minus, star, div, pow, dstar, atx, datx, modx, dassign, colon, dpipe = G.Terminals('EQUAL PLUS MINUS ASTERISK SLASH CIRCUMFLEX POTENCIAL AT DOUBLE_AT PERCENT DESTRUCTIVE_ASSIGNMENT COLON DOUBLE_PIPE')
 dequal, nequal, gt, lt, gte, lte, isx, andx, orx, notx = G.Terminals('COMP_EQ COMP_NEQ COMP_GT COMP_LT COMP_GTE COMP_LTE IS AND OR NOT')
@@ -190,6 +190,8 @@ atom %= obrace + expr + dpipe + idx + inx + expr + cbrace, lambda h,s: VectorCom
 
 built_in %= sinx + opar + expr_list + cpar, lambda h,s: Sin(s[3])
 built_in %= cosx + opar + expr_list + cpar, lambda h,s: Cos(s[3])
+built_in %= tanx + opar + expr_list + cpar, lambda h,s: Tan(s[3])
+built_in %= cotx + opar + expr_list + cpar, lambda h,s: Cot(s[3])
 built_in %= randx + opar + expr_list + cpar, lambda h,s: Rand(s[3])
 built_in %= randx + opar + cpar, lambda h,s: Rand(None)
 built_in %= expx + opar + expr_list + cpar, lambda h,s: Exp(s[3])
