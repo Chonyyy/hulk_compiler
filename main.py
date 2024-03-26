@@ -40,10 +40,10 @@ def main(debug = True, verbose = False, force = False):
                 for derivation in right_parse:
                     logger.info(f'{derivation}')
                 print(f'file {i} is parsed.')
-                # ast = evaluate_reverse_parse(right_parse, operations, tokens)
-                # formatter = FormatVisitor()
-                # tree = formatter.visit(ast)
-                # print(tree)
+                ast = evaluate_reverse_parse(right_parse, operations, tokens)
+                formatter = FormatVisitor()
+                tree = formatter.visit(ast)
+                print(tree)
 
 if __name__ == "__main__":
     main()
