@@ -1,6 +1,7 @@
 from cmp.pycompiler import Grammar
 import logging
 logger = logging.getLogger(__name__)
+from hulk_definitions.AST import *
 
 logger.info("Creating Grammar")
 G = Grammar()
@@ -34,286 +35,286 @@ eof = G.EOF
 #endregion
 
 #region Productions Definition
-program %= stat_list, lambda h,s: None # 0
+program %= stat_list, lambda h,s: Program(s[1])
 
-stat_list %= stat + semi, None # Your code here!!! (add rule) 1
-stat_list %= stat + semi + stat_list, None # Your code here!!! (add rule) 2
-stat_list %= block, None # Your code here!!! (add rule) 3
-stat_list %= block + stat_list, None # Your code here!!! (add rule) 4
-stat_list %= block + semi, None # Your code here!!! (add rule) 5
-stat_list %= block + semi + stat_list, None # Your code here!!! (add rule) 6
-stat_list %= let_var_block, None # Your code here!!! (add rule) 7
-stat_list %= let_var_block + stat_list, None # Your code here!!! (add rule) 8
-stat_list %= let_var_block + semi, None # Your code here!!! (add rule) 9
-stat_list %= let_var_block + semi + stat_list, None # Your code here!!! (add rule) 10
-stat_list %= def_func_block, None # Your code here!!! (add rule) 11
-stat_list %= def_func_block + stat_list, None # Your code here!!! (add rule) 12
-stat_list %= def_func_block + semi, None # Your code here!!! (add rule) 13
-stat_list %= def_func_block + semi + stat_list, None # Your code here!!! (add rule) 14
+stat_list %= stat + semi, lambda h,s: [s[1]] 
+stat_list %= stat + semi + stat_list, lambda h,s: [s[1]] + s[2]
+stat_list %= block, lambda h,s: [s[1]]
+stat_list %= block + stat_list, lambda h,s: [s[1]] + s[2]
+stat_list %= block + semi, lambda h,s: [s[1]]
+stat_list %= block + semi + stat_list, lambda h,s: [s[1]] + s[2]
+stat_list %= let_var_block, lambda h,s: [s[1]]
+stat_list %= let_var_block + stat_list, lambda h,s: [s[1]] + s[2]
+stat_list %= let_var_block + semi, lambda h,s: [s[1]]
+stat_list %= let_var_block + semi + stat_list, lambda h,s: [s[1]] + s[2]
+stat_list %= def_func_block, lambda h,s: [s[1]]
+stat_list %= def_func_block + stat_list, lambda h,s: [s[1]] + s[2]
+stat_list %= def_func_block + semi, lambda h,s: [s[1]]
+stat_list %= def_func_block + semi + stat_list, lambda h,s: [s[1]] + s[2]
 
-stat %= let_var, None # Your code here!!! (add rule) 15
-stat %= def_func, None # Your code here!!! (add rule) 16
-stat %= expr, None # Your code here!!! (add rule) 17
-stat %= assign, None # Your code here!!! (add rule) 18
-stat %= if_expr, None # Your code here!!! (add rule) 19
+stat %= let_var, lambda h,s: s[1]
+stat %= def_func, lambda h,s: s[1]
+stat %= expr, lambda h,s: s[1]
+stat %= assign, lambda h,s: s[1]
+stat %= if_expr, lambda h,s: s[1]
 
-let_var %= let + var_corpse + inx + stat, None # Your code here!!! (add rule) 20
-let_var_block %= let + var_corpse + inx + def_func_block, None # Your code here!!! (add rule) 21
-let_var_block %= let + var_corpse + inx + if_expr_block, None # Your code here!!! (add rule) 22
-let_var_block %= let + var_corpse + inx + let_var_block, None # Your code here!!! (add rule) 23
-let_var_block %= let + var_corpse + inx + block, None # Your code here!!! (add rule) 24
-assign %= atom + dassign + expr, None # Your code here!!! (add rule) 25
+let_var %= let + var_corpse + inx + stat, lambda h,s: [Let(x[0], x[1], s[4], x[2]) for x in s[2]]
+let_var_block %= let + var_corpse + inx + def_func_block, lambda h,s: [Let(x[0], x[1], s[4], x[2]) for x in s[2]]
+let_var_block %= let + var_corpse + inx + if_expr_block, lambda h,s: [Let(x[0], x[1], s[4], x[2]) for x in s[2]]
+let_var_block %= let + var_corpse + inx + let_var_block, lambda h,s: [Let(x[0], x[1], s[4], x[2]) for x in s[2]]
+let_var_block %= let + var_corpse + inx + block, lambda h,s: [Let(x[0], x[1], s[4], x[2]) for x in s[2]]
+assign %= atom + dassign + expr, lambda h,s: Assign(s[1], s[3])
 
-var_corpse %= idx + equal + stat, None # Your code here!!! (add rule) 26
-var_corpse %= idx + equal + stat + comma + var_corpse, None # Your code here!!! (add rule) 27
-var_corpse %= idx + equal + stat + comma + let + var_corpse, None # Your code here!!! (add rule) 28
+var_corpse %= idx + equal + stat, lambda h,s: [[s[1], s[3], None]] 
+var_corpse %= idx + equal + stat + comma + var_corpse, lambda h,s: [[s[1], s[3], None]] + s[5]
+var_corpse %= idx + equal + stat + comma + let + var_corpse, lambda h,s: [[s[1], s[3], None]] + s[6]
 
-var_corpse %= idx + typed + equal + stat, None # Your code here!!! (add rule) 29
-var_corpse %= idx + typed + equal + stat + comma + var_corpse, None # Your code here!!! (add rule) 30
-var_corpse %= idx + typed + equal + stat + comma + let + var_corpse, None # Your code here!!! (add rule) 31
+var_corpse %= idx + typed + equal + stat, lambda h,s: [[s[1], s[4], s[2]]]
+var_corpse %= idx + typed + equal + stat + comma + var_corpse, lambda h,s: [[s[1], s[4], s[2]]] + s[6]
+var_corpse %= idx + typed + equal + stat + comma + let + var_corpse, lambda h,s: [[s[1], s[4], s[2]]] + s[7]
 
-def_func %= func + idx + opar + arg_list + cpar + arrow + stat, None # Your code here!!! (add rule) 32
-def_func_block %= func + idx + opar + arg_list + cpar + arrow + let_var_block, None # Your code here!!! (add rule) 33
-def_func_block %= func + idx + opar + arg_list + cpar + arrow + def_func_block, None # Your code here!!! (add rule) 34
-def_func_block %= func + idx + opar + arg_list + cpar + arrow + def_func_block, None # Your code here!!! (add rule) 35
-def_func_block %= func + idx + opar + arg_list + cpar + block, None # Your code here!!! (add rule) 36
+def_func %= func + idx + opar + arg_list + cpar + arrow + stat, lambda h,s: Function(s[2], s[4], s[7])
+def_func_block %= func + idx + opar + arg_list + cpar + arrow + let_var_block, lambda h,s: Function(s[2], s[4], s[7])
+def_func_block %= func + idx + opar + arg_list + cpar + arrow + def_func_block, lambda h,s: Function(s[2], s[4], s[7])
+def_func_block %= func + idx + opar + arg_list + cpar + arrow + def_func_block, lambda h,s: Function(s[2], s[4], s[7])
+def_func_block %= func + idx + opar + arg_list + cpar + block, lambda h,s: Function(s[2], s[4], s[6])
 
-def_func %= func + idx + opar + arg_list + cpar + typed + arrow + stat, None # Your code here!!! (add rule) 37
-def_func_block %= func + idx + opar + arg_list + cpar + typed + arrow + let_var_block, None # Your code here!!! (add rule) 38
-def_func_block %= func + idx + opar + arg_list + cpar + typed + arrow + if_expr_block, None # Your code here!!! (add rule) 39
-def_func_block %= func + idx + opar + arg_list + cpar + typed + arrow + def_func_block, None # Your code here!!! (add rule) 40
-def_func_block %= func + idx + opar + arg_list + cpar + typed + block, None # Your code here!!! (add rule) 41
+def_func %= func + idx + opar + arg_list + cpar + typed + arrow + stat, lambda h,s: Function(s[2], s[4], s[8], s[6])
+def_func_block %= func + idx + opar + arg_list + cpar + typed + arrow + let_var_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
+def_func_block %= func + idx + opar + arg_list + cpar + typed + arrow + if_expr_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
+def_func_block %= func + idx + opar + arg_list + cpar + typed + arrow + def_func_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
+def_func_block %= func + idx + opar + arg_list + cpar + typed + block, lambda h,s: Function(s[2], s[4], s[7], s[6])
 
-arg_list %= idx, None # Your code here!!! (add rule) 42
-arg_list %= idx + typed, None # Your code here!!! (add rule) 43
-arg_list %= idx + comma + arg_list, None # Your code here!!! (add rule) 44
-arg_list %= idx + typed + comma + arg_list, None # Your code here!!! (add rule) 45
+arg_list %= idx, lambda h,s: [(s[1], None)]
+arg_list %= idx + typed, lambda h,s: [(s[1], s[2])]
+arg_list %= idx + comma + arg_list, lambda h,s: [(s[1], None)] + s[3]
+arg_list %= idx + typed + comma + arg_list, lambda h,s: [(s[1], s[2])] + s[4]
 
-block %= obracket + stat_list + cbracket, None # Your code here!!! (add rule) 46
-block %= obracket + cbracket, None # Your code here!!! (add rule) 47
+block %= obracket + stat_list + cbracket, lambda h,s: Block(s[2])
+block %= obracket + cbracket, lambda h,s: Block(None)
 
-if_expr %= ifx + opar + expr + cpar + stat + elsex + stat, None # Your code here!!! (add rule) 48
-if_expr %= ifx +  opar + expr + cpar + block + elsex + stat, None # Your code here!!! (add rule) 49
-if_expr %= ifx + opar + expr + cpar + let_var_block + elsex + stat, None # Your code here!!! (add rule) 50
-if_expr %= ifx + opar + expr + cpar + def_func_block + elsex + stat, None # Your code here!!! (add rule) 51
+if_expr %= ifx + opar + expr + cpar + stat + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[7])
+if_expr %= ifx + opar + expr + cpar + block + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[7])
+if_expr %= ifx + opar + expr + cpar + let_var_block + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[7])
+if_expr %= ifx + opar + expr + cpar + def_func_block + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[7])
 
-if_expr %= ifx + opar + expr + cpar + stat + if_br + elsex + stat, None # Your code here!!! (add rule) 52
-if_expr %= ifx +  opar + expr + cpar + block + if_br + elsex + stat, None # Your code here!!! (add rule) 53
-if_expr %= ifx + opar + expr + cpar + let_var_block + if_br + elsex + stat, None # Your code here!!! (add rule) 54
-if_expr %= ifx + opar + expr + cpar + def_func_block + if_br + elsex + stat, None # Your code here!!! (add rule) 55
+if_expr %= ifx + opar + expr + cpar + stat + if_br + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+if_expr %= ifx + opar + expr + cpar + block + if_br + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+if_expr %= ifx + opar + expr + cpar + let_var_block + if_br + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+if_expr %= ifx + opar + expr + cpar + def_func_block + if_br + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
 
-if_expr_block %= ifx + opar + expr + cpar + stat + elsex + def_func_block, None # Your code here!!! (add rule) 56
-if_expr_block %= ifx +  opar + expr + cpar + block + elsex + def_func_block, None # Your code here!!! (add rule) 57
-if_expr_block %= ifx + opar + expr + cpar + let_var_block + elsex + def_func_block, None # Your code here!!! (add rule) 58
-if_expr_block %= ifx + opar + expr + cpar + def_func_block + elsex + def_func_block, None # Your code here!!! (add rule) 59
+if_expr_block %= ifx + opar + expr + cpar + stat + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[7])
+if_expr_block %= ifx + opar + expr + cpar + block + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[7])
+if_expr_block %= ifx + opar + expr + cpar + let_var_block + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[7])
+if_expr_block %= ifx + opar + expr + cpar + def_func_block + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[7])
 
-if_expr_block %= ifx + opar + expr + cpar + stat + elsex + let_var_block, None # Your code here!!! (add rule) 60
-if_expr_block %= ifx +  opar + expr + cpar + block + elsex + let_var_block, None # Your code here!!! (add rule) 61
-if_expr_block %= ifx + opar + expr + cpar + let_var_block + elsex + let_var_block, None # Your code here!!! (add rule) 62
-if_expr_block %= ifx + opar + expr + cpar + def_func_block + elsex + let_var_block, None # Your code here!!! (add rule) 63
+if_expr_block %= ifx + opar + expr + cpar + stat + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[7])
+if_expr_block %= ifx + opar + expr + cpar + block + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[7])
+if_expr_block %= ifx + opar + expr + cpar + let_var_block + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[7])
+if_expr_block %= ifx + opar + expr + cpar + def_func_block + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[7])
 
-if_expr_block %= ifx + opar + expr + cpar + stat + elsex + block, None # Your code here!!! (add rule) 64
-if_expr_block %= ifx +  opar + expr + cpar + block + elsex + block, None # Your code here!!! (add rule) 65
-if_expr_block %= ifx + opar + expr + cpar + let_var_block + elsex + block, None # Your code here!!! (add rule) 66
-if_expr_block %= ifx + opar + expr + cpar + def_func_block + elsex + block, None # Your code here!!! (add rule) 67
+if_expr_block %= ifx + opar + expr + cpar + stat + elsex + block, lambda h,s: Conditional(s[3], s[5], s[7])
+if_expr_block %= ifx + opar + expr + cpar + block + elsex + block, lambda h,s: Conditional(s[3], s[5], s[7])
+if_expr_block %= ifx + opar + expr + cpar + let_var_block + elsex + block, lambda h,s: Conditional(s[3], s[5], s[7])
+if_expr_block %= ifx + opar + expr + cpar + def_func_block + elsex + block, lambda h,s: Conditional(s[3], s[5], s[7])
 
-if_expr_block %= ifx + opar + expr + cpar + stat + if_br + elsex + def_func_block, None # Your code here!!! (add rule) 68
-if_expr_block %= ifx +  opar + expr + cpar + block + if_br + elsex + def_func_block, None # Your code here!!! (add rule) 69
-if_expr_block %= ifx + opar + expr + cpar + let_var_block + if_br + elsex + def_func_block, None # Your code here!!! (add rule) 70
-if_expr_block %= ifx + opar + expr + cpar + def_func_block + if_br + elsex + def_func_block, None # Your code here!!! (add rule) 71
+if_expr_block %= ifx + opar + expr + cpar + stat + if_br + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+if_expr_block %= ifx + opar + expr + cpar + block + if_br + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+if_expr_block %= ifx + opar + expr + cpar + let_var_block + if_br + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+if_expr_block %= ifx + opar + expr + cpar + def_func_block + if_br + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
 
-if_expr_block %= ifx + opar + expr + cpar + stat + if_br + elsex + let_var_block, None # Your code here!!! (add rule) 72
-if_expr_block %= ifx +  opar + expr + cpar + block + if_br + elsex + let_var_block, None # Your code here!!! (add rule) 73
-if_expr_block %= ifx + opar + expr + cpar + let_var_block + if_br + elsex + let_var_block, None # Your code here!!! (add rule) 74
-if_expr_block %= ifx + opar + expr + cpar + def_func_block + if_br + elsex + let_var_block, None # Your code here!!! (add rule) 75
+if_expr_block %= ifx + opar + expr + cpar + stat + if_br + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+if_expr_block %= ifx + opar + expr + cpar + block + if_br + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+if_expr_block %= ifx + opar + expr + cpar + let_var_block + if_br + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+if_expr_block %= ifx + opar + expr + cpar + def_func_block + if_br + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
 
-if_expr_block %= ifx + opar + expr + cpar + stat + if_br + elsex + block, None # Your code here!!! (add rule) 76
-if_expr_block %= ifx +  opar + expr + cpar + block + if_br + elsex + block, None # Your code here!!! (add rule) 77
-if_expr_block %= ifx + opar + expr + cpar + let_var_block + if_br + elsex + block, None # Your code here!!! (add rule) 78
-if_expr_block %= ifx + opar + expr + cpar + def_func_block + if_br + elsex + block, None # Your code here!!! (add rule) 79
+if_expr_block %= ifx + opar + expr + cpar + stat + if_br + elsex + block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+if_expr_block %= ifx + opar + expr + cpar + block + if_br + elsex + block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+if_expr_block %= ifx + opar + expr + cpar + let_var_block + if_br + elsex + block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+if_expr_block %= ifx + opar + expr + cpar + def_func_block + if_br + elsex + block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
 
-if_br %= elifx + opar + expr + cpar + stat, None # Your code here!!! (add rule) 80
-if_br %= elifx + opar + expr + cpar + block, None # Your code here!!! (add rule) 81
-if_br %= elifx + opar + expr + cpar + let_var_block, None # Your code here!!! (add rule) 82
-if_br %= elifx + opar + expr + cpar + def_func_block, None # Your code here!!! (add rule) 83
-if_br %= elifx + opar + expr + cpar + stat + if_br, None # Your code here!!! (add rule) 84
-if_br %= elifx + opar + expr + cpar + block + if_br, None # Your code here!!! (add rule) 85
-if_br %= elifx + opar + expr + cpar + let_var_block + if_br, None # Your code here!!! (add rule) 86
-if_br %= elifx + opar + expr + cpar + def_func_block + if_br, None # Your code here!!! (add rule) 87
+if_br %= elifx + opar + expr + cpar + stat, lambda h,s: [Branch(s[3], s[5])]
+if_br %= elifx + opar + expr + cpar + block, lambda h,s: [Branch(s[3], s[5])]
+if_br %= elifx + opar + expr + cpar + let_var_block, lambda h,s: [Branch(s[3], s[5])]
+if_br %= elifx + opar + expr + cpar + def_func_block, lambda h,s: [Branch(s[3], s[5])]
+if_br %= elifx + opar + expr + cpar + stat + if_br, lambda h,s: [Branch(s[3], s[5])] + s[6]
+if_br %= elifx + opar + expr + cpar + block + if_br, lambda h,s: [Branch(s[3], s[5])] + s[6]
+if_br %= elifx + opar + expr + cpar + let_var_block + if_br, lambda h,s: [Branch(s[3], s[5])] + s[6]
+if_br %= elifx + opar + expr + cpar + def_func_block + if_br, lambda h,s: [Branch(s[3], s[5])] + s[6]
 
-expr %= term, None # Your code here!!! (add rule) 88
-expr %= expr + atx + term, None # Your code here!!! (add rule) 89
-expr %= expr + datx + term, None # Your code here!!! (add rule) 90
-expr %= expr + orx + term, None # Your code here!!! (add rule) 91
-expr %= expr + plus + term, None # Your code here!!! (add rule) 92
-expr %= expr + minus + term, None # Your code here!!! (add rule) 93
-expr %= opar + let_var + cpar, None # Your code here!!! (add rule) 94
+expr %= term, lambda h,s: s[1]
+expr %= expr + atx + term, lambda h,s: At(s[1], s[3])
+expr %= expr + datx + term, lambda h,s: DoubleAt(s[1], s[3])
+expr %= expr + orx + term, lambda h,s: Or(s[1], s[3])
+expr %= expr + plus + term, lambda h,s: Plus(s[1], s[3])
+expr %= expr + minus + term, lambda h,s: BinaryMinus(s[1], s[3])
 
-term %= factor, None # Your code here!!! (add rule) 95
-term %= term + star + factor, None # Your code here!!! (add rule) 96
-term %= term + div + factor, None # Your code here!!! (add rule) 97
-term %= term + modx + factor, None # Your code here!!! (add rule) 98
-term %= term + andx + factor, None # Your code here!!! (add rule) 99
+term %= factor, lambda h,s: s[1]
+term %= term + star + factor, lambda h,s: Star(s[1], s[3])
+term %= term + div + factor, lambda h,s: Div(s[1], s[3])
+term %= term + modx + factor, lambda h,s: Mod(s[1], s[3])
+term %= term + andx + factor, lambda h,s: And(s[1], s[3])
 
-factor %= power, None # Your code here!!! (add rule) 100
-factor %= notx + factor, None # Your code here!!! (add rule) 101
-factor %= minus + factor, None # Your code here!!! (add rule) 102
-factor %= power + pow + factor, None # Your code here!!! (add rule) 103
-factor %= power + dstar + factor, None # Your code here!!! (add rule) 104
-factor %= power + gt + factor, None # Your code here!!! (add rule) 105
-factor %= power + lt + factor, None # Your code here!!! (add rule) 106
-factor %= power + gte + factor, None # Your code here!!! (add rule) 107
-factor %= power + lte + factor, None # Your code here!!! (add rule) 108
-factor %= power + dequal + factor, None # Your code here!!! (add rule) 109
-factor %= power + nequal + factor, None # Your code here!!! (add rule) 110
-factor %= power + isx + factor, None # Your code here!!! (add rule) 111
+factor %= power, lambda h,s: s[1]
+factor %= notx + factor, lambda h,s: Not(s[2])
+factor %= minus + factor, lambda h,s: UnaryMinus(s[2])
+factor %= power + gt + factor, lambda h,s: GreaterThan(s[1], s[3])
+factor %= power + lt + factor, lambda h,s: LessThan(s[1], s[3])
+factor %= power + gte + factor, lambda h,s: GreaterEqual(s[1], s[3])
+factor %= power + lte + factor, lambda h,s: LessEqual(s[1], s[3])
+factor %= power + dequal + factor, lambda h,s: CompareEqual(s[1], s[3])
+factor %= power + nequal + factor, lambda h,s: NotEqual(s[1], s[3])
+factor %= power + isx + factor, lambda h,s: Is(s[1], s[3])
 
-power %= atom, None # Your code here!!! (add rule) 112
-power %= opar + expr + cpar, None # Your code here!!! (add rule) 113
+power %= atom, lambda h,s: s[1]
+power %= atom + pow + power, lambda h,s: Pow(s[1], s[3])
+power %= atom + dstar + power, lambda h,s: Pow(s[1], s[3])
 
-atom %= num, None # Your code here!!! (add rule) 114
-atom %= idx, None # Your code here!!! (add rule) 115
-atom %= true, None # Your code here!!! (add rule) 116
-atom %= false, None # Your code here!!! (add rule) 117
-atom %= string, None # Your code here!!! (add rule) 118
-atom %= func_call, None # Your code here!!! (add rule) 119
-atom %= e_num, None # Your code here!!! (add rule) 120
-atom %= built_in, None # Your code here!!! (add rule) 121
-atom %= atom + asx + idx, None # Your code here!!! (add rule) 122
-atom %= atom + asx + strx, None # Your code here!!! (add rule) 123
-atom %= atom + asx + numx, None # Your code here!!! (add rule) 124
-atom %= atom + asx + objx, None # Your code here!!! (add rule) 125
-atom %= atom + asx + boolx, None # Your code here!!! (add rule) 126
-atom %= obrace + expr_list + cbrace, None # Your code here!!! (add rule) 127
-atom %= obrace + expr + dpipe + idx + inx + expr + cbrace, None # Your code here!!! (add rule) 127
+atom %= opar + let_var + cpar, lambda h,s: s[2]
+atom %= opar + expr + cpar, lambda h,s: s[2]
+atom %= num, lambda h,s: Number(int(s[1]))
+atom %= idx, lambda h,s: Var(s[1])
+atom %= true, lambda h,s: Bool(True)
+atom %= false, lambda h,s: Bool(False)
+atom %= string, lambda h,s: Str(s[1])
+atom %= func_call, lambda h,s: s[1]
+atom %= e_num, lambda h,s: s[1]
+atom %= built_in, lambda h,s: s[1]
+atom %= atom + asx + idx, lambda h,s: As(s[1], s[3])
+atom %= atom + asx + strx, lambda h,s: As(s[1], s[3])
+atom %= atom + asx + numx, lambda h,s: As(s[1], s[3])
+atom %= atom + asx + objx, lambda h,s: As(s[1], s[3])
+atom %= atom + asx + boolx, lambda h,s: As(s[1], s[3])
+atom %= obrace + expr_list + cbrace, lambda h,s: Vector(s[2], len(s[2]))
+atom %= obrace + expr + dpipe + idx + inx + expr + cbrace, lambda h,s: VectorComprehension(s[6], len(s[6]), (s[4], s[2]))
 
-built_in %= sinx + opar + expr_list + cpar, None # Your code here!!! (add rule) 128
-built_in %= cosx + opar + expr_list + cpar, None # Your code here!!! (add rule) 129
-built_in %= randx + opar + expr_list + cpar, None # Your code here!!! (add rule) 130
-built_in %= randx + opar + cpar, None # Your code here!!! (add rule) 131
-built_in %= expx + opar + expr_list + cpar, None # Your code here!!! (add rule) 132
-built_in %= logx + opar + expr_list + cpar, None # Your code here!!! (add rule) 133
-built_in %= sqrtx + opar + expr_list + cpar, None # Your code here!!! (add rule) 134
-built_in %= printx + opar + expr_list + cpar, None # Your code here!!! (add rule) 135
-built_in %= rangex + opar + expr_list + cpar, None # Your code here!!! (add rule) 136
+built_in %= sinx + opar + expr_list + cpar, lambda h,s: Sin(s[3])
+built_in %= cosx + opar + expr_list + cpar, lambda h,s: Cos(s[3])
+built_in %= randx + opar + expr_list + cpar, lambda h,s: Rand(s[3])
+built_in %= randx + opar + cpar, lambda h,s: Rand(None)
+built_in %= expx + opar + expr_list + cpar, lambda h,s: Exp(s[3])
+built_in %= logx + opar + expr_list + cpar, lambda h,s: Log(s[3])
+built_in %= sqrtx + opar + expr_list + cpar, lambda h,s: Sqrt(s[3])
+built_in %= printx + opar + expr_list + cpar, lambda h,s: Print(s[3])
+built_in %= rangex + opar + expr_list + cpar, lambda h,s: Range(s[3])
 
-e_num %= pi, None # Your code here!!! (add rule) 137
-e_num %= e, None # Your code here!!! (add rule) 138
+e_num %= pi, lambda h,s: Pi()
+e_num %= e, lambda h,s: E()
 
-func_call %= idx + opar + expr_list + cpar, None # Your code here!!! (add rule) 139
+func_call %= idx + opar + expr_list + cpar, lambda h,s: Call(s[1], s[3])
 
-expr_list %= stat, None # Your code here!!! (add rule) 140
-expr_list %= stat + comma + expr_list, None # Your code here!!! (add rule) 141
+expr_list %= stat, lambda h,s: [s[1]]
+expr_list %= stat + comma + expr_list, lambda h,s: [s[1]] + s[2]
 
-loop_expr %= while_expr, None # Your code here!!! (add rule) 142
-loop_expr %= for_expr, None # Your code here!!! (add rule) 143
+loop_expr %= while_expr, lambda h,s: s[1]
+loop_expr %= for_expr, lambda h,s: s[1]
 
-while_expr %= whilex + opar + expr + cpar + stat, None # Your code here!!! (add rule) 144
-while_expr_block %= whilex + opar + expr + cpar + block, None # Your code here!!! (add rule) 145
-while_expr_block %= whilex + opar + expr + cpar + if_expr_block, None # Your code here!!! (add rule) 146
-while_expr_block %= whilex + opar + expr + cpar + let_var_block, None # Your code here!!! (add rule) 147
-while_expr_block %= whilex + opar + expr + cpar + def_func_block, None # Your code here!!! (add rule) 148
+while_expr %= whilex + opar + expr + cpar + stat, lambda h,s: While(s[3], s[5])
+while_expr_block %= whilex + opar + expr + cpar + block, lambda h,s: While(s[3], s[5])
+while_expr_block %= whilex + opar + expr + cpar + if_expr_block, lambda h,s: While(s[3], s[5])
+while_expr_block %= whilex + opar + expr + cpar + let_var_block, lambda h,s: While(s[3], s[5])
+while_expr_block %= whilex + opar + expr + cpar + def_func_block, lambda h,s: While(s[3], s[5])
 
-for_expr %= forx + opar + idx + inx + expr + cpar + stat, None # Your code here!!! (add rule) 149
-for_expr_block %= forx + opar + idx + inx + expr + cpar + block, None # Your code here!!! (add rule) 150
-for_expr_block %= forx + opar + idx + inx + expr + cpar + if_expr_block, None # Your code here!!! (add rule) 151
-for_expr_block %= forx + opar + idx + inx + expr + cpar + let_var_block, None # Your code here!!! (add rule) 152
-for_expr_block %= forx + opar + idx + inx + expr + cpar + def_func_block, None # Your code here!!! (add rule) 153
+for_expr %= forx + opar + idx + inx + expr + cpar + stat, lambda h,s: For(s[3], s[5], s[7])
+for_expr_block %= forx + opar + idx + inx + expr + cpar + block, lambda h,s: For(s[3], s[5], s[7])
+for_expr_block %= forx + opar + idx + inx + expr + cpar + if_expr_block, lambda h,s: For(s[3], s[5], s[7])
+for_expr_block %= forx + opar + idx + inx + expr + cpar + let_var_block, lambda h,s: For(s[3], s[5], s[7])
+for_expr_block %= forx + opar + idx + inx + expr + cpar + def_func_block, lambda h,s: For(s[3], s[5], s[7])
 
-stat %= loop_expr, None # Your code here!!! (add rule) 154
+stat %= loop_expr, lambda h,s: s[1]
 
-atom %= atom + dot + idx, None # Your code here!!! (add rule) 155
-atom %= atom + dot + func_call, None # Your code here!!! (add rule) 156
-atom %= atom + obrace + atom + cbrace, None # Your code here!!! (add rule) 157
+atom %= atom + dot + idx, lambda h,s: Invoke(s[1], s[3])
+atom %= atom + dot + func_call, lambda h,s: Invoke(s[1], s[3])
+atom %= atom + obrace + atom + cbrace, lambda h,s: Indexing(s[1], s[3])
 
-func_call %= idx + opar + cpar, None # Your code here!!! (add rule) 158
+func_call %= idx + opar + cpar, lambda h,s: Call(s[1], None)
 
-let_var_block %= let + var_corpse + inx + while_expr_block, None # Your code here!!! (add rule) 159
-let_var_block %= let + var_corpse + inx + for_expr_block, None # Your code here!!! (add rule) 160
+let_var_block %= let + var_corpse + inx + while_expr_block, lambda h,s: [Let(x[0], x[1], s[4], x[2]) for x in s[2]]
+let_var_block %= let + var_corpse + inx + for_expr_block, lambda h,s: [Let(x[0], x[1], s[4], x[2]) for x in s[2]]
 
-def_func_block %= func + idx + opar + arg_list + cpar + while_expr_block, None # Your code here!!! (add rule) 161
-def_func_block %= func + idx + opar + arg_list + cpar + for_expr_block, None # Your code here!!! (add rule) 162
+def_func_block %= func + idx + opar + arg_list + cpar + while_expr_block, lambda h,s: Function(s[2], s[4], s[7])
+def_func_block %= func + idx + opar + arg_list + cpar + for_expr_block, lambda h,s: Function(s[2], s[4], s[7])
 
-def_func_block %= func + idx + opar + arg_list + cpar + typed + while_expr_block, None # Your code here!!! (add rule) 163
-def_func_block %= func + idx + opar + arg_list + cpar + typed + for_expr_block, None # Your code here!!! (add rule) 164
+def_func_block %= func + idx + opar + arg_list + cpar + typed + while_expr_block, lambda h,s: Function(s[2], s[4], s[7], s[6])
+def_func_block %= func + idx + opar + arg_list + cpar + typed + for_expr_block, lambda h,s: Function(s[2], s[4], s[7], s[6])
 
-def_func %= func + idx + opar + arg_list + cpar + arrow + while_expr_block, None # Your code here!!! (add rule) 165
-def_func %= func + idx + opar + arg_list + cpar + arrow + for_expr_block, None # Your code here!!! (add rule) 166
+def_func %= func + idx + opar + arg_list + cpar + arrow + while_expr_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
+def_func %= func + idx + opar + arg_list + cpar + arrow + for_expr_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
 
-def_func %= func + idx + opar + arg_list + cpar + typed + arrow + while_expr_block, None # Your code here!!! (add rule) 167
-def_func %= func + idx + opar + arg_list + cpar + typed + arrow + for_expr_block, None # Your code here!!! (add rule) 168
+def_func %= func + idx + opar + arg_list + cpar + typed + arrow + while_expr_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
+def_func %= func + idx + opar + arg_list + cpar + typed + arrow + for_expr_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
 
-def_type %= typex + idx + obracket + cbracket, None # Your code here!!! (add rule) 169
-def_type %= typex + idx + inheritsx + idx + obracket + cbracket, None # Your code here!!! (add rule) 170
-def_type %= typex + idx + inheritsx + idx + opar + expr_list + cpar + obracket + cbracket, None # Your code here!!! (add rule) 171
+def_type %= typex + idx + obracket + cbracket, lambda h,s: TypeDef(s[2], None, None)
+def_type %= typex + idx + inheritsx + idx + obracket + cbracket, lambda h,s: TypeDef(s[2], None, None, s[4])
+def_type %= typex + idx + inheritsx + idx + opar + expr_list + cpar + obracket + cbracket, lambda h,s: TypeDef(s[2], None, None, s[4], s[6])
 
-def_type %= typex + idx + opar + arg_list + cpar + obracket + cbracket, None # Your code here!!! (add rule) 172
-def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + obracket + cbracket, None # Your code here!!! (add rule) 173
-def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + opar + expr_list + cpar + obracket + cbracket, None # Your code here!!! (add rule) 174
+def_type %= typex + idx + opar + arg_list + cpar + obracket + cbracket, lambda h,s: TypeDef(s[2], None, s[4])
+def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + obracket + cbracket, lambda h,s: TypeDef(s[2], None, s[4], s[7])
+def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + opar + expr_list + cpar + obracket + cbracket, lambda h,s: TypeDef(s[2], None, s[4], s[7], s[9])
 
-def_type %= typex + idx + obracket + type_corpse + cbracket, None # Your code here!!! (add rule) 175
-def_type %= typex + idx + inheritsx + idx + obracket + type_corpse + cbracket, None # Your code here!!! (add rule) 176
-def_type %= typex + idx + inheritsx + idx + opar + expr_list + cpar + obracket + type_corpse + cbracket, None # Your code here!!! (add rule) 177
+def_type %= typex + idx + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[4], None)
+def_type %= typex + idx + inheritsx + idx + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[6], None, s[4])
+def_type %= typex + idx + inheritsx + idx + opar + expr_list + cpar + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[9], None, s[4], s[6])
 
-def_type %= typex + idx + opar + arg_list + cpar + obracket + type_corpse + cbracket, None # Your code here!!! (add rule) 178
-def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + obracket + type_corpse + cbracket, None # Your code here!!! (add rule) 179
-def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + opar + expr_list + cpar + obracket + type_corpse + cbracket, None # Your code here!!! (add rule) 180
+def_type %= typex + idx + opar + arg_list + cpar + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[7], s[4])
+def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[9], s[4], s[7])
+def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + opar + expr_list + cpar + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[12], s[4], s[7], s[9])
 
-type_corpse %= method + semi + type_corpse, None # Your code here!!! (add rule) 181
-type_corpse %= prop + semi + type_corpse, None # Your code here!!! (add rule) 182
-type_corpse %= method + semi, None # Your code here!!! (add rule) 183
-type_corpse %= method_block, None # Your code here!!! (add rule) 183
-type_corpse %= method_block + semi, None # Your code here!!! (add rule) 183
-type_corpse %= method_block + type_corpse, None # Your code here!!! (add rule) 183
-type_corpse %= method_block + semi + type_corpse, None # Your code here!!! (add rule) 183
-type_corpse %= prop + semi, None # Your code here!!! (add rule) 184
+type_corpse %= method + semi + type_corpse, lambda h,s: [s[1]] + s[3]
+type_corpse %= prop + semi + type_corpse, lambda h,s: [s[1]] + s[3]
+type_corpse %= method + semi, lambda h,s: [s[1]]
+type_corpse %= method_block, lambda h,s: [s[1]]
+type_corpse %= method_block + semi, lambda h,s: [s[1]]
+type_corpse %= method_block + type_corpse, lambda h,s: [s[1]] + s[2]
+type_corpse %= method_block + semi + type_corpse, lambda h,s: [s[1]] + s[3]
+type_corpse %= prop + semi, lambda h,s: [s[1]]
 
-atom %= selfx, None # Your code here!!! (add rule) 185
+atom %= selfx, lambda h,s: Self(s[1])
 
-prop %= idx + equal + atom, None # Your code here!!! (add rule) 186
-prop %= idx + typed + equal + atom, None # Your code here!!! (add rule) 187
+prop %= idx + equal + expr, lambda h,s: Property(s[1], s[3])
+prop %= idx + typed + equal + expr, lambda h,s: Property(s[1], s[4], s[2])
 
-method %= idx + opar + arg_list + cpar + arrow + stat, None # Your code here!!! (add rule) 188
-method %= idx + opar + cpar + arrow + stat, None # Your code here!!! (add rule) 189
-method_block %= idx + opar + arg_list + cpar + block, None # Your code here!!! (add rule) 190
-method_block %= idx + opar + cpar + block, None # Your code here!!! (add rule) 191
+method %= idx + opar + arg_list + cpar + arrow + stat, lambda h,s: Function(s[1], s[3], s[6])
+method %= idx + opar + cpar + arrow + stat, lambda h,s: Function(s[1], None, s[5])
+method_block %= idx + opar + arg_list + cpar + block, lambda h,s: Function(s[1], s[3], s[5])
+method_block %= idx + opar + cpar + block, lambda h,s: Function(s[1], None, s[4])
 
-method %= idx + opar + arg_list + cpar + typed + arrow + stat, None # Your code here!!! (add rule) 192
-method %= idx + opar + cpar + typed + arrow + stat, None # Your code here!!! (add rule) 193
-method_block %= idx + opar + arg_list + cpar + typed + block, None # Your code here!!! (add rule) 194
-method_block %= idx + opar + cpar + typed + block, None # Your code here!!! (add rule) 195
+method %= idx + opar + arg_list + cpar + typed + arrow + stat, lambda h,s: Function(s[1], s[3], s[7], s[5])
+method %= idx + opar + cpar + typed + arrow + stat, lambda h,s: Function(s[1], None, s[6], s[4])
+method_block %= idx + opar + arg_list + cpar + typed + block, lambda h,s: Function(s[1], s[3], s[6], s[5])
+method_block %= idx + opar + cpar + typed + block, lambda h,s: Function(s[1], s[3], s[5], s[4])
 
-stat_list %= def_type, None # Your code here!!! (add rule) 196
-stat_list %= def_type + stat_list, None # Your code here!!! (add rule) 197
+stat_list %= def_type, lambda h,s: [s[1]]
+stat_list %= def_type + stat_list, lambda h,s: [s[1]] + s[2]
 
-expr %= newx + func_call, None # Your code here!!! (add rule) 198
+expr %= newx + func_call, lambda h,s: CreateInstance(s[2].idx, s[2].args)
 
-typed %= colon + idx, None # Your code here!!! (add rule) 199
-typed %= colon + strx, None # Your code here!!! (add rule) 200
-typed %= colon + numx, None # Your code here!!! (add rule) 201
-typed %= colon + objx, None # Your code here!!! (add rule) 202
-typed %= colon + boolx, None # Your code here!!! (add rule) 203
+typed %= colon + idx, lambda h,s: s[2]
+typed %= colon + strx, lambda h,s: s[2]
+typed %= colon + numx, lambda h,s: s[2]
+typed %= colon + objx, lambda h,s: s[2]
+typed %= colon + boolx, lambda h,s: s[2]
 
-protocol %= proto + idx + obracket + def_list + cbracket, None # Your code here!!! (add rule) 204
-protocol %= proto + idx + extends + idx + obracket + def_list + cbracket, None # Your code here!!! (add rule) 205
+protocol %= proto + idx + obracket + def_list + cbracket, lambda h,s: Protocol(s[2], s[4])
+protocol %= proto + idx + extends + idx + obracket + def_list + cbracket, lambda h,s: Protocol(s[2], s[6], s[4])
 
-def_list %= define + semi, None # Your code here!!! (add rule) 206
-def_list %= define_block, None # Your code here!!! (add rule) 207
-def_list %= define + semi + def_list, None # Your code here!!! (add rule) 208
-def_list %= define_block + def_list, None # Your code here!!! (add rule) 209
+def_list %= define + semi, lambda h,s: [s[1]]
+def_list %= define_block, lambda h,s: [s[1]]
+def_list %= define + semi + def_list, lambda h,s: [s[1]] + s[3]
+def_list %= define_block + def_list, lambda h,s: [s[1]] + s[3]
 
-define_block %= idx + opar + cpar + obracket + cbracket, None # Your code here!!! (add rule) 210
-define_block %= idx + opar + arg_list + cpar + obracket + cbracket, None # Your code here!!! (add rule) 211
-define_block %= idx + opar + cpar + typed + obracket + cbracket, None # Your code here!!! (add rule) 212
-define_block %= idx + opar + arg_list + cpar + typed + obracket + cbracket, None # Your code here!!! (add rule) 213
+define_block %= idx + opar + cpar + obracket + cbracket, lambda h,s: Function(s[1], None, None)
+define_block %= idx + opar + arg_list + cpar + obracket + cbracket, lambda h,s: Function(s[1], s[3], None)
+define_block %= idx + opar + cpar + typed + obracket + cbracket, lambda h,s: Function(s[1], None, None, s[4])
+define_block %= idx + opar + arg_list + cpar + typed + obracket + cbracket, lambda h,s: Function(s[1], s[3], None, s[5])
 
-define %= idx + opar + cpar, None # Your code here!!! (add rule) 214
-define %= idx + opar + arg_list + cpar, None # Your code here!!! (add rule) 215
-define %= idx + opar + cpar + typed, None # Your code here!!! (add rule) 216
-define %= idx + opar + arg_list + cpar + typed, None # Your code here!!! (add rule) 217
+define %= idx + opar + cpar, lambda h,s: Function(s[1], None, None)
+define %= idx + opar + arg_list + cpar, lambda h,s: Function(s[1], s[3], None)
+define %= idx + opar + cpar + typed, lambda h,s: Function(s[1], None, None, s[4])
+define %= idx + opar + arg_list + cpar + typed, lambda h,s: Function(s[1], s[3], None, s[5])
 
-stat_list %= protocol, None # Your code here!!! (add rule) 218
-stat_list %= protocol + stat_list, None # Your code here!!! (add rule) 219
+stat_list %= protocol, lambda h,s: [s[1]]
+stat_list %= protocol + stat_list, lambda h,s: [s[1]] + s[2]
 
 #endregion
 #endregion
