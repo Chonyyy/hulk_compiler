@@ -6,7 +6,7 @@ from tools.evaluation import evaluate_reverse_parse
 from cmp.tools.parsing import LR1Parser
 from hulk_definitions.visitor import FormatVisitor
 
-import sys,logging, pickle
+import sys,logging
 
 logger = logging.getLogger(__name__)
 

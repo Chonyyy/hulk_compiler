@@ -60,8 +60,6 @@ LEXER = Lexer([
     ('SQRT', 'sqrt'),
     ('SIN', 'sin'),
     ('COS', 'cos'),
-    ('COT', 'cot'),
-    ('TAN', 'tan'),
     ('EXP', 'exp'),
     ('LOG', 'log'),
     ('RAND', 'rand'),
