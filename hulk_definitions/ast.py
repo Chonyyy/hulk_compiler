@@ -4,8 +4,8 @@ class Node(ABC):
     pass
 
 class Program(Node):
-    def __init__(self, statements):
-        self.statements = statements
+    def __init__(self, statements: "Statement"): 
+       self.statements  = statements
 
 class Statement(Node):
     pass
@@ -119,6 +119,7 @@ class Atom(Expression):
 class Call(Atom):
     def __init__(self, idx, args):
         Atom.__init__(self, idx)
+        self.idx = idx
         self.args = args
 
 class Number(Atom):
@@ -182,28 +183,38 @@ class Indexing(Atom):
         self.index = index
 
 class Sin(Call):
-    pass
+    def __init__(self, args):
+        super().__init__("sin",args)
 
 class Cos(Call):
-    pass
+    def __init__(self, args):
+        super().__init__("cos",args)
 
 class Rand(Call):
-    pass
+    def __init__(self, args):
+        super().__init__("rand",args)
 
 class Exp(Call):
-    pass
+    def __init__(self, args):
+        super().__init__("exp",args)
 
 class Log(Call):
-    pass
+    def __init__(self, args):
+        super().__init__("log",args)
 
 class Sqrt(Call):
-    pass
+    def __init__(self, args):
+        super().__init__("sqrt",args)
 
 class Print(Call):
-    pass
+    def __init__(self, args):
+        super().__init__("print",args)
 
 class Range(Call):
-    pass
+    def __init__(self, args):
+        super().__init__("range",args)
+    def __len__(self):#TODO: Parche arreglar esto
+        return int(self.args[1].lex - self.args[0].lex)
 
 class While(Statement):
     def __init__(self, stop, body):

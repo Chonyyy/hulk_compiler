@@ -4,14 +4,15 @@ from hulk_definitions.grammar import G
 from parser_gen.parser_lr1 import LR1Parser as My_Parser
 from tools.evaluation import evaluate_reverse_parse
 from cmp.tools.parsing import LR1Parser
+from hulk_definitions.visitor import FormatVisitor
 
-import sys,logging
+import sys,logging, pickle
 
 logger = logging.getLogger(__name__)
 
 sys.setrecursionlimit(10000000)
 
-def main(debug = True, verbose = False):
+def main(debug = True, verbose = False, force = False):
     file_path = './hulk_compiler.log'
 
     if os.path.exists(file_path):
@@ -24,7 +25,18 @@ def main(debug = True, verbose = False):
         logger.info('Program Started')
         logger.info('=== Generating Parser ===')
         # parser = LR1Parser(G, True)
-        my_parser = My_Parser(G)
+        my_parser = None
+        
+        if os.path.exists('./parser.pickle') and not force:
+            # Loading existing parser
+            with open('parser.pickle', 'rb') as file:
+                my_parser = pickle.load(file)
+        else:
+            # Generating and serializing parser
+            my_parser = My_Parser(G)
+            with open('parser.pickle', 'wb') as file:
+                pickle.dump(my_parser, file)
+
         for i, file in enumerate(files):
             with open(f'./hulk_examples/{file}', 'r') as f:
                 logger.info(f'=== Reading file: {file} ===')
@@ -36,7 +48,10 @@ def main(debug = True, verbose = False):
                 for derivation in right_parse:
                     logger.info(f'{derivation}')
                 print(f'file {i} is parsed.')
-                # ast = evaluate_reverse_parse(right_parse, operations, tokens)
+                ast = evaluate_reverse_parse(right_parse, operations, tokens)
+                formatter = FormatVisitor()
+                tree = formatter.visit(ast)
+                print(tree)
 
 if __name__ == "__main__":
     main()

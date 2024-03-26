@@ -1,7 +1,7 @@
 from cmp.pycompiler import Grammar
 import logging
 logger = logging.getLogger(__name__)
-from hulk_definitions.AST import *
+from hulk_definitions.ast import *
 
 logger.info("Creating Grammar")
 G = Grammar()
@@ -38,7 +38,7 @@ eof = G.EOF
 program %= stat_list, lambda h,s: Program(s[1])
 
 stat_list %= stat + semi, lambda h,s: [s[1]] 
-stat_list %= stat + semi + stat_list, lambda h,s: [s[1]] + s[2]
+stat_list %= stat + semi + stat_list, lambda h,s: [s[1]] + s[3]
 stat_list %= block, lambda h,s: [s[1]]
 stat_list %= block + stat_list, lambda h,s: [s[1]] + s[2]
 stat_list %= block + semi, lambda h,s: [s[1]]
@@ -172,7 +172,7 @@ power %= atom + dstar + power, lambda h,s: Pow(s[1], s[3])
 
 atom %= opar + let_var + cpar, lambda h,s: s[2]
 atom %= opar + expr + cpar, lambda h,s: s[2]
-atom %= num, lambda h,s: Number(int(s[1]))
+atom %= num, lambda h,s: Number(float(s[1]))
 atom %= idx, lambda h,s: Var(s[1])
 atom %= true, lambda h,s: Bool(True)
 atom %= false, lambda h,s: Bool(False)
@@ -204,7 +204,7 @@ e_num %= e, lambda h,s: E()
 func_call %= idx + opar + expr_list + cpar, lambda h,s: Call(s[1], s[3])
 
 expr_list %= stat, lambda h,s: [s[1]]
-expr_list %= stat + comma + expr_list, lambda h,s: [s[1]] + s[2]
+expr_list %= stat + comma + expr_list, lambda h,s: [s[1]] + s[3]
 
 loop_expr %= while_expr, lambda h,s: s[1]
 loop_expr %= for_expr, lambda h,s: s[1]
@@ -238,7 +238,7 @@ def_func_block %= func + idx + opar + arg_list + cpar + for_expr_block, lambda h
 def_func_block %= func + idx + opar + arg_list + cpar + typed + while_expr_block, lambda h,s: Function(s[2], s[4], s[7], s[6])
 def_func_block %= func + idx + opar + arg_list + cpar + typed + for_expr_block, lambda h,s: Function(s[2], s[4], s[7], s[6])
 
-def_func %= func + idx + opar + arg_list + cpar + arrow + while_expr_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
+def_func %= func + idx + opar + arg_list + cpar + arrow + while_expr_block, lambda h,s: Function(s[2], s[4], s[7])#TODO: type is giving errors
 def_func %= func + idx + opar + arg_list + cpar + arrow + for_expr_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
 
 def_func %= func + idx + opar + arg_list + cpar + typed + arrow + while_expr_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
