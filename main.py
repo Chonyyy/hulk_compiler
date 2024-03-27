@@ -10,10 +10,8 @@ import sys,logging
 
 logger = logging.getLogger(__name__)
 
-sys.setrecursionlimit(10000000)
-
 def main(debug = True, verbose = False, force = False):
-    file_path = './hulk_compiler.log'
+    file_path = './parsing_table.dat'
 
     if os.path.exists(file_path):
         os.remove(file_path)
