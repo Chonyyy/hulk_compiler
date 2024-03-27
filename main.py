@@ -22,7 +22,6 @@ def main(debug = True, verbose = False, force = False):
         files = os.listdir('./hulk_examples')
         logger.info('Program Started')
         logger.info('=== Generating Parser ===')
-        # parser = LR1Parser(G, True)
         my_parser = My_Parser(G, 'parsing_table.dat')
 
         for i, file in enumerate(files):
