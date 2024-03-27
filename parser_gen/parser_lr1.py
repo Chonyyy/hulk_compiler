@@ -239,8 +239,6 @@ class LR1Parser(ShiftReduceParser):
         table[key] = value       
 
     def _save_table(self, path) -> bool:
-        if 'regex_parser' in path:
-            return False
         logger.info(f'Saving parser table in {path}')
         with open(path, "w", encoding="utf-8") as table:
             for key in list(self.action.keys()):
@@ -269,8 +267,6 @@ class LR1Parser(ShiftReduceParser):
         return True
     
     def _load_table(self, path) -> bool:
-        if 'regex_parser' in path:
-            return False
         logger.info(f'Loading parser table of {path}')
         try:
             with open(path, 'r', encoding = "utf-8") as table:

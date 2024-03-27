@@ -1,0 +1,177 @@
+0 ( SHIFT 1
+0 ε SHIFT 21
+0 symbol SHIFT 20
+1 ( SHIFT 2
+1 ε SHIFT 4
+1 symbol SHIFT 3
+2 ( SHIFT 2
+2 ε SHIFT 4
+2 symbol SHIFT 3
+3 symbol REDUCE 10
+3 | REDUCE 10
+3 ε REDUCE 10
+3 * REDUCE 10
+3 ( REDUCE 10
+3 ) REDUCE 10
+4 symbol REDUCE 11
+4 | REDUCE 11
+4 ε REDUCE 11
+4 * REDUCE 11
+4 ( REDUCE 11
+4 ) REDUCE 11
+5 ) SHIFT 6
+6 symbol REDUCE 12
+6 | REDUCE 12
+6 ε REDUCE 12
+6 * REDUCE 12
+6 ( REDUCE 12
+6 ) REDUCE 12
+7 ) REDUCE 0
+8 ) REDUCE 2
+8 | SHIFT 9
+9 ( SHIFT 2
+9 ε SHIFT 4
+9 symbol SHIFT 3
+10 ) REDUCE 1
+11 | REDUCE 3
+11 ) REDUCE 3
+12 ( SHIFT 2
+12 | REDUCE 5
+12 ) REDUCE 5
+12 ε SHIFT 4
+12 symbol SHIFT 3
+13 | REDUCE 4
+13 ) REDUCE 4
+14 * SHIFT 15
+14 symbol REDUCE 6
+14 | REDUCE 6
+14 ε REDUCE 6
+14 ( REDUCE 6
+14 ) REDUCE 6
+15 symbol REDUCE 7
+15 | REDUCE 7
+15 ε REDUCE 7
+15 * REDUCE 7
+15 ( REDUCE 7
+15 ) REDUCE 7
+16 symbol REDUCE 8
+16 | REDUCE 8
+16 ε REDUCE 8
+16 * REDUCE 8
+16 ( REDUCE 8
+16 ) REDUCE 8
+17 symbol REDUCE 9
+17 | REDUCE 9
+17 ε REDUCE 9
+17 * REDUCE 9
+17 ( REDUCE 9
+17 ) REDUCE 9
+18 ) SHIFT 19
+19 symbol REDUCE 12
+19 | REDUCE 12
+19 $ REDUCE 12
+19 ε REDUCE 12
+19 * REDUCE 12
+19 ( REDUCE 12
+20 symbol REDUCE 10
+20 | REDUCE 10
+20 $ REDUCE 10
+20 ε REDUCE 10
+20 * REDUCE 10
+20 ( REDUCE 10
+21 symbol REDUCE 11
+21 | REDUCE 11
+21 $ REDUCE 11
+21 ε REDUCE 11
+21 * REDUCE 11
+21 ( REDUCE 11
+22 $ OK None
+23 $ REDUCE 0
+24 | SHIFT 25
+24 $ REDUCE 2
+25 ( SHIFT 1
+25 ε SHIFT 21
+25 symbol SHIFT 20
+26 $ REDUCE 1
+27 | REDUCE 3
+27 $ REDUCE 3
+28 ( SHIFT 1
+28 ε SHIFT 21
+28 symbol SHIFT 20
+28 | REDUCE 5
+28 $ REDUCE 5
+29 | REDUCE 4
+29 $ REDUCE 4
+30 symbol REDUCE 6
+30 | REDUCE 6
+30 $ REDUCE 6
+30 ε REDUCE 6
+30 ( REDUCE 6
+30 * SHIFT 31
+31 symbol REDUCE 7
+31 | REDUCE 7
+31 $ REDUCE 7
+31 ε REDUCE 7
+31 * REDUCE 7
+31 ( REDUCE 7
+32 symbol REDUCE 8
+32 | REDUCE 8
+32 $ REDUCE 8
+32 ε REDUCE 8
+32 * REDUCE 8
+32 ( REDUCE 8
+33 symbol REDUCE 9
+33 | REDUCE 9
+33 $ REDUCE 9
+33 ε REDUCE 9
+33 * REDUCE 9
+33 ( REDUCE 9
+GOTO
+0 union 24
+0 union_group 23
+0 rgx 22
+0 symbol_nt 33
+0 closure 32
+0 closure_group 30
+0 concat 28
+0 concat_group 27
+1 concat 12
+1 closure 16
+1 concat_group 11
+1 symbol_nt 17
+1 rgx 18
+1 closure_group 14
+1 union 8
+1 union_group 7
+2 concat 12
+2 closure 16
+2 rgx 5
+2 concat_group 11
+2 symbol_nt 17
+2 closure_group 14
+2 union 8
+2 union_group 7
+9 concat 12
+9 closure 16
+9 concat_group 11
+9 union_group 10
+9 symbol_nt 17
+9 closure_group 14
+9 union 8
+12 concat 12
+12 closure 16
+12 symbol_nt 17
+12 closure_group 14
+12 concat_group 13
+25 union 24
+25 symbol_nt 33
+25 closure 32
+25 closure_group 30
+25 union_group 26
+25 concat 28
+25 concat_group 27
+28 symbol_nt 33
+28 closure 32
+28 closure_group 30
+28 concat_group 29
+28 concat 28
