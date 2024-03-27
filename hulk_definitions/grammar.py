@@ -58,11 +58,11 @@ stat %= expr, lambda h,s: s[1]
 stat %= assign, lambda h,s: s[1]
 stat %= if_expr, lambda h,s: s[1]
 
-let_var %= let + var_corpse + inx + stat, lambda h,s: [Let(x[0], x[1], s[4], x[2]) for x in s[2]]
-let_var_block %= let + var_corpse + inx + def_func_block, lambda h,s: [Let(x[0], x[1], s[4], x[2]) for x in s[2]]
-let_var_block %= let + var_corpse + inx + if_expr_block, lambda h,s: [Let(x[0], x[1], s[4], x[2]) for x in s[2]]
-let_var_block %= let + var_corpse + inx + let_var_block, lambda h,s: [Let(x[0], x[1], s[4], x[2]) for x in s[2]]
-let_var_block %= let + var_corpse + inx + block, lambda h,s: [Let(x[0], x[1], s[4], x[2]) for x in s[2]]
+let_var %= let + var_corpse + inx + stat, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]])
+let_var_block %= let + var_corpse + inx + def_func_block, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]])
+let_var_block %= let + var_corpse + inx + if_expr_block, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]])
+let_var_block %= let + var_corpse + inx + let_var_block, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]])
+let_var_block %= let + var_corpse + inx + block, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]])
 assign %= atom + dassign + expr, lambda h,s: Assign(s[1], s[3])
 
 var_corpse %= idx + equal + stat, lambda h,s: [[s[1], s[3], None]] 
@@ -229,8 +229,8 @@ atom %= atom + obrace + atom + cbrace, lambda h,s: Indexing(s[1], s[3])
 
 func_call %= idx + opar + cpar, lambda h,s: Call(s[1], None)
 
-let_var_block %= let + var_corpse + inx + while_expr_block, lambda h,s: [Let(x[0], x[1], s[4], x[2]) for x in s[2]]
-let_var_block %= let + var_corpse + inx + for_expr_block, lambda h,s: [Let(x[0], x[1], s[4], x[2]) for x in s[2]]
+let_var_block %= let + var_corpse + inx + while_expr_block, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]])
+let_var_block %= let + var_corpse + inx + for_expr_block, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]])
 
 def_func_block %= func + idx + opar + arg_list + cpar + while_expr_block, lambda h,s: Function(s[2], s[4], s[7])
 def_func_block %= func + idx + opar + arg_list + cpar + for_expr_block, lambda h,s: Function(s[2], s[4], s[7])
@@ -282,7 +282,7 @@ method_block %= idx + opar + cpar + block, lambda h,s: Function(s[1], None, s[4]
 method %= idx + opar + arg_list + cpar + typed + arrow + stat, lambda h,s: Function(s[1], s[3], s[7], s[5])
 method %= idx + opar + cpar + typed + arrow + stat, lambda h,s: Function(s[1], None, s[6], s[4])
 method_block %= idx + opar + arg_list + cpar + typed + block, lambda h,s: Function(s[1], s[3], s[6], s[5])
-method_block %= idx + opar + cpar + typed + block, lambda h,s: Function(s[1], s[3], s[5], s[4])
+method_block %= idx + opar + cpar + typed + block, lambda h,s: Function(s[1], None, s[5], s[4])
 
 stat_list %= def_type, lambda h,s: [s[1]]
 stat_list %= def_type + stat_list, lambda h,s: [s[1]] + s[2]
@@ -301,7 +301,7 @@ protocol %= proto + idx + extends + idx + obracket + def_list + cbracket, lambda
 def_list %= define + semi, lambda h,s: [s[1]]
 def_list %= define_block, lambda h,s: [s[1]]
 def_list %= define + semi + def_list, lambda h,s: [s[1]] + s[3]
-def_list %= define_block + def_list, lambda h,s: [s[1]] + s[3]
+def_list %= define_block + def_list, lambda h,s: [s[1]] + s[2]
 
 define_block %= idx + opar + cpar + obracket + cbracket, lambda h,s: Function(s[1], None, None)
 define_block %= idx + opar + arg_list + cpar + obracket + cbracket, lambda h,s: Function(s[1], s[3], None)

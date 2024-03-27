@@ -39,7 +39,7 @@ def main(debug = True, verbose = False, force = False):
                 logger.info(f'=== Derivation Secuence for File {file} ===')
                 for derivation in right_parse:
                     logger.info(f'{derivation}')
-                print(f'file {i} is parsed.')
+                print(f'file {file} is parsed.')
                 ast = evaluate_reverse_parse(right_parse, operations, tokens)
                 formatter = FormatVisitor()
                 tree = formatter.visit(ast)

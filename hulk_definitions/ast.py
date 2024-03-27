@@ -10,6 +10,11 @@ class Program(Node):
 class Statement(Node):
     pass
 
+
+class LetList(Statement):
+    def __init__(self, statements: "Statement"):
+        self.children = statements
+
 class Block(Statement):
     def __init__(self, body):
         self.body = body
