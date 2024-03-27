@@ -4,6 +4,7 @@ from hulk_definitions.grammar import G
 from parser_gen.parser_lr1 import LR1Parser as My_Parser
 from tools.evaluation import evaluate_reverse_parse
 from hulk_definitions.visitor import FormatVisitor, TypeCollector
+from code_gen.cil import run_pipeline
 
 import sys,logging
 
@@ -48,6 +49,9 @@ def main(debug = True, verbose = False, force = False):
             print('Errors:', errors)
             print('Context:')
             print(context)
+            
+            # Code generation CIL
+            ast, errors, context, scope, cil_ast = run_pipeline(G, text)
 
 if __name__ == "__main__":
     main()
