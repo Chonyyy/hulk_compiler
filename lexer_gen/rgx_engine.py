@@ -5,7 +5,6 @@ from tools.pycompiler import Grammar
 from lexer_gen import G
 from cmp.tools.parsing import metodo_predictivo_no_recursivo #FIXME: Change for actual parser later
 # from cmp.tools.evaluation import evaluate_parse
-from parser_gen.parser_lr1 import LR1Parser
 # from cmp.tools.parsing import LR1Parser
 from tools.evaluation import evaluate_reverse_parse, evaluate_parse
 # TODO: change parsing tools for ours
@@ -33,9 +32,11 @@ def regex_tokenizer(text:str, G:Grammar, skip_whitespaces=True):
     return tokens
 
 class Regex:
-    def __init__(self, rgx):
+    def __init__(self, rgx, parser):
         tokens = regex_tokenizer(rgx, G, skip_whitespaces=False)
-        parser = LR1Parser(G, 'regex_parser.dat')
+        # parser = metodo_predictivo_no_recursivo(G)
+        # left_parse = parser(tokens)
+        # ast = evaluate_parse(left_parse, tokens)
         right_parse, operations = parser(tokens)
         ast = evaluate_reverse_parse(right_parse, operations, tokens)
         nfa = ast.evaluate()

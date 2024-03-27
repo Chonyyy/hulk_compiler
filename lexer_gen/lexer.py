@@ -1,6 +1,8 @@
 from lexer_gen.rgx_engine import Regex
 from lexer_gen.automatons import State, automaton_minimization
 from lexer_gen.utils import Token
+from lexer_gen import G as rgx_gramar
+from parser_gen.parser_lr1 import LR1Parser
 import math, logging
 logger = logging.getLogger(__name__)
 
@@ -14,12 +16,13 @@ class Lexer:
     
     def _build_regexs(self, table):
         regexs = []
+        parser = LR1Parser(rgx_gramar)
         for n, (token_type, regex) in enumerate(table):
             logger.debug(f'Building regex for {token_type} with regex : {regex}')
             # Your code here!!!
             # - Remember to tag the final states with the token_type and priority.
             # - <State>.tag might be useful for that purpose ;-)
-            dfa = Regex(regex).automaton #TODO: Minimize ?
+            dfa = Regex(regex, parser).automaton #TODO: Minimize ?
             start_state, states = State.from_nfa(dfa, get_states= True)
             for state in dfa.finals:
                 final_state = states[state]
