@@ -10,10 +10,8 @@ import sys,logging
 
 logger = logging.getLogger(__name__)
 
-sys.setrecursionlimit(10000000)
-
 def main(debug = True, verbose = False, force = False):
-    file_path = './hulk_compiler.log'
+    file_path = './parsing_table.dat'
 
     if os.path.exists(file_path):
         os.remove(file_path)
@@ -27,7 +25,7 @@ def main(debug = True, verbose = False, force = False):
         # parser = LR1Parser(G, True)
         my_parser = None
         
-        my_parser = My_Parser(G)
+        my_parser = My_Parser(G,file_path)
 
         for i, file in enumerate(files):
             with open(f'./hulk_examples/{file}', 'r') as f:
