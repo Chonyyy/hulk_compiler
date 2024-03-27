@@ -115,6 +115,7 @@ class ShiftReduceParser:
     OK = 'OK'
     
     def __init__(self, G):
+        print("initializing parser")
         self.G = G
         self.action = {}
         self.goto = {}
