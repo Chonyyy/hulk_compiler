@@ -1,13 +1,9 @@
 from typing import Any
-from cmp.utils import Token
+from lexer_gen.utils import Token
 from lexer_gen.automatons import DFA, nfa_to_dfa
 from tools.pycompiler import Grammar
 from lexer_gen import G
-from cmp.tools.parsing import metodo_predictivo_no_recursivo #FIXME: Change for actual parser later
-# from cmp.tools.evaluation import evaluate_parse
-# from cmp.tools.parsing import LR1Parser
 from tools.evaluation import evaluate_reverse_parse, evaluate_parse
-# TODO: change parsing tools for ours
 
 def regex_tokenizer(text:str, G:Grammar, skip_whitespaces=True):
     tokens = []

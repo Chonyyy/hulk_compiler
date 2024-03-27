@@ -1,4 +1,4 @@
-from cmp.pycompiler import Grammar
+from tools.pycompiler import Grammar
 import logging
 logger = logging.getLogger(__name__)
 from hulk_definitions.ast import *
