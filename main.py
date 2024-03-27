@@ -11,7 +11,7 @@ import sys,logging
 logger = logging.getLogger(__name__)
 
 def main(debug = True, verbose = False, force = False):
-    file_path = './parsing_table.dat'
+    file_path = './hulk_compiler.log'
 
     if os.path.exists(file_path):
         os.remove(file_path)
