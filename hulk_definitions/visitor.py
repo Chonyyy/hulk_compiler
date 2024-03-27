@@ -3,6 +3,74 @@ from hulk_definitions.ast import *
 from tools.semantic import Context
 from tools import visitor
 
+class VariableInfo:
+    def __init__(self, name):
+        self.name = name
+
+class FunctionInfo:
+    def __init__(self, name, params):
+        self.name = name
+        self.params = params
+
+class Scope:
+    def __init__(self, parent = None):
+        self.local_vars = []
+        self.local_funcs = []
+        self.types = []
+        self.parent = parent
+        self.children = []
+        self.var_index_at_parent = 0 if parent is None else len(parent.local_vars)
+        self.func_index_at_parent = 0 if parent is None else len(parent.local_funcs)
+        
+    def create_child_scope(self):
+        child_scope = Scope(self)
+        self.children.append(child_scope)
+        return child_scope
+
+    def define_variable(self, vname):
+        self.local_vars.append((vname, len(self.children)))
+        self.create_child_scope()
+    
+    def define_function(self, fname, params):
+        self.local_funcs.append(((fname, params), len(self.children)))
+        self.create_child_scope()
+
+    def is_var_defined(self, vname):
+        if vname not in [var[0] for var in self.local_vars]:
+            if self.parent:
+                return self.parent.is_var_defined(vname)
+            else:
+                return False
+        return True
+    
+    
+    def is_func_defined(self, fname, n):
+        if (fname, n) not in [(fun[0][0], len(fun[0][1])) for fun in self.local_funcs]:
+            if self.parent:
+                return self.parent.is_func_defined(fname, n)
+            else:
+                return False
+        return True
+
+
+    def is_local_var(self, vname):
+        return self.get_local_variable_info(vname) is not None
+    
+    def is_local_func(self, fname, n):
+        return self.get_local_function_info(fname, n) is not None
+
+    def get_local_variable_info(self, vname):
+        for var in self.local_vars:
+            if vname == var[0]:
+                return VariableInfo(vname)
+        return
+    
+    def get_local_function_info(self, fname, n):
+        for func in self.local_funcs:
+            if (fname, n) == (func[0][0], func[0][1]):
+                return FunctionInfo(fname, func[1])
+        return
+
 class FormatVisitor(object):
     @visitor.on('node')
     def visit(self, node, tabs=0):
