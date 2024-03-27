@@ -16,7 +16,7 @@ class Lexer:
     
     def _build_regexs(self, table):
         regexs = []
-        parser = LR1Parser(rgx_gramar)
+        parser = LR1Parser(rgx_gramar, "./regex_parser.dat")
         for n, (token_type, regex) in enumerate(table):
             logger.debug(f'Building regex for {token_type} with regex : {regex}')
             # Your code here!!!
