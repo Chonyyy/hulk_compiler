@@ -37,7 +37,7 @@ class Regex:
         tokens = regex_tokenizer(rgx, G, skip_whitespaces=False)
         parser = LR1Parser(G, 'regex_parser.dat')
         right_parse, operations = parser(tokens)
-        ast = evaluate_reverse_parse(right_parse, operations, tokens)# FIXME: change for right parse evaluator
+        ast = evaluate_reverse_parse(right_parse, operations, tokens)
         nfa = ast.evaluate()
         self.automaton = nfa_to_dfa(nfa)
     

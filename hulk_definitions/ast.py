@@ -10,6 +10,11 @@ class Program(Node):
 class Statement(Node):
     pass
 
+
+class LetList(Statement):
+    def __init__(self, statements: "Statement"):
+        self.children = statements
+
 class Block(Statement):
     def __init__(self, body):
         self.body = body
@@ -185,7 +190,7 @@ class Indexing(Atom):
 class Sin(Call):
     def __init__(self, args):
         super().__init__("sin",args)
-
+        
 class Cos(Call):
     def __init__(self, args):
         super().__init__("cos",args)

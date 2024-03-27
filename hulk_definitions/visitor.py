@@ -24,16 +24,15 @@ class FormatVisitor(object):
     def visit(self, node: Statement, tabs=0):
         return '\t' * tabs + f'\\__Statement: {node.__class__.__name__}'
 
-    @when(Block)
-    def visit(self, node: Block, tabs=0):
-        ans = '\t' * tabs + f'\\__Block: {len(node.body)} statements'
-        body = ''.join(self.visit(node.body, tabs + 1))
-        return f'{ans}\n{body}'
+    @when(LetList)
+    def visit(self, node: LetList, tabs=0):
+        for child in node.children:
+            return f'{self.visit(child, tabs)}'
 
-    @when(Let)
-    def visit(self, node: Let, tabs=0):
-        ans = '\t' * tabs + f'\\__Let: {node.name} = <expr>'
-        expr = self.visit(node.expr, tabs + 1)
+    @when(Assign)
+    def visit(self, node:Assign, tabs=0):
+        ans = '\t' * tabs + f'\\__Assign: {node.lex} = <expr>'
+        expr = self.visit(node.body, tabs + 1)
         return f'{ans}\n{expr}'
 
     @when(Function)
@@ -44,6 +43,62 @@ class FormatVisitor(object):
         ans = '\t' * tabs + f'\\__Function: {node.name}({params}) -> <body>'
         body = ''.join(self.visit(node.body, tabs + 1))
         return f'{ans}\n{body}'
+
+    @when(Protocol)
+    def visit(self, node:Protocol, tabs=0):
+        ans = '\t' * tabs + f'\\__Protocol: {node.name}'
+        body = ''.join(self.visit(child, tabs + 1) for child in node.body)
+        return f'{ans}\n{body}'
+
+    @when(TypeDef)
+    def visit(self, node:TypeDef, tabs=0):
+        if node.inheritance is None:
+            ans = '\t' * tabs + f'\\__TypeDef: {node.name}'
+        else:
+            ans = '\t' * tabs + f'\\__TypeDef: {node.name} inherits from {node.inheritance}'#TODO: Check this
+        body = '<empty_body>'
+        if node.body:
+            body = '\n'.join(self.visit(child, tabs + 1) for child in node.body)
+        return f'{ans}\n{body}'
+
+    @when(Print)
+    def visit(self, node:Print, tabs=0):
+        ans = '\t' * tabs + f'\\__Print:(<args>)'
+        # args = ''.join(self.visit(arg, tabs + 1) for arg in node.args)
+        args = ''
+        for arg in node.args: #TODO parche
+            if not arg:
+                continue
+            args += str(self.visit(arg,tabs + 1))
+        return f'{ans}\n{args}'
+
+    @when(Number)
+    def visit(self, node: Number, tabs=0):
+        return '\t' * tabs + f'\\__Number: {node.lex}'
+
+    @when(For)
+    def visit(self, node:For, tabs=0):
+        ans = '\t' * tabs + f'\\__For: {node.item} in <collection> -> <body>'
+        collection = self.visit(node.collection, tabs + 1)
+        body = self.visit(node.body, tabs + 1)
+        return f'{ans}\n{collection}\n{body}'
+
+    @when(Block)
+    def visit(self, node: Block, tabs=0):
+        if node.body:
+            ans = '\t' * tabs + f'\\__Block: {len(node.body)} statements'
+        else:
+            ans = '\t' * tabs + f'\\__Block: {0} statements'
+        print(type(node.body))
+        body = ''.join(self.visit(node.body, tabs + 1))
+        return f'{ans}\n{body}'
+
+    @when(Let)
+    def visit(self, node: Let, tabs=0):
+        ans = '\t' * tabs + f'\\__Let: {node.name} = <expr>'
+        expr = self.visit(node.expr, tabs + 1)
+        return f'{ans}\n{expr}'
+
 
     @when(Conditional)
     def visit(self, node: Conditional, tabs=0):
@@ -229,9 +284,6 @@ class FormatVisitor(object):
             args = ''.join(self.visit(arg, tabs + 1) for arg in node.args)
         return f'{ans}\n{args}'
 
-    @when(Number)
-    def visit(self, node: Number, tabs=0):
-        return '\t' * tabs + f'\\__Number: {node.lex}'
     
     @when(Str)
     def visit(self, node: Str, tabs=0):
@@ -256,7 +308,8 @@ class FormatVisitor(object):
     @when(VectorComprehension)
     def visit(self, node: VectorComprehension, tabs=0):
         ans = '\t' * tabs + f'\\__VectorComprehension: <values> with length {node.len} and operation <operation>'
-        values = ''.join(self.visit(value, tabs + 1) for value in node.values)
+        # values = ''.join(self.visit(value, tabs + 1) for value in node.lex)
+        values = "TODO: FIx later"
         operation = self.visit(node.operation, tabs + 1)
         return f'{ans}\n{values}\n{operation}'
     
@@ -264,30 +317,12 @@ class FormatVisitor(object):
     def visit(self, node: Var, tabs=0):
         return '\t' * tabs + f'\\__Var: {node.lex}'
 
-    @when(TypeDef)
-    def visit(self, node:TypeDef, tabs=0):
-        ans = '\t' * tabs + f'\\__TypeDef: {node.name}'
-        body = '<empty_body>'
-        if node.body:
-            body = '\n'.join(self.visit(child, tabs + 1) for child in node.body)
-        return f'{ans}\n{body}'
 
     @when(TypeCreation)
     def visit(self, node: TypeCreation, tabs=0):
         return '\t' * tabs + f'\\__TypeCreation: <type>'
 
-    @when(Protocol)
-    def visit(self, node:Protocol, tabs=0):
-        ans = '\t' * tabs + f'\\__Protocol: {node.name}'
-        body = ''.join(self.visit(child, tabs + 1) for child in node.body)
-        return f'{ans}\n{body}'
-
-    @when(Assign)
-    def visit(self, node:Assign, tabs=0):
-        ans = '\t' * tabs + f'\\__Assign: {node.lex} = <expr>'
-        expr = self.visit(node.body, tabs + 1)
-        return f'{ans}\n{expr}'
-
+ 
     @when(Pi)
     def visit(self, node:Pi, tabs=0):
         return '\t' * tabs + f'\\__Pi'
@@ -306,88 +341,72 @@ class FormatVisitor(object):
     def visit(self, node:Sin, tabs=0):
         ans = '\t' * tabs + f'\\__Sin:(<args>)'
         # args = ''.join(self.visit(arg, tabs + 1) for arg in node.args)
-        args = ''
-        for arg in node.args: #TODO parche
-            if not arg:
-                continue
-            args += str(self.visit(arg,tabs + 1))
+        args = '\t'*tabs + f'<no-args>'
+        if node.args:
+            for arg in node.args: #TODO parche
+                args += str(self.visit(arg,tabs + 1))
         return f'{ans}\n{args}'
 
     @when(Cos)
     def visit(self, node:Cos, tabs=0):
         ans = '\t' * tabs + f'\\__Cos:(<args>)'
         # args = ''.join(self.visit(arg, tabs + 1) for arg in node.args)
-        args = ''
-        for arg in node.args: #TODO parche
-            if not arg:
-                continue
-            args += str(self.visit(arg,tabs + 1))
+        args = '\t'*tabs + f'<no-args>'
+        if node.args:
+            for arg in node.args: #TODO parche
+                args += str(self.visit(arg,tabs + 1))
         return f'{ans}\n{args}'
+    
 
     @when(Rand)
     def visit(self, node:Rand, tabs=0):
         ans = '\t' * tabs + f'\\__Rand:(<args>)'
         # args = ''.join(self.visit(arg, tabs + 1) for arg in node.args)
-        args = ''
-        for arg in node.args: #TODO parche
-            if not arg:
-                continue
-            args += str(self.visit(arg,tabs + 1))
+        args = '\t'*tabs + f'<no-args>'
+        if node.args:
+            for arg in node.args: #TODO parche
+                args += str(self.visit(arg,tabs + 1))
         return f'{ans}\n{args}'
 
     @when(Exp)
     def visit(self, node:Exp, tabs=0):
         ans = '\t' * tabs + f'\\__Exp:(<args>)'
         # args = ''.join(self.visit(arg, tabs + 1) for arg in node.args)
-        args = ''
-        for arg in node.args: #TODO parche
-            if not arg:
-                continue
-            args += str(self.visit(arg,tabs + 1))
+        args = '\t'*tabs + f'<no-args>'
+        if node.args:
+            for arg in node.args: #TODO parche
+                args += str(self.visit(arg,tabs + 1))
         return f'{ans}\n{args}'
 
     @when(Log)
     def visit(self, node:Log, tabs=0):
         ans = '\t' * tabs + f'\\__Log:(<args>)'
         # args = ''.join(self.visit(arg, tabs + 1) for arg in node.args)
-        args = ''
-        for arg in node.args: #TODO parche
-            if not arg:
-                continue
-            args += str(self.visit(arg,tabs + 1))
+        args = '\t'*tabs + f'<no-args>'
+        if node.args:
+            for arg in node.args: #TODO parche
+                args += str(self.visit(arg,tabs + 1))
         return f'{ans}\n{args}'
 
     @when(Sqrt)
     def visit(self, node:Sqrt, tabs=0):
         ans = '\t' * tabs + f'\\__Sqrt:(<args>)'
         # args = ''.join(self.visit(arg, tabs + 1) for arg in node.args)
-        args = ''
-        for arg in node.args: #TODO parche
-            if not arg:
-                continue
-            args += str(self.visit(arg,tabs + 1))
+        args = '\t'*tabs + f'<no-args>'
+        if node.args:
+            for arg in node.args: #TODO parche
+                args += str(self.visit(arg,tabs + 1))
         return f'{ans}\n{args}'
 
-    @when(Print)
-    def visit(self, node:Print, tabs=0):
-        ans = '\t' * tabs + f'\\__Print:(<args>)'
-        # args = ''.join(self.visit(arg, tabs + 1) for arg in node.args)
-        args = ''
-        for arg in node.args: #TODO parche
-            if not arg:
-                continue
-            args += str(self.visit(arg,tabs + 1))
-        return f'{ans}\n{args}'
 
     @when(Range)
     def visit(self, node:Range, tabs=0):
         ans = '\t' * tabs + f'\\__Range:(<args>)'
         # args = ''.join(self.visit(arg, tabs + 1) for arg in node.args)
-        args = ''
-        for arg in node.args: #TODO parche
-            if not arg:
-                continue
-            args += str(self.visit(arg,tabs + 1))
+        args = '\t'*tabs + f'<no-args>'
+        if node.args:
+            for arg in node.args: #TODO parche
+                args += str(self.visit(arg,tabs + 1))
         return f'{ans}\n{args}'
 
     @when(While)
@@ -396,13 +415,6 @@ class FormatVisitor(object):
         expr = self.visit(node.stop, tabs + 1)
         body = self.visit(node.body, tabs + 1)
         return f'{ans}\n{expr}\n{body}'
-
-    @when(For)
-    def visit(self, node:For, tabs=0):
-        ans = '\t' * tabs + f'\\__For: {node.item} in <collection> -> <body>'
-        collection = self.visit(node.collection, tabs + 1)
-        body = self.visit(node.body, tabs + 1)
-        return f'{ans}\n{collection}\n{body}'
 
     @when(Self)
     def visit(self, node:Self, tabs=0):
@@ -417,5 +429,7 @@ class FormatVisitor(object):
     @when(CreateInstance)
     def visit(self, node: CreateInstance, tabs=0):
         ans = '\t' * tabs + f'\\__CreateInstance: new {node.type}(<args>)'
-        args = ''.join(self.visit(arg, tabs + 1) for arg in node.params)
+        args = '<no-params>'
+        if node.params:
+            args = ''.join(self.visit(arg, tabs + 1) for arg in node.params)
         return f'{ans}\n{args}' 

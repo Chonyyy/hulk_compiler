@@ -6,7 +6,7 @@ from tools.evaluation import evaluate_reverse_parse
 from cmp.tools.parsing import LR1Parser
 from hulk_definitions.visitor import FormatVisitor
 
-import sys,logging, pickle
+import sys,logging
 
 logger = logging.getLogger(__name__)
 
@@ -27,15 +27,6 @@ def main(debug = True, verbose = False, force = False):
         my_parser = My_Parser(G, 'parsing_table.dat')
         # parser = LR1Parser(G, True)
         
-        # if os.path.exists('./parser.pickle') and not force:
-        #     # Loading existing parser
-        #     with open('parser.pickle', 'rb') as file:
-        #         my_parser = pickle.load(file)
-        # else:
-        #     # Generating and serializing parser
-        #     with open('parser.pickle', 'wb') as file:
-        #         pickle.dump(my_parser, file)
-
         for i, file in enumerate(files):
             with open(f'./hulk_examples/{file}', 'r') as f:
                 logger.info(f'=== Reading file: {file} ===')
@@ -46,7 +37,7 @@ def main(debug = True, verbose = False, force = False):
                 logger.info(f'=== Derivation Secuence for File {file} ===')
                 for derivation in right_parse:
                     logger.info(f'{derivation}')
-                print(f'file {i} is parsed.')
+                print(f'file {file} is parsed.')
                 ast = evaluate_reverse_parse(right_parse, operations, tokens)
                 formatter = FormatVisitor()
                 tree = formatter.visit(ast)
