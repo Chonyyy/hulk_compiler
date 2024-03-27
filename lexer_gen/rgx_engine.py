@@ -35,10 +35,7 @@ def regex_tokenizer(text:str, G:Grammar, skip_whitespaces=True):
 class Regex:
     def __init__(self, rgx):
         tokens = regex_tokenizer(rgx, G, skip_whitespaces=False)
-        parser = LR1Parser(G)
-        # parser = metodo_predictivo_no_recursivo(G)
-        # left_parse = parser(tokens)
-        # ast = evaluate_parse(left_parse, tokens)
+        parser = LR1Parser(G, 'regex_parser.dat')
         right_parse, operations = parser(tokens)
         ast = evaluate_reverse_parse(right_parse, operations, tokens)# FIXME: change for right parse evaluator
         nfa = ast.evaluate()

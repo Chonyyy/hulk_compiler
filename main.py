@@ -24,18 +24,17 @@ def main(debug = True, verbose = False, force = False):
         files = os.listdir('./hulk_examples')
         logger.info('Program Started')
         logger.info('=== Generating Parser ===')
+        my_parser = My_Parser(G, 'parsing_table.dat')
         # parser = LR1Parser(G, True)
-        my_parser = None
         
-        if os.path.exists('./parser.pickle') and not force:
-            # Loading existing parser
-            with open('parser.pickle', 'rb') as file:
-                my_parser = pickle.load(file)
-        else:
-            # Generating and serializing parser
-            my_parser = My_Parser(G)
-            with open('parser.pickle', 'wb') as file:
-                pickle.dump(my_parser, file)
+        # if os.path.exists('./parser.pickle') and not force:
+        #     # Loading existing parser
+        #     with open('parser.pickle', 'rb') as file:
+        #         my_parser = pickle.load(file)
+        # else:
+        #     # Generating and serializing parser
+        #     with open('parser.pickle', 'wb') as file:
+        #         pickle.dump(my_parser, file)
 
         for i, file in enumerate(files):
             with open(f'./hulk_examples/{file}', 'r') as f:

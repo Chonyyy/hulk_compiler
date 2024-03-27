@@ -1,9 +1,11 @@
 from cmp_parser.tools import compute_firsts, compute_follows, compute_local_first
 from cmp_parser.pycompiler import Grammar
 from cmp_parser.pycompiler import Item
+from lexer_gen.utils import Symbol
 from cmp_parser.utils import ContainerSet
 from cmp_parser.automata import State, multiline_formatter
 from pandas import DataFrame
+from os import path
 import logging
 logger = logging.getLogger(__name__)
 
@@ -118,7 +120,7 @@ class ShiftReduceParser:
         self.G = G
         self.action = {}
         self.goto = {}
-        self._build_parsing_table()
+        # self._build_parsing_table()
     
     def _build_parsing_table(self):
         raise NotImplementedError()
@@ -140,7 +142,10 @@ class ShiftReduceParser:
                 logger.info("Error: No se puede reconocer la cadena.")
                 return False
             a = list(self.action.keys())
+            
             action, tag = self.action.get((state, lookahead), (None, None))
+            if action == None and tag == None:
+                action, tag = self.action.get((state, lookahead.Name), (None, None))
             logger.info(f'Realizando {action} a {tag}')
             operations.append(action)
             
@@ -156,7 +161,10 @@ class ShiftReduceParser:
                 for _ in range(body_size):
                     stack.pop()
                     
-                stack.append(self.goto[(stack[-1],self.G.Productions[tag].Left)])
+                try:
+                    stack.append(self.goto[(stack[-1], self.G.Productions[tag].Left)])
+                except:
+                    stack.append(self.goto[(stack[-1], self.G.Productions[tag].Left.Name)])
                 output.append(self.G.Productions[tag])
                 
                 logger.info(f'Reduce {tag}')
@@ -173,7 +181,15 @@ class ShiftReduceParser:
                 # return False
         
 class LR1Parser(ShiftReduceParser):
-    def _build_parsing_table(self):
+    def __init__(self, G, path):
+        ShiftReduceParser.__init__(self, G)
+        if self._load_table(path): 
+            logger.info('Parser table has been loaded')
+        else:
+            logger.info("Parser table can't be loaded")
+            self._build_parsing_table(path)
+
+    def _build_parsing_table(self, path):
         G = self.G.AugmentedGrammar(True)
         automaton = build_LR1_automaton(G)
 
@@ -208,14 +224,106 @@ class LR1Parser(ShiftReduceParser):
                         
                         k = G.Productions.index(item.production)
                         self._register(self.action, (idx,l),  (self.REDUCE, k))
+        
+        if self._save_table(path):
+            logger.info('Parsing table has been saved.')
+        else:
+            logger.info("Error! The parsing table can't be saved")
                           
-            
         
     @staticmethod
     def _register(table, key, value):
         logger.info(f"Registering {key} -> {value}")
         assert key not in table or table[key] == value, 'Shift-Reduce or Reduce-Reduce conflict!!!'
-        table[key] = value        
+        table[key] = value       
+
+    def _save_table(self, path) -> bool:
+        if 'regex_parser' in path:
+            return False
+        logger.info(f'Saving parser table in {path}')
+        with open(path, "w", encoding="utf-8") as table:
+            for key in list(self.action.keys()):
+                try:
+                    value = self.action[key]
+                    logger.info(f'Saving {key} -> {value} as:')
+                    origin, la = key
+                    action, destiny = value
+                    logger.info(f'\t{str(origin)} {la} -> {action} {str(destiny)}')
+                    table.write(f'{str(origin)} {la} {action} {str(destiny)}\n')
+                except:
+                    return False
+                
+            table.write('GOTO\n')
+            for key in list(self.goto.keys()):
+                try:
+                    value = self.goto[key]
+                    logger.info(f'Saving {key} -> {value} as:')
+                    origin, la = key
+                    destiny = value
+                    logger.info(f'\t{str(origin)} {la} -> {str(destiny)}')
+                    table.write(f'{str(origin)} {la} {str(destiny)}\n')
+                except:
+                    return False
+
+        return True
+    
+    def _load_table(self, path) -> bool:
+        if 'regex_parser' in path:
+            return False
+        logger.info(f'Loading parser table of {path}')
+        try:
+            with open(path, 'r', encoding = "utf-8") as table:
+                lines = table.readlines()
+                goto = False
+                for rline in lines:
+                    if 'GOTO' in rline:
+                        goto = True
+                        continue
+                    line = rline.split(' ')
+                    if not goto:
+
+                        try:
+
+                            origin = int(line[0])
+                            la = line[1]
+                            action = line[2]
+                            if 'None' not in line[3]:
+                                destiny = int(line[3])
+                            else:
+                                destiny = None
+
+                        except:
+
+                            logger.info('Table record is damaged')
+                            return False
+
+                        key = (origin, la)
+                        value = (action, destiny)
+                        self.action[key] = value
+                    else:
+                        try:
+
+                            origin = int(line[0])
+                            la = line[1]
+                            if 'None' not in line[2]:
+                                destiny = int(line[2])
+                            else:
+                                destiny = None
+
+                        except:
+
+                            logger.info('Table record is damaged')
+                            return False
+
+                        key = (origin, la)
+                        value = destiny
+                        self.goto[key] = value
+
+                return goto
+        except:
+            logger.info(f'file {path} does not exist.')
+            return False
+                    
 
 def encode_value(value):
     try:
