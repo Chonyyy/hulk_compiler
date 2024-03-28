@@ -24,8 +24,26 @@ def main(debug = True, verbose = False, force = False):
     my_parser = My_Parser(G, 'parsing_table.dat')
 
     for i, file in enumerate(files):
-        # if i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17]:
-        #     continue
+        if file in [
+            "1_example_expressions.hlk",
+            "2_example_functions.hlk",
+            "4_example_conditionals.hlk",
+            "5_example_loops.hlk",
+            "6_example_types.hlk",
+            "7_example_type_checking.hlk",
+            "8_example_protocol.hlk",
+            "9_example_vector.hlk",
+            "11_example_expressions.hlk",
+            "12_example_functions.hlk",
+            "13_example_variables.hlk",
+            "14_example_conditionals.hlk",
+            "15_example_loops.hlk",
+            "16_example_types.hlk",
+            "17_example_type_checking.hlk",
+            "18_example_protocol.hlk",
+            "19_example_vector.hlk"
+        ]:
+            continue
         with open(f'./hulk_examples/{file}', 'r') as f:
             print(f'=== Reading file: {file} ===')
             text = f.read()
