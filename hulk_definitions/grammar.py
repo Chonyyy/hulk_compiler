@@ -292,6 +292,7 @@ expr %= newx + func_call, lambda h,s: CreateInstance(s[2].idx, s[2].args)
 typed %= colon + idx, lambda h,s: s[2]
 typed %= colon + strx, lambda h,s: s[2]
 typed %= colon + numx, lambda h,s: s[2]
+typed %= colon + iterx, lambda h,s: s[2]
 typed %= colon + objx, lambda h,s: s[2]
 typed %= colon + boolx, lambda h,s: s[2]
 

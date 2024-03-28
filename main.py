@@ -45,7 +45,7 @@ def main(debug = True, verbose = False, force = False):
             logger.info('=== Collecting Types ===')
             errors = []
             context = Context()
-            built_in_types = ["Object", "Number", "String", "Boolean"]
+            built_in_types = ["Object", "Number", "String", "Boolean", "Vector"]
             built_in_protocols = ["Iterable"]
 
             for bi_type in built_in_types:
