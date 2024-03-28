@@ -182,9 +182,9 @@ class ShiftReduceParser:
                 # return False
         
 class LR1Parser(ShiftReduceParser):
-    def __init__(self, G, path):
-        ShiftReduceParser.__init__(self, G)
-        if self._load_table(path): 
+    def __init__(self, G, path, force = False):
+        super().__init__(G)
+        if self._load_table(path) and not force:
             logger.info('Parser table has been loaded')
         else:
             logger.info("Parser table can't be loaded")
@@ -196,7 +196,7 @@ class LR1Parser(ShiftReduceParser):
 
         logger.info("Building parsing table")
         for i, node in enumerate(automaton):
-            # logger.info(i, '\t', '\n\t '.join(str(x) for x in node.state), '\n')
+            logger.info(i, '\t', '\n\t '.join(str(x) for x in node.state), '\n')
             logger.info(f'{i}')
             for state in node.state:
                 logger.info(f'\t {state}')
@@ -204,7 +204,9 @@ class LR1Parser(ShiftReduceParser):
 
         for node in automaton:
             idx = node.idx
+            logger.info(f'Node {idx}')
             for item in node.state:
+                logger.info(f'\t{item}')
                 next_symbol = item.NextSymbol
                 
                 if next_symbol in G.terminals:
