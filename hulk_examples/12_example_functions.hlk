@@ -1,8 +1,8 @@
-function tan(x: Number): Number => sin(x: Number): Number / cos(x: Number): Number;
-function cot(x: Number): Number => 1 / tan(x: Number): Number;
-function tan(x: Number): Number => sin(x: Number): Number / cos(x: Number): Number;
+function tan(x: Number): Number => sin(x) / cos(x);
+function cot(x: Number): Number => 1 / tan(x);
+function tan(x: Number): Number => sin(x) / cos(x);
 
-print(tan(PI: Number): Number ** 2 + cot(PI: Number): Number ** 2);
+print(tan(PI) ** 2 + cot(PI) ** 2);
 
 function operate(x: Number, y: Number) {
     print(x + y);

@@ -26,13 +26,13 @@ let pt: PointSecond = new PointSecond(3,4) in
     print("x: " @ pt.getX() @ "; y: " @ pt.getY());
 
 type PolarPoint inherits PointSecond {
-    rho(): Number => sqrt(self.getX() ^ 2 + self.getY() ^ 2): Number;
+    rho(): Number => sqrt(self.getX() ^ 2 + self.getY() ^ 2);
 }
 
 let pt: PolarPoint = new PolarPoint(3,4) in
     print("rho: " @ pt.rho());
 
-type PolarPoint(phi: Number, rho: Number) inherits Point(rho * sin(phi: Number): Number, rho * cos(phi: Number): Number) {
+type PolarPoint(phi: Number, rho: Number) inherits Point(rho * sin(phi), rho * cos(phi)) {
 }
 
 type Person(firstname: String, lastname: String) {
