@@ -12,15 +12,26 @@ class FunctionInfo:
         self.name = name
         self.params = params
 
+class TypeInfo:
+    def __init__(self, name):
+        self.name = name
+
+class ProtocolInfo:
+    def __init__(self, name):
+        self.name = name
+
 class Scope:
     def __init__(self, parent = None):
         self.local_vars = []
         self.local_funcs = []
-        self.types = []
+        self.local_types = []
+        self.local_protocols = []
         self.parent = parent
         self.children = []
         self.var_index_at_parent = 0 if parent is None else len(parent.local_vars)
         self.func_index_at_parent = 0 if parent is None else len(parent.local_funcs)
+        self.type_index_at_parent = 0 if parent is None else len(parent.local_types)
+        self.protocol_index_at_parent = 0 if parent is None else len(parent.local_protocols)
         
     def create_child_scope(self):
         child_scope = Scope(self)
@@ -33,6 +44,10 @@ class Scope:
     
     def define_function(self, fname, params):
         self.local_funcs.append(((fname, params), len(self.children)))
+        self.create_child_scope()
+
+    def define_type(self, tname):
+        self.local_types.append((tname, len(self.children)))
         self.create_child_scope()
 
     def is_var_defined(self, vname):
