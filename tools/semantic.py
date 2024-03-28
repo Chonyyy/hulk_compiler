@@ -156,12 +156,19 @@ class IntType(Type):
 class Context:
     def __init__(self):
         self.types = {}
+        self.protocols = {}
 
     def create_type(self, name:str):
         if name in self.types:
             raise SemanticError(f'Type with the same name ({name}) already in context.')
         typex = self.types[name] = Type(name)
         return typex
+
+    def create_protocol(self, name:str):
+        if name in self.protocols:
+            raise SemanticError(f'Protocol with the same name ({name}) already in context.')
+        protocolx = self.protocols[name] = Type(name)
+        return protocolx
 
     def get_type(self, name:str):
         try:
