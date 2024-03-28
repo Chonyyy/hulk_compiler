@@ -34,11 +34,28 @@ class Method:
             other.return_type == self.return_type and \
             other.param_types == self.param_types
 
+class MethodDef:
+    def __init__(self, name, param_names, params_types, return_type):
+        self.name = name
+        self.param_names = param_names
+        self.param_types = params_types
+        self.return_type = return_type
+
+    def __str__(self):
+        params = ', '.join(f'{n}:{t.name}' for n,t in zip(self.param_names, self.param_types))
+        return f'[method] {self.name}({params}): {self.return_type.name};'
+    
+    def __eq__(self, other):
+        return other.name == self.name and \
+            other.return_type == self.return_type and \
+            other.param_types == self.param_types
+
 class Type:
     def __init__(self, name:str):
         self.name = name
         self.attributes = []
         self.methods = []
+        self.args = []
         self.parent = None
 
     def set_parent(self, parent):
@@ -66,6 +83,25 @@ class Type:
             return attribute
         else:
             raise SemanticError(f'Attribute "{name}" is already defined in {self.name}.')
+
+    def get_argument(self, name:str):
+        try:
+            return next(arg for arg in self.args if arg[0] == name)
+        except StopIteration:
+            if self.parent is None:
+                raise SemanticError(f'Argument "{name}" is not defined in {self.name}.')
+            try:
+                return self.parent.get_argument(name)
+            except SemanticError:
+                raise SemanticError(f'Argument "{name}" is not defined in {self.name}.')
+
+    def define_argument(self, name:str, typex):
+        try:
+            self.get_argument(name)
+        except SemanticError:
+            self.args.append((name, typex))
+        else:
+            raise SemanticError(f'Argument "{name}" is already defined in {self.name}.')
 
     def get_method(self, name:str):
         try:
@@ -120,6 +156,28 @@ class Type:
     def __repr__(self):
         return str(self)
 
+class Protocol(Type):
+    def __init__(self, name:str):
+        super().__init__(name)
+        self.methods_def = []
+
+    def define_method(self, name:str, param_names:list, param_types:list, return_type):
+        if name in (method.name for method in self.methods_def):
+            raise SemanticError(f'Method "{name}" already defined in {self.name}')
+
+        method = MethodDef(name, param_names, param_types, return_type)
+        self.methods_def.append(method)
+        return method
+
+    def get_attribute(self, name: str):
+        raise SemanticError(f'Protocol "{self.name}" has no attributes.')
+    
+    def define_attribute(self, name: str, typex):
+        raise SemanticError(f'Protocol "{self.name}" has no attributes.')
+
+    def all_attributes(self, clean=True):
+        raise SemanticError(f'Protocol "{self.name}" has no attributes.')
+    
 class ErrorType(Type):
     def __init__(self):
         Type.__init__(self, '<error>')
@@ -167,7 +225,7 @@ class Context:
     def create_protocol(self, name:str):
         if name in self.protocols:
             raise SemanticError(f'Protocol with the same name ({name}) already in context.')
-        protocolx = self.protocols[name] = Type(name)
+        protocolx = self.protocols[name] = Protocol(name)
         return protocolx
 
     def get_type(self, name:str):
@@ -175,6 +233,12 @@ class Context:
             return self.types[name]
         except KeyError:
             raise SemanticError(f'Type "{name}" is not defined.')
+
+    def get_protocol(self, name:str):
+        try:
+            return self.protocols[name]
+        except KeyError:
+            raise SemanticError(f'Protocol "{name}" is not defined.')
 
     def __str__(self):
         return '{\n\t' + '\n\t'.join(y for x in self.types.values() for y in str(x).split('\n')) + '\n}'

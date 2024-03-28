@@ -3,7 +3,8 @@ from hulk_definitions.token_def import LEXER
 from hulk_definitions.grammar import G
 from parser_gen.parser_lr1 import LR1Parser as My_Parser
 from tools.evaluation import evaluate_reverse_parse
-from hulk_definitions.visitor import FormatVisitor, TypeCollector
+from tools.semantic import Context
+from hulk_definitions.visitor import FormatVisitor, TypeCollector, TypeBuilder
 
 import sys,logging
 
@@ -23,8 +24,9 @@ def main(debug = True, verbose = False, force = False):
     my_parser = My_Parser(G, 'parsing_table.dat')
 
     for i, file in enumerate(files):
+        if i in [0, 1, 2, 3, 4]:
+            continue
         with open(f'./hulk_examples/{file}', 'r') as f:
-            
             logger.info(f'=== Reading file: {file} ===')
             text = f.read()
             
@@ -42,12 +44,28 @@ def main(debug = True, verbose = False, force = False):
             
             logger.info('=== Collecting Types ===')
             errors = []
-            collector = TypeCollector(errors)
+            context = Context()
+            built_in_types = ["Object", "Number", "String", "Boolean"]
+            built_in_protocols = ["Iterable"]
+
+            for bi_type in built_in_types:
+                context.create_type(bi_type)
+            for bi_protocol in built_in_protocols:
+                context.create_protocol(bi_protocol)
+
+            collector = TypeCollector(context, errors)
             collector.visit(ast)
             context = collector.context
+
+            logger.info('=== Building Types ===')
+            builder = TypeBuilder(context, errors)
+            builder.visit(ast)
+            context = builder.context
             print('Errors:', errors)
             print('Context:')
             print(context)
+
+            logger.info('=== Type Inference ===')
 
 if __name__ == "__main__":
     main()
