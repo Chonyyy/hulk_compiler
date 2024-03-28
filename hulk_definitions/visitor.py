@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from hulk_definitions.ast import *
 from tools.semantic import Context, SemanticError, Type
 from tools import visitor
+from tools.semantic import Scope
 from typing import Union
 
 class FormatVisitor(object):
@@ -610,18 +611,20 @@ class TypeInferer(object):
 class TypeChecker(object):
     def __init__(self, context: Context, errors=[]):
         self.context = context
+        self.current_type = None
+        self.current_method = None
         self.errors = errors
     
     @visitor.on('node')
-    def visit(self, node):
+    def visit(self, node, scope):
         pass
     
     @visitor.when(Program)
-    def visit(self, node: Program):
+    def visit(self, node: Program, scope: Scope = None):
+        scope = Scope()
         for child in node.statements:
-            self.visit(child, self.context)
-
-        return self.errors
+            self.visit(child, scope.create_child_scope())
+        return scope
 
     @visitor.when(Let)
     def visit(self, node: Let, ctx: Context):
@@ -632,143 +635,143 @@ class TypeChecker(object):
         except SemanticError as se:
             self.errors.append(se.text)
 
-    @visitor.when(Assign)
-    def visit(self, node: Assign, ctx: Context):
-        try:
-            type_expr = self.visit(node.body, ctx)
-            if not type_expr.conforms(ctx.get_type(node.type)):
-                self.errors.append(f'TypeError: Type {type_expr.name} does not conform to {node.type}')
-        except SemanticError as se:
-            self.errors.append(se.text)
+    # @visitor.when(Assign)
+    # def visit(self, node: Assign, ctx: Context):
+    #     try:
+    #         type_expr = self.visit(node.body, ctx)
+    #         if not type_expr.conforms(ctx.get_type(node.type)):
+    #             self.errors.append(f'TypeError: Type {type_expr.name} does not conform to {node.type}')
+    #     except SemanticError as se:
+    #         self.errors.append(se.text)
 
-    @visitor.when(Conditional)
-    def visit(self, node: Conditional, ctx: Context):
-        try:
-            type_expr = self.visit(node.if_expr, ctx)
-            if type_expr.name != 'Bool':
-                self.errors.append(f'TypeError: Type {type_expr.name} does not conform to Bool')
-        except SemanticError as se:
-            self.errors.append(se.text)
+    # @visitor.when(Conditional)
+    # def visit(self, node: Conditional, ctx: Context):
+    #     try:
+    #         type_expr = self.visit(node.if_expr, ctx)
+    #         if type_expr.name != 'Bool':
+    #             self.errors.append(f'TypeError: Type {type_expr.name} does not conform to Bool')
+    #     except SemanticError as se:
+    #         self.errors.append(se.text)
 
-        self.visit(node.if_body, ctx)
-        self.visit(node.else_body, ctx)
+    #     self.visit(node.if_body, ctx)
+    #     self.visit(node.else_body, ctx)
 
-    @visitor.when(For)
-    def visit(self, node: For, ctx: Context):
-        try:
-            type_expr = self.visit(node.collection, ctx)
-            if type_expr.name != 'Vector':
-                self.errors.append(f'TypeError: Type {type_expr.name} does not conform to Vector')
-        except SemanticError as se:
-            self.errors.append(se.text)
+    # @visitor.when(For)
+    # def visit(self, node: For, ctx: Context):
+    #     try:
+    #         type_expr = self.visit(node.collection, ctx)
+    #         if type_expr.name != 'Vector':
+    #             self.errors.append(f'TypeError: Type {type_expr.name} does not conform to Vector')
+    #     except SemanticError as se:
+    #         self.errors.append(se.text)
 
-        self.visit(node.body, ctx)
+    #     self.visit(node.body, ctx)
 
-    @visitor.when(While)
-    def visit(self, node: While, ctx: Context):
-        try:
-            type_expr = self.visit(node.stop, ctx)
-            if type_expr.name != 'Bool':
-                self.errors.append(f'TypeError: Type {type_expr.name} does not conform to Bool')
-        except SemanticError as se:
-            self.errors.append(se.text)
+    # @visitor.when(While)
+    # def visit(self, node: While, ctx: Context):
+    #     try:
+    #         type_expr = self.visit(node.stop, ctx)
+    #         if type_expr.name != 'Bool':
+    #             self.errors.append(f'TypeError: Type {type_expr.name} does not conform to Bool')
+    #     except SemanticError as se:
+    #         self.errors.append(se.text)
 
-        self.visit(node.body, ctx)
+    #     self.visit(node.body, ctx)
 
-    @visitor.when(Block)
-    def visit(self, node: Block, ctx: Context):
-        for child in node.body:
-            self.visit(child, ctx)
+    # @visitor.when(Block)
+    # def visit(self, node: Block, ctx: Context):
+    #     for child in node.body:
+    #         self.visit(child, ctx)
 
-    @visitor.when(Call)
-    def visit(self, node: Call, ctx: Context):
-        try:
-            obj_type = self.visit(node.obj, ctx)
-            if not obj_type.has_method(node.idx):
-                self.errors.append(f'TypeError: Type {obj_type.name} does not have method {node.idx}')
-            else:
-                method = obj_type.get_method(node.idx)
-                if len(node.args) != len(method.params):
-                    self.errors.append(f'TypeError: Method {node.idx} expects {len(method.params)} arguments, got {len(node.args)}')
-                else:
-                    for arg, param in zip(node.args, method.params):
-                        arg_type = self.visit(arg, ctx)
-                        if not arg_type.conforms(param):
-                            self.errors.append(f'TypeError: Type {arg_type.name} does not conform to {param}')
-        except SemanticError as se:
-            self.errors.append(se.text)
+    # @visitor.when(Call)
+    # def visit(self, node: Call, ctx: Context):
+    #     try:
+    #         obj_type = self.visit(node.obj, ctx)
+    #         if not obj_type.has_method(node.idx):
+    #             self.errors.append(f'TypeError: Type {obj_type.name} does not have method {node.idx}')
+    #         else:
+    #             method = obj_type.get_method(node.idx)
+    #             if len(node.args) != len(method.params):
+    #                 self.errors.append(f'TypeError: Method {node.idx} expects {len(method.params)} arguments, got {len(node.args)}')
+    #             else:
+    #                 for arg, param in zip(node.args, method.params):
+    #                     arg_type = self.visit(arg, ctx)
+    #                     if not arg_type.conforms(param):
+    #                         self.errors.append(f'TypeError: Type {arg_type.name} does not conform to {param}')
+    #     except SemanticError as se:
+    #         self.errors.append(se.text)
 
-    @visitor.when(Invoke)
-    def visit(self, node: Invoke, ctx: Context):
-        try:
-            obj_type = self.visit(node.container, ctx)
-            if not obj_type.has_attribute(node.lex):
-                self.errors.append(f'TypeError: Type {obj_type.name} does not have attribute {node.lex}')
-        except SemanticError as se:
-            self.errors.append(se.text)
+    # @visitor.when(Invoke)
+    # def visit(self, node: Invoke, ctx: Context):
+    #     try:
+    #         obj_type = self.visit(node.container, ctx)
+    #         if not obj_type.has_attribute(node.lex):
+    #             self.errors.append(f'TypeError: Type {obj_type.name} does not have attribute {node.lex}')
+    #     except SemanticError as se:
+    #         self.errors.append(se.text)
 
-    @visitor.when(Indexing)
-    def visit(self, node: Indexing, ctx: Context):
-        try:
-            obj_type = self.visit(node.lex, ctx)
-            if obj_type.name != 'Vector':
-                self.errors.append(f'TypeError: Type {obj_type.name} does not conform to Vector')
-            else:
-                index_type = self.visit(node.index, ctx)
-                if index_type.name != 'Number':
-                    self.errors.append(f'TypeError: Type {index_type.name} does not conform to Number')
-        except SemanticError as se:
-            self.errors.append(se.text)
+    # @visitor.when(Indexing)
+    # def visit(self, node: Indexing, ctx: Context):
+    #     try:
+    #         obj_type = self.visit(node.lex, ctx)
+    #         if obj_type.name != 'Vector':
+    #             self.errors.append(f'TypeError: Type {obj_type.name} does not conform to Vector')
+    #         else:
+    #             index_type = self.visit(node.index, ctx)
+    #             if index_type.name != 'Number':
+    #                 self.errors.append(f'TypeError: Type {index_type.name} does not conform to Number')
+    #     except SemanticError as se:
+    #         self.errors.append(se.text)
 
-    @visitor.when(VectorComprehension)
-    def visit(self, node: VectorComprehension, ctx: Context):
-        try:
-            operation_type = self.visit(node.operation, ctx)
-            if operation_type.name != 'Number':
-                self.errors.append(f'TypeError: Type {operation_type.name} does not conform to Number')
-        except SemanticError as se:
-            self.errors.append(se.text)
+    # @visitor.when(VectorComprehension)
+    # def visit(self, node: VectorComprehension, ctx: Context):
+    #     try:
+    #         operation_type = self.visit(node.operation, ctx)
+    #         if operation_type.name != 'Number':
+    #             self.errors.append(f'TypeError: Type {operation_type.name} does not conform to Number')
+    #     except SemanticError as se:
+    #         self.errors.append(se.text)
 
-    @visitor.when(Unary)
-    def visit(self, node: Unary, ctx: Context):
-        return self.visit(node.right, ctx)
+    # @visitor.when(Unary)
+    # def visit(self, node: Unary, ctx: Context):
+    #     return self.visit(node.right, ctx)
     
-    @visitor.when(Binary)
-    def visit(self, node: Binary, ctx: Context):
-        left = self.visit(node.left, ctx)
-        right = self.visit(node.right, ctx)
-        if left.name != right.name:
-            self.errors.append(f'TypeError: Type {left.name} does not conform to {right.name}')
-        return left
+    # @visitor.when(Binary)
+    # def visit(self, node: Binary, ctx: Context):
+    #     left = self.visit(node.left, ctx)
+    #     right = self.visit(node.right, ctx)
+    #     if left.name != right.name:
+    #         self.errors.append(f'TypeError: Type {left.name} does not conform to {right.name}')
+    #     return left
     
-    @visitor.when(Plus)
-    def visit(self, node: Plus, ctx: Context):
-        return self.visit(node.left, ctx)
+    # @visitor.when(Plus)
+    # def visit(self, node: Plus, ctx: Context):
+    #     return self.visit(node.left, ctx)
     
-    @visitor.when(BinaryMinus)
-    def visit(self, node: BinaryMinus, ctx: Context):
-        return self.visit(node.left, ctx)
+    # @visitor.when(BinaryMinus)
+    # def visit(self, node: BinaryMinus, ctx: Context):
+    #     return self.visit(node.left, ctx)
     
-    @visitor.when(Star)
-    def visit(self, node: Star, ctx: Context):
-        return self.visit(node.left, ctx)
+    # @visitor.when(Star)
+    # def visit(self, node: Star, ctx: Context):
+    #     return self.visit(node.left, ctx)
     
-    @visitor.when(Pow)
-    def visit(self, node: Pow, ctx: Context):
-        return self.visit(node.left, ctx)
+    # @visitor.when(Pow)
+    # def visit(self, node: Pow, ctx: Context):
+    #     return self.visit(node.left, ctx)
     
-    @visitor.when(Div)
-    def visit(self, node: Div, ctx: Context):
-        return self.visit(node.left, ctx)
+    # @visitor.when(Div)
+    # def visit(self, node: Div, ctx: Context):
+    #     return self.visit(node.left, ctx)
     
-    @visitor.when(Mod)
-    def visit(self, node: Mod, ctx: Context):
-        return self.visit(node.left, ctx)
+    # @visitor.when(Mod)
+    # def visit(self, node: Mod, ctx: Context):
+    #     return self.visit(node.left, ctx)
     
-    @visitor.when(Is)
-    def visit(self, node: Is, ctx: Context):
-        return self.visit(node.left, ctx)
+    # @visitor.when(Is)
+    # def visit(self, node: Is, ctx: Context):
+    #     return self.visit(node.left, ctx)
     
-    @visitor.when(As)
-    def visit(self, node: As, ctx: Context):
-        return self.visit(node.left, ctx)
+    # @visitor.when(As)
+    # def visit(self, node: As, ctx: Context):
+    #     return self.visit(node.left, ctx)

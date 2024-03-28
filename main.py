@@ -3,8 +3,8 @@ from hulk_definitions.token_def import LEXER
 from hulk_definitions.grammar import G
 from parser_gen.parser_lr1 import LR1Parser as My_Parser
 from tools.evaluation import evaluate_reverse_parse
-from tools.semantic import Context
-from hulk_definitions.visitor import FormatVisitor, TypeCollector, TypeBuilder
+from tools.semantic import Context, Scope
+from hulk_definitions.visitor import FormatVisitor, TypeCollector, TypeBuilder, TypeChecker
 
 import sys,logging
 
@@ -65,9 +65,15 @@ def main(debug = True, verbose = False, force = False):
             # print('Context:')
             # print(context)
 
+            global_scope = Scope()
             logger.info('=== Type Inference ===')
 
             logger.info('=== Type Checking ===')
+            checker = TypeChecker(context,  errors)
+            checker.visit(ast)
+            context = checker.context
+            global_scope = checker.scope
+            
 
 
 if __name__ == "__main__":
