@@ -616,6 +616,38 @@ class MiniCOOLToCILVisitor(BaseCOOLToCILVisitor):
     
 formatter = get_formatter()
 
+# def run_pipelinecp14(G, text):
+#     ast = deprecated_pipeline(G, text)
+#     print('============== COLLECTING TYPES ===============')
+#     errors = []
+#     collector = TypeCollector(errors)
+#     collector.visit(ast)
+#     context = collector.context
+#     print('Errors:', errors)
+#     print('Context:')
+#     print(context)
+#     print('=============== BUILDING TYPES ================')
+#     builder = TypeBuilder(context, errors)
+#     builder.visit(ast)
+#     print('Errors: [')
+#     for error in errors:
+#         print('\t', error)
+#     print(']')
+#     print('Context:')
+#     print(context)
+#     return ast, errors, context
+
+# def run_pipelinecp15(G, text):
+#     ast, errors, context = deprecated_pipeline(G, text)
+#     print('=============== CHECKING TYPES ================')
+#     checker = TypeChecker(context, errors)
+#     scope = checker.visit(ast)
+#     print('Errors: [')
+#     for error in errors:
+#         print('\t', error)
+#     print(']')
+#     return ast, errors, context, scope
+
 def run_pipeline(G, text):
     ast, errors, context, scope = deprecated_pipeline(G, text)
     print('============= TRANSFORMING TO CIL =============')
