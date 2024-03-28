@@ -1,0 +1,14 @@
+let a = 10 in while (a >= 0) {
+    print(a);
+    a := a - 1;
+}
+function gcd(a, b) => while (a > 0)
+    let m = a % b in {
+        b := a;
+        a := m;
+    };
+for (x in range(0, 10)) print(x);
+let iterable = range(0, 10) in
+    while (iterable.next())
+        let x = iterable.current() in
+            print(x);
