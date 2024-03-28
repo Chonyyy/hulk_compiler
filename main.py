@@ -24,10 +24,10 @@ def main(debug = True, verbose = False, force = False):
     my_parser = My_Parser(G, 'parsing_table.dat')
 
     for i, file in enumerate(files):
-        if i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17]:
-            continue
+        # if i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17]:
+        #     continue
         with open(f'./hulk_examples/{file}', 'r') as f:
-            logger.info(f'=== Reading file: {file} ===')
+            print(f'=== Reading file: {file} ===')
             text = f.read()
             
             logger.info('=== Tokenizing Text ===')
@@ -38,9 +38,9 @@ def main(debug = True, verbose = False, force = False):
             ast = evaluate_reverse_parse(right_parse, operations, tokens)
             
             logger.info('=== Visualizing AST ===')
-            formatter = FormatVisitor()
-            tree = formatter.visit(ast)
-            print(tree)
+            # formatter = FormatVisitor()
+            # tree = formatter.visit(ast)
+            # print(tree)
             
             logger.info('=== Collecting Types ===')
             errors = []
@@ -61,9 +61,9 @@ def main(debug = True, verbose = False, force = False):
             builder = TypeBuilder(context, errors)
             builder.visit(ast)
             context = builder.context
-            print('Errors:', errors)
-            print('Context:')
-            print(context)
+            # print('Errors:', errors)
+            # print('Context:')
+            # print(context)
 
             logger.info('=== Type Inference ===')
 

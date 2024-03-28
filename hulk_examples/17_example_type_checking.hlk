@@ -19,7 +19,7 @@ type Superman {
     // Implementation
 }
 
-let x = new Superman() in
+let x: Superman = new Superman() in
     print(
         if (x is Bird) "It's bird!"
         elif (x is Plane) "It's a plane!"
