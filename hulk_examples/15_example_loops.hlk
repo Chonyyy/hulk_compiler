@@ -7,7 +7,7 @@ function gcd(a: Number, b: Number): Number => while (a > 0)
         b := a;
         a := m;
     };
-for (x in range(0, 10)) print(x);
+for (x: Number in range(0, 10)) print(x);
 let iterable = range(0, 10) in
     while (iterable.next())
         let x: Number = iterable.current() in
