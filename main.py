@@ -90,7 +90,7 @@ def main(debug = True, verbose = False, force = False):
             checker = TypeChecker(context,  errors)
             checker.visit(ast)
             context = checker.context
-            global_scope = checker.scope
+            # global_scope = checker.scope
             
 
 

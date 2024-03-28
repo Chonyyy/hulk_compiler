@@ -628,12 +628,15 @@ class TypeChecker(object):
 
     @visitor.when(LetList)
     def visit(self, node: Let, scope):
-        pass
+        for child in node.children:
+            child_scope = self.context.create_child_scope()
+            self.visit(child, child_scope)
+    
     @visitor.when(Let)
-    def visit(self, node: Let, ctx: Context):
+    def visit(self, node: Let, scope):
         try:
-            type_expr = self.visit(node.expr, ctx)
-            if not type_expr.conforms(ctx.get_type(node.type)):
+            type_expr = self.visit(node.expr, scope)
+            if not type_expr.conforms(self.context.get_type(node.type)):
                 self.errors.append(f'TypeError: Type {type_expr.name} does not conform to {node.type}')
         except SemanticError as se:
             self.errors.append(se.text)
