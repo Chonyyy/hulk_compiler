@@ -13,7 +13,7 @@ program = G.NonTerminal('<program>', startSymbol=True)
 stat_list, stat, typed = G.NonTerminals('<stat_list> <stat> <typing>')
 protocol, define, define_block, def_list = G.NonTerminals('<protocol> <define> <define-block> <define-list>')
 def_type, properties, methods, prop, method, method_block, type_corpse, inheritance = G.NonTerminals('<def-type> <properties> <methods> <property> <method> <method-block> <type-corpse> <inheritance>')
-loop_expr, while_expr, while_expr_block, for_expr, for_expr_block = G.NonTerminals('<loop-expr> <while-expr> <while-expr-block> <for-expr> <for-expr-block>')
+loop_expr, while_expr, while_expr_block, for_expr, for_expr_block, for_var = G.NonTerminals('<loop-expr> <while-expr> <while-expr-block> <for-expr> <for-expr-block> <for-var>')
 let_var, let_var_block, def_func, def_func_block, arg_list = G.NonTerminals('<let-var> <let-var-block> <def-func> <def-func-block> <arg-list>')
 assign, var_corpse = G.NonTerminals('<assign> <var-corpse>')
 if_expr, if_br, if_expr_block, if_br_block = G.NonTerminals('<if-expr> <if-branches> <if-expr-block> <if-branches-block>')
@@ -220,6 +220,9 @@ for_expr_block %= forx + opar + idx + inx + expr + cpar + block, lambda h,s: For
 for_expr_block %= forx + opar + idx + inx + expr + cpar + if_expr_block, lambda h,s: For(s[3], s[5], s[7])
 for_expr_block %= forx + opar + idx + inx + expr + cpar + let_var_block, lambda h,s: For(s[3], s[5], s[7])
 for_expr_block %= forx + opar + idx + inx + expr + cpar + def_func_block, lambda h,s: For(s[3], s[5], s[7])
+
+for_var %= idx, lambda h,s: ForVar(name = s[1])
+for_var %= idx + typed, lambda h,s: ForVar(name = s[1], type = s[2])
 
 stat %= loop_expr, lambda h,s: s[1]
 
