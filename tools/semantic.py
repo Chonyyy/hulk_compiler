@@ -25,9 +25,9 @@ class Method:
         self.param_types = params_types
         self.return_type = return_type
 
-    def __str__(self):
-        params = ', '.join(f'{n}:{t.name}' for n,t in zip(self.param_names, self.param_types))
-        return f'[method] {self.name}({params}): {self.return_type.name};'
+    # def __str__(self):
+    #     params = ', '.join(f'{n}:{t.name}' for n,t in zip(self.param_names, self.param_types))
+    #     return f'[method] {self.name}({params}): {self.return_type.name if self.return_type.name else "None"};'
 
     def __eq__(self, other):
         return other.name == self.name and \

@@ -24,8 +24,8 @@ def main(debug = True, verbose = False, force = False):
     my_parser = My_Parser(G, 'parsing_table.dat')
 
     for i, file in enumerate(files):
-        if i in [0, 1, 2, 3, 4]:
-            continue
+        # if i in [0, 1, 2, 3, 4]:
+        #     continue
         with open(f'./hulk_examples/{file}', 'r') as f:
             logger.info(f'=== Reading file: {file} ===')
             text = f.read()

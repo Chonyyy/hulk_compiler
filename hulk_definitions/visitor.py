@@ -523,7 +523,7 @@ class TypeCollector(object):
         pass
     
     @visitor.when(Program)
-    def visit(self, node):
+    def visit(self, node: Program):
         for child in node.statements:
             if isinstance(child, TypeDef) or isinstance(child, Protocol):
                 self.visit(child, self.context)
@@ -554,7 +554,7 @@ class TypeBuilder(object):
         pass
     
     @visitor.when(Program)
-    def visit(self, node):
+    def visit(self, node: Program):
         for child in node.statements:
             if isinstance(child, TypeDef) or isinstance(child, Protocol):
                 self.visit(child, self.context)
@@ -604,13 +604,15 @@ class TypeBuilder(object):
             self.errors.append(se.text)
                 
     @visitor.when(Function)
-    def visit(self, node: Property, ctx: Context, current_type: Union[Type, Protocol]):
+    def visit(self, node: Function, ctx: Context, current_type: Union[Type, Protocol]):
         try:
             # Divide the params into names and types from node.params: List[Tuple[str, str]
+            param_names, param_types = [], []
+            return_type = None
             if node.params:
                 param_names, param_types = zip(*node.params)
-                current_type.define_method(node.name, param_names, param_types,type)
-            else:
-                current_type.define_method(node.name, [], [], type)
+            if node.type:
+                return_type = ctx.get_type(node.type)
+            current_type.define_method(node.name, param_names, param_types, return_type)
         except SemanticError as se:
             self.errors.append(se.text)
