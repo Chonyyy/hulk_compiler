@@ -154,6 +154,11 @@ class VectorComprehension(Vector):
 class Var(Atom):
     pass
 
+class ForVar(Var):
+    def __init__(self, name, type = None):
+        self.name = name
+        self.type = type
+
 class TypeDef(Statement):
     def __init__(self, name, body, args, inheritance = None, inner_args = None):
         self.name = name
