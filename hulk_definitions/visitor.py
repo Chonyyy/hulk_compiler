@@ -626,6 +626,9 @@ class TypeChecker(object):
             self.visit(child, scope.create_child_scope())
         return scope
 
+    @visitor.when(LetList)
+    def visit(self, node: Let, scope):
+        pass
     @visitor.when(Let)
     def visit(self, node: Let, ctx: Context):
         try:
