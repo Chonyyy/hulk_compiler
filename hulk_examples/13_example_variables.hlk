@@ -1,40 +1,40 @@
-let msg = "Hello World" in print(msg);
-let number = 42, text = "The meaning of life is" in
+let msg: String = "Hello World" in print(msg);
+let number: Number = 42, text: String = "The meaning of life is" in
     print(text @ number);
-let number = 42 in
-    let text = "The meaning of life is" in
+let number: Number = 42 in
+    let text: String = "The meaning of life is" in
         print(text @ number);
-let number = 42 in (
-    let text = "The meaning of life is" in (
+let number: Number = 42 in (
+    let text: String = "The meaning of life is" in (
             print(text @ number)
         )
     );
-let a = 6, b = a * 7 in print(b);
-let a = 6 in
-    let b = a * 7 in
+let a: Number = 6, b: Number = a * 7 in print(b: Number);
+let a: Number = 6 in
+    let b: Number = a * 7 in
         print(b);
-let a = 5, b = 10, c = 20 in {
+let a: Number = 5, b: Number = 10, c: Number = 20 in {
     print(a+b);
     print(b*c);
     print(c/a);
 }
-let a = (let b = 6 in b * 7) in print(a);
-print(let b = 6 in b * 7);
-let a = 20 in {
-    let a = 42 in print(a);
+let a: Number = (let b: Number = 6 in b * 7) in print(a);
+print(let b: Number = 6 in b * 7);
+let a: Number = 20 in {
+    let a: Number = 42 in print(a: Number);
     print(a);
 }
-let a = 7, a = 7 * 6 in print(a);
-let a = 7 in
-    let a = 7 * 6 in
+let a: Number = 7, a: Number = 7 * 6 in print(a);
+let a: Number = 7 in
+    let a: Number = 7 * 6 in
         print(a);
-let a = 0 in {
+let a: Number = 0 in {
     print(a);
     a := 1;
     print(a);
 }
-let a = 0 in
-    let b = a := 1 in {
-        print(a);
-        print(b);
+let a: Number = 0 in
+    let b: Number = a := 1 in {
+        print(a: Number);
+        print(b: Number);
     };

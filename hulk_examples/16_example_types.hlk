@@ -1,50 +1,50 @@
 type Point {
-    x = 0;
-    y = 0;
+    x: Number = 0;
+    y: Number = 0;
 
-    getX() => self.x;
-    getY() => self.y;
+    getX(): Number => self.x;
+    getY(): Number => self.y;
 
-    setX(x) => self.x := x;
-    setY(y) => self.y := y;
+    setX(x: Number): Number => self.x := x;
+    setY(y: Number): Number => self.y := y;
 }
 
-type PointSecond(x, y) {
-    x = x;
-    y = y;
+type PointSecond(x: Number, y: Number) {
+    x: Number = x;
+    y: Number = y;
 
-    getX() => self.x;
-    getY() => self.y;
+    getX(): Number => self.x;
+    getY(): Number => self.y;
 
-    setX(x) => self.x := x;
-    setY(y) => self.y := y;
+    setX(x: Number): Number => self.x := x;
+    setY(y: Number): Number => self.y := y;
 }
 
-let pt = new Point() in
+let pt: Point = new Point() in
     print("x: " @ pt.getX() @ "; y: " @ pt.getY());
-let pt = new PointSecond(3,4) in
+let pt: PointSecond = new PointSecond(3,4) in
     print("x: " @ pt.getX() @ "; y: " @ pt.getY());
 
 type PolarPoint inherits PointSecond {
-    rho() => sqrt(self.getX() ^ 2 + self.getY() ^ 2);
+    rho(): Number => sqrt(self.getX() ^ 2 + self.getY() ^ 2): Number;
 }
 
-let pt = new PolarPoint(3,4) in
+let pt: PolarPoint = new PolarPoint(3,4) in
     print("rho: " @ pt.rho());
 
-type PolarPoint(phi, rho) inherits Point(rho * sin(phi), rho * cos(phi)) {
+type PolarPoint(phi: Number, rho: Number) inherits Point(rho * sin(phi: Number): Number, rho * cos(phi: Number): Number) {
 }
 
-type Person(firstname, lastname) {
-    firstname = firstname;
-    lastname = lastname;
+type Person(firstname: String, lastname: String) {
+    firstname: String = firstname;
+    lastname: String = lastname;
 
-    name() => self.firstname @@ self.lastname;
+    name(): String => self.firstname @@ self.lastname;
 }
 
 type Knight inherits Person {
-    name() => "Sir" @@ base();
+    name(): String => "Sir" @@ base();
 }
 
-let p = new Knight("Phil", "Collins") in
+let p: Knight = new Knight("Phil", "Collins") in
     print(p.name()); // prints Sir Phil Collins
