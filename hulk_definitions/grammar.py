@@ -77,7 +77,7 @@ expr %= forx + opar + idx + inx + expr_block + cpar + expr, lambda h,s: For(s[3]
 
 expr_block %= obracket + block_corpse + cbracket, lambda h,s: Block(s[2]) #34
 expr_block %= atom + dassign + expr_block, lambda h,s: Assign(s[1], s[3]) #35
-expr_block %= let + var_corpse + inx + expr_block, lambda h,s: LetList([Let(x[0], x[1], x[2]) for x in s[2]], s[4]) #36
+expr_block %= let + var_corpse + inx + expr_block, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]]) #36
 expr_block %= ifx + opar + expr + cpar + expr + elsex + expr_block, lambda h,s: Conditional(s[3], s[5], s[7]) #37
 expr_block %= ifx + opar + expr + cpar + expr_block + elsex + expr_block, lambda h,s: Conditional(s[3], s[5], s[7]) #38
 expr_block %= ifx + opar + expr_block + cpar + expr + elsex + expr_block, lambda h,s: Conditional(s[3], s[5], s[7]) #39
@@ -170,7 +170,7 @@ atom %= built_in, lambda h,s: s[1] #109
 atom %= obrace + expr_list + cbrace, lambda h,s: Vector(s[2], len(s[2])) #110
 atom %= obrace + expr + dpipe + idx + inx + expr + cbrace, lambda h,s: VectorComprehension(s[6], len(s[6]), (s[4], s[2])) #111
 atom %= atom + dot + idx, lambda h,s: Invoke(s[1], s[3]) #112
-atom %= atom + dot + idx + func_call, lambda h,s: Invoke(s[1], s[3]) #113
+atom %= atom + dot + func_call, lambda h,s: Invoke(s[1], s[3]) #113
 atom %= atom + obrace + expr + cbrace, lambda h,s: Indexing(s[1], s[3]) #114
 atom %= atom + obrace + expr_block + cbrace, lambda h,s: Indexing(s[1], s[3]) #115
 
