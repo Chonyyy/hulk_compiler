@@ -1,8 +1,8 @@
-let a: String = 42 in if (a % 2 == 0) print("Even") else print("odd");
+{let a: String = 42 in if (a % 2 == 0) print("Even") else print("odd");
 let a: Number = 42 in print(if (a % 2 == 0) "even" else "odd");
 let a: Number = 42 in
     if (a % 2 == 0) {
         print(a);
         print("Even");
     }
-    else print("Odd");
+    else print("Odd");}

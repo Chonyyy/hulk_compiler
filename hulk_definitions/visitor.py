@@ -413,9 +413,11 @@ class FormatVisitor(object):
         body = self.visit(node.body, tabs + 1)
         return f'{ans}\n{expr}\n{body}'
 
-    @visitor.when(Self)
-    def visit(self, node:Self, tabs=0):
-        return '\t' * tabs + f'\\__Self'
+    @visitor.when(Base)
+    def visit(self, node:Base, tabs=0):
+        ans = '\t' * tabs + f'\\__Base'
+        params = self.visit(node.args, tabs + 1)
+        return f'{ans}\n{params}'
 
     @visitor.when(Property)
     def visit(self, node:Property, tabs=0):

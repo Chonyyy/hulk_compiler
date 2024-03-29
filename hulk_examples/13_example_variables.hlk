@@ -1,4 +1,4 @@
-let msg: String = "Hello World" in print(msg);
+{let msg: String = "Hello World" in print(msg);
 let number: Number = 42, text: String = "The meaning of life is" in
     print(text @ number);
 let number: Number = 42 in
@@ -38,3 +38,4 @@ let a: Number = 0 in
         print(a);
         print(b);
     };
+}

@@ -1,4 +1,4 @@
-42;
+{42;
 print(42);
 print((((1 + 2) ^ 3) * 4) / 5);
 print("Hello World");
@@ -9,4 +9,4 @@ print(sin(2 * PI) ^ 2 + cos(3 * PI / log(4, 64)));
     print(42);
     print(sin(PI/2));
     print("Hello World");
-}
+}}
