@@ -113,7 +113,7 @@ var_corpse %= idx + typed + equal + expr_block + comma + let + var_corpse, lambd
 def_func %= func + idx + opar + arg_list + cpar + arrow + eexpr, lambda h,s: Function(s[2], s[4], s[7]) #63
 def_func %= func + idx + opar + arg_list + cpar + typed + arrow + eexpr, lambda h,s: Function(s[2], s[4], s[8], s[6]) #64
 def_func %= func + idx + opar + arg_list + cpar + expr_block, lambda h,s: Function(s[2], s[4], s[7], s[6]) #65
-def_func %= func + idx + opar + arg_list + cpar + typed + expr_block, lambda h,s: Function(s[2], s[4], s[7], s[6]) #66
+def_func %= func + idx + opar + arg_list + cpar + typed + expr_block, lambda h,s: Function(s[2], s[4], s[8], s[6]) #66
 
 arg_list %= idx, lambda h,s: [(s[1], None)] #67
 arg_list %= idx + typed, lambda h,s: [(s[1], s[2])] #68
