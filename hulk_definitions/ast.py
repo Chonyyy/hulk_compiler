@@ -10,21 +10,28 @@ class Program(Node):
 class Statement(Node):
     pass
 
-
-class LetList(Statement):
-    def __init__(self, statements: "Statement"):
-        self.children = statements
-
-class Block(Statement):
-    def __init__(self, body):
-        self.body = body
-
 class Let(Statement):
     def __init__(self, name, expr, scope, type = None):
         self.name = name
         self.expr = expr
         self.scope = scope
         self.type = type
+
+class LetList(Statement):
+    def __init__(self, let_statements: list[Let]):
+        self.child = None
+        current = self.child
+        for let in let_statements:
+            if self.child is None:
+                self.child = let
+                current = let
+            else:
+                current.scope = let
+                current = let
+
+class Block(Statement):
+    def __init__(self, body):
+        self.body = body
 
 class Function(Statement):
     def __init__(self, name, params, body, type = None):

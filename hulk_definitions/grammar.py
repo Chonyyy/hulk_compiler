@@ -215,11 +215,11 @@ while_expr_block %= whilex + opar + expr + cpar + if_expr_block, lambda h,s: Whi
 while_expr_block %= whilex + opar + expr + cpar + let_var_block, lambda h,s: While(s[3], s[5])
 while_expr_block %= whilex + opar + expr + cpar + def_func_block, lambda h,s: While(s[3], s[5])
 
-for_expr %= forx + opar + idx + inx + expr + cpar + stat, lambda h,s: For(s[3], s[5], s[7])
-for_expr_block %= forx + opar + idx + inx + expr + cpar + block, lambda h,s: For(s[3], s[5], s[7])
-for_expr_block %= forx + opar + idx + inx + expr + cpar + if_expr_block, lambda h,s: For(s[3], s[5], s[7])
-for_expr_block %= forx + opar + idx + inx + expr + cpar + let_var_block, lambda h,s: For(s[3], s[5], s[7])
-for_expr_block %= forx + opar + idx + inx + expr + cpar + def_func_block, lambda h,s: For(s[3], s[5], s[7])
+for_expr %= forx + opar + for_var + inx + expr + cpar + stat, lambda h,s: For(s[3], s[5], s[7])
+for_expr_block %= forx + opar + for_var + inx + expr + cpar + block, lambda h,s: For(s[3], s[5], s[7])
+for_expr_block %= forx + opar + for_var + inx + expr + cpar + if_expr_block, lambda h,s: For(s[3], s[5], s[7])
+for_expr_block %= forx + opar + for_var + inx + expr + cpar + let_var_block, lambda h,s: For(s[3], s[5], s[7])
+for_expr_block %= forx + opar + for_var + inx + expr + cpar + def_func_block, lambda h,s: For(s[3], s[5], s[7])
 
 for_var %= idx, lambda h,s: ForVar(name = s[1])
 for_var %= idx + typed, lambda h,s: ForVar(name = s[1], type = s[2])
