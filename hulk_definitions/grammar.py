@@ -52,7 +52,7 @@ eexpr %= expr_block, lambda h,s: [s[1]] #10
 eexpr %= expr_block + semi, lambda h,s: [s[1]] #11
 
 expr %= atom + dassign + expr, lambda h,s: Assign(s[1], s[3]) #12
-expr %= let + var_corpse + inx + expr, lambda h,s: LetList([Let(x[0], x[1], x[2]) for x in s[2]], s[4]) #13
+expr %= let + var_corpse + inx + expr, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]]) #13
 expr %= atom + asx + idx, lambda h,s: As(s[1], s[3]) #14
 expr %= atom + asx + strx, lambda h,s: As(s[1], s[3]) #15
 expr %= atom + asx + numx, lambda h,s: As(s[1], s[3]) #16
