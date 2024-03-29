@@ -300,7 +300,7 @@ class Scope:
     #     return True
 
     # def is_local_var(self, vname):
-    #     return self.get_local_variable_info(vname) is not None
+    #     return self.get_local_variable(vname) is not None
     
     # def is_local_func(self, fname, n):
         return self.get_local_function_info(fname, n) is not None

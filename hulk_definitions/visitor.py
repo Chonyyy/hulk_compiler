@@ -770,7 +770,7 @@ class TypeChecker(object):
             if arg.lex in ["Pi","E"]: #TODO arreglar
                 arg_type = self.context.get_type("Number")
             else:
-                arg_type = self.context.get_type(scope.get_local_variable_info(arg.lex))
+                arg_type = self.context.get_type(scope.get_local_variable(arg.lex))
             
             param_type = self.context.get_type(param_type[1])
             if not arg_type.conforms(param_type):
@@ -876,7 +876,7 @@ class TypeChecker(object):
     def visit(self, node: Var, scope: Scope):
         # Buscar el tipo de la variable en el alcance actual
         try:
-            var_info = scope.get_local_variable_info(node.lex)
+            var_info = scope.get_local_variable(node.lex)
             return self.context.get_type(var_info)
         except SemanticError as se:
             self.errors.append(se.text)
@@ -917,7 +917,7 @@ class TypeChecker(object):
     def visit(self, node: Sin, scope: Scope):
         # Verificar que el argumento de la función sin es del tipo correcto
         # for arg in node.args:
-        #     type_arg = scope.get_local_variable_info(arg.lex) # TODO DEVOLVER EL TIPO DE LA VAR DEL SCOPE
+        #     type_arg = scope.get_local_variable(arg.lex) # TODO DEVOLVER EL TIPO DE LA VAR DEL SCOPE
         #     if not type_arg.conforms(self.context.get_type('Number')):
         #         self.errors.append(f'TypeError: Argument of sin function must be of type Number')
         # Devolver el tipo de la función sin, que es Number
