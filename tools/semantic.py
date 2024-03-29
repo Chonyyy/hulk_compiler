@@ -254,6 +254,8 @@ class Scope:
 
     def define_variable(self, var_name:str, var_type:str) -> None:
         self.index += 1
+        if self.get_local_variable(var_name):
+            raise SemanticError(f'Variable "{var_name}" is already defined.')
         self.local_vars.append((self.index, Variable(var_name, var_type)))
     
     def define_function(self, func_name:str, params:list[Tuple[str, str]], return_type:str) -> None:
@@ -333,6 +335,12 @@ class Context:
             return self.protocols[name]
         except KeyError:
             raise SemanticError(f'Protocol "{name}" is not defined.')
+
+    def get_protocol_or_type(self, name:str):
+        try:
+            return self.get_protocol(name)
+        except SemanticError:
+            return self.get_type(name)
 
     def __str__(self):
         return '{\n\t' + '\n\t'.join(y for x in self.types.values() for y in str(x).split('\n')) + '\n}'
