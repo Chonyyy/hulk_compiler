@@ -128,13 +128,19 @@ class Call(Atom):
         self.args = args
 
 class Number(Atom):
-    pass
+    def __init__(self, lex):
+        super().__init__(lex)
+        self.type = "Number"
 
 class Str(Atom):
-    pass
+    def __init__(self, lex):
+        super().__init__(lex)
+        self.type = "String"
 
 class Bool(Atom):
-    pass
+    def __init__(self, lex):
+        super().__init__(lex)
+        self.type = "Bool"
 
 class Invoke(Atom):
     def __init__(self, container, property):
@@ -182,10 +188,12 @@ class Assign(Atom):
         self.body = body
 
 class Pi(Expression):
-    pass
+    def __init__(self):
+        self.lex = "Pi"
 
 class E(Expression):
-    pass
+    def __init__(self):
+        self.lex = "E"
 
 class Indexing(Atom):
     def __init__(self, name, index):

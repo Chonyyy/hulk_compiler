@@ -27,6 +27,7 @@ def main(debug = True, verbose = False, force = False):
         if file in [
             "1_example_expressions.hlk",
             "2_example_functions.hlk",
+            "3_example_variables.hlk",
             "4_example_conditionals.hlk",
             "5_example_loops.hlk",
             "6_example_types.hlk",
@@ -35,13 +36,14 @@ def main(debug = True, verbose = False, force = False):
             "9_example_vector.hlk",
             "11_example_expressions.hlk",
             "12_example_functions.hlk",
-            "13_example_variables.hlk",
+            # "13_example_variables.hlk",
             "14_example_conditionals.hlk",
             "15_example_loops.hlk",
             "16_example_types.hlk",
             "17_example_type_checking.hlk",
             "18_example_protocol.hlk",
-            "19_example_vector.hlk"
+            "19_example_vector.hlk",
+            "testing_TypeChecker.hlk"
         ]:
             continue
         with open(f'./hulk_examples/{file}', 'r') as f:

@@ -58,6 +58,20 @@ class Type:
         self.args = []
         self.parent = None
 
+    def conforms(self, other):
+        # Si el tipo actual es el mismo que el otro tipo, entonces conforma
+        if self == other:
+            return True
+        # Si el tipo actual tiene un tipo padre y este conforma con el otro tipo, entonces también conforma
+        elif self.parent is not None and self.parent.conforms(other):
+            return True
+        # Si el tipo actual es un tipo especial que puede conformar con cualquier otro tipo, entonces conforma
+        elif self.bypass():
+            return True
+        # En cualquier otro caso, el tipo actual no conforma con el otro tipo
+        else:
+            return False
+    
     def set_parent(self, parent):
         if self.parent is not None:
             raise SemanticError(f'Parent type is already set for {self.name}.')
