@@ -633,7 +633,7 @@ class TypeChecker(object):
         try:
             if node.type:
                 return_type = self.context.get_type(node.type)
-            scope.define_function(node.name, node.params, return_type)
+                scope.define_function(node.name, node.params, return_type)
         except SemanticError as se:
             self.errors.append(se.text)
 
@@ -655,7 +655,8 @@ class TypeChecker(object):
     
         # Verificar el cuerpo de la función
         body_type = self.visit(node.body, body_scope)
-    
+
+        declared_return_type = None
         # Verificar que el tipo de retorno de la función sea compatible con el tipo declarado
         if node.type is not None:
             declared_return_type = self.context.get_type(node.type)
@@ -694,7 +695,7 @@ class TypeChecker(object):
                 self.errors.append(f'TypeError: Argument type {arg_type.name} does not conform to parameter type {param_type.name} in function call {node.idx}')
     
         # Devolver el tipo de retorno de la función
-        return self.context.get_type(function.function_type)
+        return function.function_type
     
     @visitor.when(Block)
     def visit(self, node: Block, scope: Scope):
@@ -748,6 +749,50 @@ class TypeChecker(object):
           
         return self.context.get_type('Object')
     
+    @visitor.when(Conditional)
+    def visit(self, node: Conditional, scope: Scope):
+        # Verificar que el tipo de la expresión condicional sea Bool
+        if_expr_type = self.visit(node.if_expr, scope)
+        if not if_expr_type.conforms(self.context.get_type('Bool')):
+            self.errors.append(f'TypeError: Conditional expression must be of type Bool')
+    
+        # Realizar el chequeo de tipos para el cuerpo del if
+        self.visit(node.if_body, scope)
+    
+        # Realizar el chequeo de tipos para el cuerpo del else
+        self.visit(node.else_body, scope)
+    
+        # Si hay ramas adicionales, realizar el chequeo de tipos para cada una de ellas
+        if node.branches:
+            for branch in node.branches:
+                self.visit(branch, scope)
+    
+        return self.context.get_type('Object')
+    
+    @visitor.when(For)
+    def visit(self, node: For, scope: Scope):
+        # Verificar que el tipo de la colección sea Vector
+        collection_type = self.visit(node.collection, scope)
+        if not collection_type.conforms(self.context.get_type('Vector')):
+            self.errors.append(f'TypeError: For loop collection must be of type Vector')
+    
+        # Realizar el chequeo de tipos para el cuerpo del bucle
+        self.visit(node.body, scope)
+    
+        return self.context.get_type('Object')
+    
+    @visitor.when(While)
+    def visit(self, node: While, scope: Scope):
+        # Verificar que el tipo de la expresión de parada sea Bool
+        stop_expr_type = self.visit(node.stop, scope)
+        if not stop_expr_type.conforms(self.context.get_type('Bool')):
+            self.errors.append(f'TypeError: While loop stop condition must be of type Bool')
+    
+        # Realizar el chequeo de tipos para el cuerpo del bucle
+        self.visit(node.body, scope)
+    
+        return self.context.get_type('Object')
+    
     @visitor.when(Var)
     def visit(self, node: Var, scope: Scope):
         # Buscar el tipo de la variable en el alcance actual
@@ -772,6 +817,22 @@ class TypeChecker(object):
     def visit(self, node: Number, scope: Scope):
         # El tipo de un Number es predefinido como "Number"
         return self.context.get_type('Bool')
+    
+    @visitor.when(Vector)
+    def visit(self, node: Vector, scope: Scope):
+        # Verificar que los valores del vector sean del tipo correcto
+        for value in node.lex:
+            value_type = self.visit(value, scope)
+            # Aquí asumimos que el tipo correcto para los valores del vector es Number
+            if not value_type.conforms(self.context.get_type('Number')):
+                self.errors.append(f'TypeError: Vector values must be of type Number')
+    
+        # Verificar que la longitud del vector sea un número entero
+        if not isinstance(node.len, int):
+            self.errors.append(f'TypeError: Vector length must be an integer')
+    
+        # Devolver el tipo de la expresión vector, que es Vector
+        return self.context.get_type('Vector')
     
     @visitor.when(Sin)
     def visit(self, node: Sin, scope: Scope):
