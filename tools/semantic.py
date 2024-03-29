@@ -58,6 +58,8 @@ class Type:
         self.parent = None
 
     def conforms(self, other):
+        if other.name == "Object":
+            return True
         # Si el tipo actual es el mismo que el otro tipo, entonces conforma
         if self == other:
             return True
@@ -118,7 +120,7 @@ class Type:
 
     def get_method(self, name:str):
         try:
-            return next(method for method in self.methods if method.name == name)
+            return next(method for method in self.methods_def if method.name == name)
         except StopIteration:
             if self.parent is None:
                 raise SemanticError(f'Function "{name}" is not defined in {self.name}.')
@@ -130,7 +132,7 @@ class Type:
     def define_method(self, name:str, param_names:list, param_types:list, return_type):
         if name in (method.name for method in self.methods):
             raise SemanticError(f'Function "{name}" already defined in {self.name}')
-
+        
         method = Function(name, param_names, param_types, return_type)
         self.methods.append(method)
         return method
@@ -278,7 +280,7 @@ class Scope:
         for index, fun in self.local_funcs:
             if current_index and index > current_index:
                 continue
-            if fun_name == fun.name and len(fun.param_names) == params_num:
+            if fun_name == fun.name and len(fun.params) == params_num:
                 return fun
 
         return self.parent.get_local_function_info(fun_name, params_num, self.index_at_parent) if self.parent else None

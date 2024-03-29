@@ -730,15 +730,16 @@ class TypeChecker(object):
             scope = Scope()
         for child in node.statements:
             self.visit(child, scope)
-        return scope
+
 
     @visitor.when(Function)
     def visit(self, node: Function, scope: Scope):
         
         try:
+            return_type = None
             if node.type:
                 return_type = self.context.get_type(node.type)
-                scope.define_function(node.name, node.params, return_type)
+            scope.define_function(node.name, node.params, return_type)
         except SemanticError as se:
             self.errors.append(se.text)
 
@@ -775,7 +776,7 @@ class TypeChecker(object):
     def visit(self, node: Call, scope: Scope):
         # Obtener la función llamada por su nombre
         try:
-            function = scope.get_local_function_info(node.lex, len(node.args))
+            function = scope.get_local_function_info(node.idx, len(node.args) if node.args else 0)
         except SemanticError as se:
             self.errors.append(se.text)
             return self.context.get_type('ErrorType') # Retornar un tipo de error como marcador de posición
@@ -791,14 +792,14 @@ class TypeChecker(object):
             if arg.lex in ["Pi","E"]: #TODO arreglar
                 arg_type = self.context.get_type("Number")
             else:
-                arg_type = self.context.get_type(scope.get_local_variable(arg.lex))
+                arg_type = self.context.get_type(scope.get_local_variable(arg.lex).var_type)
             
             param_type = self.context.get_type(param_type[1])
             if not arg_type.conforms(param_type):
                 self.errors.append(f'TypeError: Argument type {arg_type.name} does not conform to parameter type {param_type.name} in function call {node.idx}')
     
         # Devolver el tipo de retorno de la función
-        return function.function_type
+        return function.return_type
     
     @visitor.when(Block)
     def visit(self, node: Block, scope: Scope):
@@ -834,8 +835,9 @@ class TypeChecker(object):
         
         # Agregar la variable al alcance actual con su tipo
         child_scope.define_variable(node.name, node.type)
-        self.visit(node.scope, child_scope)
-        return child_scope
+        # self.visit(node.scope, child_scope)
+        scope_type = self.visit(node.scope,child_scope)
+        return scope_type
 
     @visitor.when(Plus)
     def visit(self, node: Plus, scope: Scope):
@@ -1106,7 +1108,7 @@ class TypeChecker(object):
         # Buscar el tipo de la variable en el alcance actual
         try:
             var_info = scope.get_local_variable(node.lex)
-            return self.context.get_type(var_info.var_type)
+            return self.context.get_protocol_or_type(var_info.var_type)
         except SemanticError as se:
             self.errors.append(se.text)
            
@@ -1192,3 +1194,126 @@ class TypeChecker(object):
     
         # Devolver el tipo de la expresión range, que es Vector
         return self.context.get_type('Vector')
+    
+    @visitor.when(Branch)
+    def visit(self, node: Branch, scope: Scope):
+        # Verificar que el tipo de la condición sea Bool
+        condition_type = self.visit(node.condition, scope)
+        if not condition_type.conforms(self.context.get_type('Boolean')):
+            self.errors.append(f'TypeError: Condition of Branch must be of type Boolean')
+    
+        # Realizar el chequeo de tipos para el cuerpo de la rama
+        self.visit(node.body, scope)
+    
+        # No hay un tipo de retorno específico para una rama, por lo que se puede devolver un tipo void
+        return self.context.get_type('Object')
+    
+    @visitor.when(TypeDef)
+    def visit(self, node: TypeDef, scope: Scope):
+        # Verificar que los argumentos de la definición de tipo sean del tipo correcto
+        for arg in node.args:
+            arg_type = self.visit(arg, scope)
+            # Aquí asumimos que el tipo correcto para los argumentos es Number
+            if not arg_type.conforms(self.context.get_type('Number')):
+                self.errors.append(f'TypeError: Argument of TypeDef must be of type Number')
+    
+        # Verificar que el cuerpo de la definición de tipo sea del tipo correcto
+        body_type = self.visit(node.body, scope)
+        # Aquí asumimos que el tipo correcto para el cuerpo es Vector
+        if not body_type.conforms(self.context.get_type('Vector')):
+            self.errors.append(f'TypeError: Body of TypeDef must be of type Vector')
+    
+        # Verificar que el tipo heredado, si existe, sea un tipo válido
+        if node.inheritance:
+            try:
+                inheritance_type = self.context.get_type(node.inheritance)
+            except SemanticError as se:
+                self.errors.append(se.text)
+    
+        # No hay un tipo de retorno específico para una definición de tipo, por lo que se puede devolver un tipo void
+        return self.context.get_type('Object')
+    
+    @visitor.when(Protocol)
+    def visit(self, node: Protocol, scope: Scope):
+        # Verificar que el cuerpo del protocolo sea del tipo correcto
+        body_type = self.visit(node.body, scope)
+        # Aquí asumimos que el tipo correcto para el cuerpo es Vector
+        if not body_type.conforms(self.context.get_type('Vector')):
+            self.errors.append(f'TypeError: Body of Protocol must be of type Vector')
+    
+        # No hay un tipo de retorno específico para un protocolo, por lo que se puede devolver un tipo void
+        return self.context.get_type('Void')
+    
+    @visitor.when(Assign)
+    def visit(self, node: Assign, scope: Scope):
+        # Verificar que el tipo del cuerpo de la asignación sea del tipo correcto
+        body_type = self.visit(node.body, scope)
+        # Aquí asumimos que el tipo correcto para el cuerpo es Number
+        # if not body_type.conforms(self.context.get_type('Number')):
+        #     self.errors.append(f'TypeError: Body of Assign must be of the same type')
+    
+        return body_type
+    
+    @visitor.when(Indexing)
+    def visit(self, node: Indexing, scope: Scope):
+        # Verificar que el tipo del índice sea Number
+        index_type = self.visit(node.index, scope)
+        if not index_type.conforms(self.context.get_type('Number')):
+            self.errors.append(f'TypeError: Index of Indexing must be of type Number')
+    
+        # Devolver el tipo de la expresión, que es el tipo del objeto indexado
+        return self.visit(node.lex, scope)
+    
+    @visitor.when(Invoke)
+    def visit(self, node: Invoke, scope: Scope):
+        # Verificar que el tipo del contenedor sea el tipo correcto
+        container_type = self.visit(node.container, scope)
+        # Aquí asumimos que el tipo correcto para el contenedor es un tipo de objeto
+        if not container_type.conforms(self.context.get_type('Object')):
+            self.errors.append(f'TypeError: Container of Invoke must be of type ObjectType')
+        
+        if type(node.lex) is Call:
+            container_type.get_method(node.lex.idx)
+        
+        # Devolver el tipo de la expresión, que es el tipo de la propiedad invocada
+        return self.visit(node.lex, scope)
+    
+    @visitor.when(VectorComprehension)
+    def visit(self, node: VectorComprehension, scope: Scope):
+        # Verificar que el tipo de la operación sea el tipo correcto
+        operation_type = self.visit(node.operation, scope)
+        # Aquí asumimos que el tipo correcto para la operación es Number
+        if not operation_type.conforms(self.context.get_type('Number')):
+            self.errors.append(f'TypeError: Operation of VectorComprehension must be of type Number')
+    
+        # Devolver el tipo de la expresión, que es Vector
+        return self.context.get_type('Vector')
+    
+    @visitor.when(Property)
+    def visit(self, node: Property, scope: Scope):
+        # Verificar que el tipo del cuerpo de la propiedad sea del tipo correcto
+        body_type = self.visit(node.body, scope)
+        if node.type is not None and not body_type.conforms(self.context.get_type(node.type)):
+            self.errors.append(f'TypeError: Body of Property must conform to the declared type {node.type}')
+    
+        # Devolver el tipo de la expresión, que es el tipo declarado o el tipo del cuerpo si no se declara un tipo
+        return self.context.get_type(node.type) if node.type else body_type
+    
+    @visitor.when(CreateInstance)
+    def visit(self, node: CreateInstance, scope: Scope):
+        # Verificar que el tipo de la instancia creada sea un tipo válido
+        try:
+            instance_type = self.context.get_type(node.type)
+        except SemanticError as se:
+            self.errors.append(se.text)
+            return self.context.get_type('ErrorType') # Retornar un tipo de error como marcador de posición
+    
+        # Verificar que los parámetros de la instancia creada sean del tipo correcto
+        for param in node.params:
+            param_type = self.visit(param, scope)
+            # Aquí asumimos que el tipo correcto para los parámetros es Number
+            if not param_type.conforms(self.context.get_type('Number')):
+                self.errors.append(f'TypeError: Parameters of CreateInstance must be of type Number')
+    
+        # Devolver el tipo de la expresión, que es el tipo de la instancia creada
+        return instance_type

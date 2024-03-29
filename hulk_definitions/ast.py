@@ -132,7 +132,7 @@ class Call(Atom):
     def __init__(self, idx, args):
         Atom.__init__(self, idx)
         self.idx = idx
-        self.args = args
+        self.args = args if args else []
 
 class Number(Atom):
     def __init__(self, lex):
