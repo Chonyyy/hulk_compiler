@@ -4,7 +4,7 @@ from hulk_definitions.grammar import G
 from parser_gen.parser_lr1 import LR1Parser as My_Parser
 from tools.evaluation import evaluate_reverse_parse
 from tools.semantic import Context, Scope
-from hulk_definitions.visitor import FormatVisitor, TypeCollector, TypeBuilder, TypeChecker, SemanticChecker, GlobalScopeConstructor
+from hulk_definitions.visitor import FormatVisitor, TypeCollector, TypeBuilder, TypeChecker
 
 import sys,logging
 
@@ -37,8 +37,8 @@ def main(debug = True, verbose = False, force = False):
             "11_example_expressions.hlk",
             "12_example_functions.hlk",
             "13_example_variables.hlk",
-            # "14_example_conditionals.hlk",
-            "15_example_loops.hlk",
+            "14_example_conditionals.hlk",
+            # "15_example_loops.hlk",
             "16_example_types.hlk",
             "17_example_type_checking.hlk",
             "18_example_protocol.hlk",
@@ -86,7 +86,7 @@ def main(debug = True, verbose = False, force = False):
             # print(context)
 
             logger.info('=== Building Global Scope ===')
-            global_scope = create_global_scope()
+            # global_scope = create_global_scope()
 
 
             logger.info('=== Semantic Checking ===')
