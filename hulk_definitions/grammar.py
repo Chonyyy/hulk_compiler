@@ -10,20 +10,19 @@ G = Grammar()
 
 #region NonTerminals Definition
 program = G.NonTerminal('<program>', startSymbol=True)
-stat_list, stat, typed = G.NonTerminals('<stat_list> <stat> <typing>')
+stat_list, typed = G.NonTerminals('<stat_list> <typing>')
+or_expr, and_expr, compare, arit = G.NonTerminals('<or-expr> <and-expr> <compare> <arit>')
 protocol, define, define_block, def_list = G.NonTerminals('<protocol> <define> <define-block> <define-list>')
 def_type, properties, methods, prop, method, method_block, type_corpse, inheritance = G.NonTerminals('<def-type> <properties> <methods> <property> <method> <method-block> <type-corpse> <inheritance>')
-loop_expr, while_expr, while_expr_block, for_expr, for_expr_block, for_var = G.NonTerminals('<loop-expr> <while-expr> <while-expr-block> <for-expr> <for-expr-block> <for-var>')
-let_var, let_var_block, def_func, def_func_block, arg_list = G.NonTerminals('<let-var> <let-var-block> <def-func> <def-func-block> <arg-list>')
-assign, var_corpse = G.NonTerminals('<assign> <var-corpse>')
-if_expr, if_br, if_expr_block, if_br_block = G.NonTerminals('<if-expr> <if-branches> <if-expr-block> <if-branches-block>')
-built_in, e_num, block = G.NonTerminals('<built-in> <e-num> <block>')
-expr, term, factor, power, atom = G.NonTerminals('<expr> <term> <factor> <power> <atom>')
-func_call, expr_list = G.NonTerminals('<func-call> <expr-list>')
+def_func, arg_list, definitions, if_br = G.NonTerminals('<def-func> <arg-list> <definitions> <if-branches>')
+assign, assign_block, var_corpse = G.NonTerminals('<assign> <assign-block> <var-corpse>')
+built_in, e_num, block, block_corpse = G.NonTerminals('<built-in> <e-num> <block> <block-corpse>')
+expr, eexpr, expr_block, term, factor, power, atom = G.NonTerminals('<expr> <eexpr> <expr-block> <term> <factor> <power> <atom>')
+func_call, expr_list, definition = G.NonTerminals('<func-call> <expr-list> <definition>')
 #endregion
 
 #region Terminals Definition
-let, func, inx, ifx, elsex, elifx, whilex, forx, typex, selfx, newx = G.Terminals('LET FUNCTION IN IF ELSE ELIF WHILE FOR TYPE SELF NEW')
+let, func, inx, ifx, elsex, elifx, whilex, forx, typex, base, newx = G.Terminals('LET FUNCTION IN IF ELSE ELIF WHILE FOR TYPE BASE NEW')
 inheritsx, asx, proto, extends, iterx, dot = G.Terminals('INHERITS AS PROTOCOL EXTENDS ITERABLE DOT')
 printx, sinx, cosx, expx, sqrtx, logx, randx, rangex = G.Terminals('PRINT SIN COS EXP SQRT LOG RAND RANGE')
 semi, opar, cpar, obracket, cbracket, obrace, cbrace, arrow, comma = G.Terminals('SEMICOLON OPAR CPAR OBRACKET CBRACKET OBRACE CBRACE IMPLICATION COMMA')
@@ -35,290 +34,237 @@ eof = G.EOF
 #endregion
 
 #region Productions Definition
-program %= stat_list, lambda h,s: Program(s[1])
+program %= stat_list, lambda h,s: Program(s[1]) #1
 
-stat_list %= stat + semi, lambda h,s: [s[1]] 
-stat_list %= stat + semi + stat_list, lambda h,s: [s[1]] + s[3]
-stat_list %= block, lambda h,s: [s[1]]
-stat_list %= block + stat_list, lambda h,s: [s[1]] + s[2]
-stat_list %= block + semi, lambda h,s: [s[1]]
-stat_list %= block + semi + stat_list, lambda h,s: [s[1]] + s[2]
-stat_list %= let_var_block, lambda h,s: [s[1]]
-stat_list %= let_var_block + stat_list, lambda h,s: [s[1]] + s[2]
-stat_list %= let_var_block + semi, lambda h,s: [s[1]]
-stat_list %= let_var_block + semi + stat_list, lambda h,s: [s[1]] + s[2]
-stat_list %= def_func_block, lambda h,s: [s[1]]
-stat_list %= def_func_block + stat_list, lambda h,s: [s[1]] + s[2]
-stat_list %= def_func_block + semi, lambda h,s: [s[1]]
-stat_list %= def_func_block + semi + stat_list, lambda h,s: [s[1]] + s[2]
 
-stat %= let_var, lambda h,s: s[1]
-stat %= def_func, lambda h,s: s[1]
-stat %= expr, lambda h,s: s[1]
-stat %= assign, lambda h,s: s[1]
-stat %= if_expr, lambda h,s: s[1]
+stat_list %= eexpr, lambda h,s: s[1] #2
+stat_list %= definitions + eexpr, lambda h,s: s[1] + s[2] #3
 
-let_var %= let + var_corpse + inx + stat, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]])
-let_var_block %= let + var_corpse + inx + def_func_block, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]])
-let_var_block %= let + var_corpse + inx + if_expr_block, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]])
-let_var_block %= let + var_corpse + inx + let_var_block, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]])
-let_var_block %= let + var_corpse + inx + block, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]])
-assign %= atom + dassign + expr, lambda h,s: Assign(s[1], s[3])
+definitions %= definition, lambda h,s: [s[1]] #4
+definitions %= definition + definitions, lambda h,s: [s[1]] + s[2] #5
 
-var_corpse %= idx + equal + stat, lambda h,s: [[s[1], s[3], None]] 
-var_corpse %= idx + equal + stat + comma + var_corpse, lambda h,s: [[s[1], s[3], None]] + s[5]
-var_corpse %= idx + equal + stat + comma + let + var_corpse, lambda h,s: [[s[1], s[3], None]] + s[6]
+definition %= protocol, lambda h,s: s[1] #6
+definition %= def_type, lambda h,s: s[1] #7
+definition %= def_func, lambda h,s: s[1] #8
 
-var_corpse %= idx + typed + equal + stat, lambda h,s: [[s[1], s[4], s[2]]]
-var_corpse %= idx + typed + equal + stat + comma + var_corpse, lambda h,s: [[s[1], s[4], s[2]]] + s[6]
-var_corpse %= idx + typed + equal + stat + comma + let + var_corpse, lambda h,s: [[s[1], s[4], s[2]]] + s[7]
+eexpr %= expr + semi, lambda h,s: [s[1]] #9
+eexpr %= expr_block, lambda h,s: [s[1]] #10
+eexpr %= expr_block + semi, lambda h,s: [s[1]] #11
 
-def_func %= func + idx + opar + arg_list + cpar + arrow + stat, lambda h,s: Function(s[2], s[4], s[7])
-def_func_block %= func + idx + opar + arg_list + cpar + arrow + let_var_block, lambda h,s: Function(s[2], s[4], s[7])
-def_func_block %= func + idx + opar + arg_list + cpar + arrow + def_func_block, lambda h,s: Function(s[2], s[4], s[7])
-def_func_block %= func + idx + opar + arg_list + cpar + arrow + def_func_block, lambda h,s: Function(s[2], s[4], s[7])
-def_func_block %= func + idx + opar + arg_list + cpar + block, lambda h,s: Function(s[2], s[4], s[6])
+expr %= atom + dassign + expr, lambda h,s: Assign(s[1], s[3]) #12
+expr %= let + var_corpse + inx + expr, lambda h,s: LetList([Let(x[0], x[1], x[2]) for x in s[2]], s[4]) #13
+expr %= atom + asx + idx, lambda h,s: As(s[1], s[3]) #14
+expr %= atom + asx + strx, lambda h,s: As(s[1], s[3]) #15
+expr %= atom + asx + numx, lambda h,s: As(s[1], s[3]) #16
+expr %= atom + asx + objx, lambda h,s: As(s[1], s[3]) #17
+expr %= atom + asx + boolx, lambda h,s: As(s[1], s[3]) #18
+expr %= newx + func_call, lambda h,s: CreateInstance(s[2].idx, s[2].args) #19
+expr %= or_expr, lambda h,s: s[1] #20
+expr %= or_expr + datx + or_expr, lambda h,s: DoubleAt(s[1], s[3]) #21
+expr %= or_expr + atx + or_expr, lambda h,s: At(s[1], s[3]) #22
+expr %= ifx + opar + expr + cpar + expr + elsex + expr, lambda h,s: Conditional(s[3], s[5], s[7]) #23
+expr %= ifx + opar + expr + cpar + expr_block + elsex + expr, lambda h,s: Conditional(s[3], s[5], s[7]) #24
+expr %= ifx + opar + expr_block + cpar + expr + elsex + expr, lambda h,s: Conditional(s[3], s[5], s[7]) #25
+expr %= ifx + opar + expr_block + cpar + expr_block + elsex + expr, lambda h,s: Conditional(s[3], s[5], s[7]) #26
+expr %= ifx + opar + expr + cpar + expr + if_br + elsex + expr, lambda h,s: Conditional(s[3], s[5], s[8], s[6]) #27
+expr %= ifx + opar + expr + cpar + expr_block + if_br + elsex + expr, lambda h,s: Conditional(s[3], s[5], s[8], s[6]) #28
+expr %= ifx + opar + expr_block + cpar + expr + if_br + elsex + expr, lambda h,s: Conditional(s[3], s[5], s[8], s[6]) #29
+expr %= ifx + opar + expr_block + cpar + expr_block + if_br + elsex + expr, lambda h,s: Conditional(s[3], s[5], s[8], s[6]) #30
+expr %= whilex + opar + expr + cpar + expr, lambda h,s: While(s[3], s[5]) #30
+expr %= whilex + opar + expr_block + cpar + expr, lambda h,s: While(s[3], s[5]) #31
+expr %= forx + opar + idx + inx + expr + cpar + expr, lambda h,s: For(s[3], s[5], s[7]) #32
+expr %= forx + opar + idx + inx + expr_block + cpar + expr, lambda h,s: For(s[3], s[5], s[7]) #33
 
-def_func %= func + idx + opar + arg_list + cpar + typed + arrow + stat, lambda h,s: Function(s[2], s[4], s[8], s[6])
-def_func_block %= func + idx + opar + arg_list + cpar + typed + arrow + let_var_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
-def_func_block %= func + idx + opar + arg_list + cpar + typed + arrow + if_expr_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
-def_func_block %= func + idx + opar + arg_list + cpar + typed + arrow + def_func_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
-def_func_block %= func + idx + opar + arg_list + cpar + typed + block, lambda h,s: Function(s[2], s[4], s[7], s[6])
+expr_block %= obracket + block_corpse + cbracket, lambda h,s: Block(s[2]) #34
+expr_block %= atom + dassign + expr_block, lambda h,s: Assign(s[1], s[3]) #35
+expr_block %= let + var_corpse + inx + expr_block, lambda h,s: LetList([Let(x[0], x[1], x[2]) for x in s[2]], s[4]) #36
+expr_block %= ifx + opar + expr + cpar + expr + elsex + expr_block, lambda h,s: Conditional(s[3], s[5], s[7]) #37
+expr_block %= ifx + opar + expr + cpar + expr_block + elsex + expr_block, lambda h,s: Conditional(s[3], s[5], s[7]) #38
+expr_block %= ifx + opar + expr_block + cpar + expr + elsex + expr_block, lambda h,s: Conditional(s[3], s[5], s[7]) #39
+expr_block %= ifx + opar + expr_block + cpar + expr_block + elsex + expr_block, lambda h,s: Conditional(s[3], s[5], s[7]) #40
+expr_block %= ifx + opar + expr + cpar + expr + if_br + elsex + expr_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6]) #41
+expr_block %= ifx + opar + expr + cpar + expr + if_br + elsex + expr_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6]) #42
+expr_block %= ifx + opar + expr_block + cpar + expr + if_br + elsex + expr_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6]) #43
+expr_block %= ifx + opar + expr_block + cpar + expr + if_br + elsex + expr_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6]) #44
+expr_block %= whilex + opar + expr + cpar + expr_block, lambda h,s: While(s[3], s[5]) #45
+expr_block %= whilex + opar + expr_block + cpar + expr_block, lambda h,s: While(s[3], s[5]) #46
+expr_block %= forx + opar + idx + inx + expr + cpar + expr_block, lambda h,s: For(s[3], s[5], s[7]) #47
+expr_block %= forx + opar + idx + inx + expr_block + cpar + expr_block, lambda h,s: For(s[3], s[5], s[7]) #48
 
-arg_list %= idx, lambda h,s: [(s[1], None)]
-arg_list %= idx + typed, lambda h,s: [(s[1], s[2])]
-arg_list %= idx + comma + arg_list, lambda h,s: [(s[1], None)] + s[3]
-arg_list %= idx + typed + comma + arg_list, lambda h,s: [(s[1], s[2])] + s[4]
+block_corpse %= eexpr, lambda h,s: [s[1]] #49
+block_corpse %= block_corpse + eexpr, lambda h,s: s[1] + [s[2]] #50
 
-block %= obracket + stat_list + cbracket, lambda h,s: Block(s[2])
-block %= obracket + cbracket, lambda h,s: Block(None)
+var_corpse %= idx + equal + expr, lambda h,s: [[s[1], s[3], None]] #51
+var_corpse %= idx + equal + expr + comma + var_corpse, lambda h,s: [[s[1], s[3], None]] + s[5] #52
+var_corpse %= idx + equal + expr + comma + let + var_corpse, lambda h,s: [[s[1], s[3], None]] + s[6] #53
 
-if_expr %= ifx + opar + expr + cpar + stat + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[7])
-if_expr %= ifx + opar + expr + cpar + block + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[7])
-if_expr %= ifx + opar + expr + cpar + let_var_block + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[7])
-if_expr %= ifx + opar + expr + cpar + def_func_block + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[7])
+var_corpse %= idx + equal + expr_block, lambda h,s: [[s[1], s[3], None]] #54
+var_corpse %= idx + equal + expr_block + comma + var_corpse, lambda h,s: [[s[1], s[3], None]] + s[5] #55
+var_corpse %= idx + equal + expr_block + comma + let + var_corpse, lambda h,s: [[s[1], s[3], None]] + s[6] #56
 
-if_expr %= ifx + opar + expr + cpar + stat + if_br + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
-if_expr %= ifx + opar + expr + cpar + block + if_br + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
-if_expr %= ifx + opar + expr + cpar + let_var_block + if_br + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
-if_expr %= ifx + opar + expr + cpar + def_func_block + if_br + elsex + stat, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+var_corpse %= idx + typed + equal + expr, lambda h,s: [[s[1], s[4], s[2]]] #57
+var_corpse %= idx + typed + equal + expr + comma + var_corpse, lambda h,s: [[s[1], s[4], s[2]]] + s[6] #58
+var_corpse %= idx + typed + equal + expr + comma + let + var_corpse, lambda h,s: [[s[1], s[4], s[2]]] + s[7] #59
 
-if_expr_block %= ifx + opar + expr + cpar + stat + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[7])
-if_expr_block %= ifx + opar + expr + cpar + block + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[7])
-if_expr_block %= ifx + opar + expr + cpar + let_var_block + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[7])
-if_expr_block %= ifx + opar + expr + cpar + def_func_block + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[7])
+var_corpse %= idx + typed + equal + expr_block, lambda h,s: [[s[1], s[4], s[2]]] #60
+var_corpse %= idx + typed + equal + expr_block + comma + var_corpse, lambda h,s: [[s[1], s[4], s[2]]] + s[6] #61
+var_corpse %= idx + typed + equal + expr_block + comma + let + var_corpse, lambda h,s: [[s[1], s[4], s[2]]] + s[7] #62
 
-if_expr_block %= ifx + opar + expr + cpar + stat + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[7])
-if_expr_block %= ifx + opar + expr + cpar + block + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[7])
-if_expr_block %= ifx + opar + expr + cpar + let_var_block + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[7])
-if_expr_block %= ifx + opar + expr + cpar + def_func_block + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[7])
+def_func %= func + idx + opar + arg_list + cpar + arrow + eexpr, lambda h,s: Function(s[2], s[4], s[7]) #63
+def_func %= func + idx + opar + arg_list + cpar + typed + arrow + eexpr, lambda h,s: Function(s[2], s[4], s[8], s[6]) #64
+def_func %= func + idx + opar + arg_list + cpar + expr_block, lambda h,s: Function(s[2], s[4], s[7], s[6]) #65
+def_func %= func + idx + opar + arg_list + cpar + typed + expr_block, lambda h,s: Function(s[2], s[4], s[7], s[6]) #66
 
-if_expr_block %= ifx + opar + expr + cpar + stat + elsex + block, lambda h,s: Conditional(s[3], s[5], s[7])
-if_expr_block %= ifx + opar + expr + cpar + block + elsex + block, lambda h,s: Conditional(s[3], s[5], s[7])
-if_expr_block %= ifx + opar + expr + cpar + let_var_block + elsex + block, lambda h,s: Conditional(s[3], s[5], s[7])
-if_expr_block %= ifx + opar + expr + cpar + def_func_block + elsex + block, lambda h,s: Conditional(s[3], s[5], s[7])
+arg_list %= idx, lambda h,s: [(s[1], None)] #67
+arg_list %= idx + typed, lambda h,s: [(s[1], s[2])] #68
+arg_list %= idx + comma + arg_list, lambda h,s: [(s[1], None)] + s[3] #69
+arg_list %= idx + typed + comma + arg_list, lambda h,s: [(s[1], s[2])] + s[4] #70
 
-if_expr_block %= ifx + opar + expr + cpar + stat + if_br + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
-if_expr_block %= ifx + opar + expr + cpar + block + if_br + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
-if_expr_block %= ifx + opar + expr + cpar + let_var_block + if_br + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
-if_expr_block %= ifx + opar + expr + cpar + def_func_block + if_br + elsex + def_func_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+if_br %= elifx + opar + expr + cpar + expr, lambda h,s: [Branch(s[3], s[5])] #71
+if_br %= elifx + opar + expr + cpar + expr_block, lambda h,s: [Branch(s[3], s[5])] #72
+if_br %= elifx + opar + expr_block + cpar + expr, lambda h,s: [Branch(s[3], s[5])] #73
+if_br %= elifx + opar + expr_block + cpar + expr_block, lambda h,s: [Branch(s[3], s[5])] #74
 
-if_expr_block %= ifx + opar + expr + cpar + stat + if_br + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
-if_expr_block %= ifx + opar + expr + cpar + block + if_br + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
-if_expr_block %= ifx + opar + expr + cpar + let_var_block + if_br + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
-if_expr_block %= ifx + opar + expr + cpar + def_func_block + if_br + elsex + let_var_block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+or_expr %= and_expr, lambda h,s: s[1] #75
+or_expr %= or_expr + orx + and_expr, lambda h,s: Or(s[1], s[3]) #76
 
-if_expr_block %= ifx + opar + expr + cpar + stat + if_br + elsex + block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
-if_expr_block %= ifx + opar + expr + cpar + block + if_br + elsex + block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
-if_expr_block %= ifx + opar + expr + cpar + let_var_block + if_br + elsex + block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
-if_expr_block %= ifx + opar + expr + cpar + def_func_block + if_br + elsex + block, lambda h,s: Conditional(s[3], s[5], s[8], s[6])
+and_expr %= compare, lambda h,s: s[1] #77
+and_expr %= and_expr + andx + compare, lambda h,s: And(s[1], s[3]) #78
 
-if_br %= elifx + opar + expr + cpar + stat, lambda h,s: [Branch(s[3], s[5])]
-if_br %= elifx + opar + expr + cpar + block, lambda h,s: [Branch(s[3], s[5])]
-if_br %= elifx + opar + expr + cpar + let_var_block, lambda h,s: [Branch(s[3], s[5])]
-if_br %= elifx + opar + expr + cpar + def_func_block, lambda h,s: [Branch(s[3], s[5])]
-if_br %= elifx + opar + expr + cpar + stat + if_br, lambda h,s: [Branch(s[3], s[5])] + s[6]
-if_br %= elifx + opar + expr + cpar + block + if_br, lambda h,s: [Branch(s[3], s[5])] + s[6]
-if_br %= elifx + opar + expr + cpar + let_var_block + if_br, lambda h,s: [Branch(s[3], s[5])] + s[6]
-if_br %= elifx + opar + expr + cpar + def_func_block + if_br, lambda h,s: [Branch(s[3], s[5])] + s[6]
+compare %= arit + gt + arit, lambda h,s: GreaterThan(s[1], s[3]) #79
+compare %= arit + lt + arit, lambda h,s: LessThan(s[1], s[3]) #80
+compare %= arit + gte + arit, lambda h,s: GreaterEqual(s[1], s[3]) #81
+compare %= arit + lte + arit, lambda h,s: LessEqual(s[1], s[3]) #82
+compare %= arit + dequal + arit, lambda h,s: CompareEqual(s[1], s[3]) #83
+compare %= arit + nequal + arit, lambda h,s: NotEqual(s[1], s[3]) #84
+compare %= arit + isx + idx, lambda h,s: Is(s[1], s[3]) #85
+compare %= arit, lambda h,s: s[1] #86
 
-expr %= term, lambda h,s: s[1]
-expr %= expr + atx + term, lambda h,s: At(s[1], s[3])
-expr %= expr + datx + term, lambda h,s: DoubleAt(s[1], s[3])
-expr %= expr + orx + term, lambda h,s: Or(s[1], s[3])
-expr %= expr + plus + term, lambda h,s: Plus(s[1], s[3])
-expr %= expr + minus + term, lambda h,s: BinaryMinus(s[1], s[3])
+arit %= term, lambda h,s: s[1] #87
+arit %= arit + plus + term, lambda h,s: Plus(s[1], s[3]) #88
+arit %= arit + minus + term, lambda h,s: BinaryMinus(s[1], s[3]) #89
 
-term %= factor, lambda h,s: s[1]
-term %= term + star + factor, lambda h,s: Star(s[1], s[3])
-term %= term + div + factor, lambda h,s: Div(s[1], s[3])
-term %= term + modx + factor, lambda h,s: Mod(s[1], s[3])
-term %= term + andx + factor, lambda h,s: And(s[1], s[3])
+term %= factor, lambda h,s: s[1] #90
+term %= term + star + factor, lambda h,s: Star(s[1], s[3]) #91
+term %= term + div + factor, lambda h,s: Div(s[1], s[3]) #92
+term %= term + modx + factor, lambda h,s: Mod(s[1], s[3]) #93
 
-factor %= power, lambda h,s: s[1]
-factor %= notx + factor, lambda h,s: Not(s[2])
-factor %= minus + factor, lambda h,s: UnaryMinus(s[2])
-factor %= power + gt + factor, lambda h,s: GreaterThan(s[1], s[3])
-factor %= power + lt + factor, lambda h,s: LessThan(s[1], s[3])
-factor %= power + gte + factor, lambda h,s: GreaterEqual(s[1], s[3])
-factor %= power + lte + factor, lambda h,s: LessEqual(s[1], s[3])
-factor %= power + dequal + factor, lambda h,s: CompareEqual(s[1], s[3])
-factor %= power + nequal + factor, lambda h,s: NotEqual(s[1], s[3])
-factor %= power + isx + factor, lambda h,s: Is(s[1], s[3])
+factor %= power, lambda h,s: s[1] #94
+factor %= notx + factor, lambda h,s: Not(s[2]) #95
+factor %= minus + factor, lambda h,s: UnaryMinus(s[2]) #96
 
-power %= atom, lambda h,s: s[1]
-power %= atom + pow + power, lambda h,s: Pow(s[1], s[3])
-power %= atom + dstar + power, lambda h,s: Pow(s[1], s[3])
+power %= atom, lambda h,s: s[1] #97
+power %= atom + pow + power, lambda h,s: Pow(s[1], s[3]) #98
+power %= atom + dstar + power, lambda h,s: Pow(s[1], s[3]) #99
 
-atom %= opar + let_var + cpar, lambda h,s: s[2]
-atom %= opar + expr + cpar, lambda h,s: s[2]
-atom %= num, lambda h,s: Number(float(s[1]))
-atom %= idx, lambda h,s: Var(s[1])
-atom %= true, lambda h,s: Bool(True)
-atom %= false, lambda h,s: Bool(False)
-atom %= string, lambda h,s: Str(s[1])
-atom %= func_call, lambda h,s: s[1]
-atom %= e_num, lambda h,s: s[1]
-atom %= built_in, lambda h,s: s[1]
-atom %= atom + asx + idx, lambda h,s: As(s[1], s[3])
-atom %= atom + asx + strx, lambda h,s: As(s[1], s[3])
-atom %= atom + asx + numx, lambda h,s: As(s[1], s[3])
-atom %= atom + asx + objx, lambda h,s: As(s[1], s[3])
-atom %= atom + asx + boolx, lambda h,s: As(s[1], s[3])
-atom %= obrace + expr_list + cbrace, lambda h,s: Vector(s[2], len(s[2]))
-atom %= obrace + expr + dpipe + idx + inx + expr + cbrace, lambda h,s: VectorComprehension(s[6], len(s[6]), (s[4], s[2]))
+atom %= opar + expr + cpar, lambda h,s: s[2] #100
+atom %= opar + expr_block + cpar, lambda h,s: s[2] #101
+atom %= num, lambda h,s: Number(float(s[1])) #102
+atom %= idx, lambda h,s: Var(s[1]) #103
+atom %= true, lambda h,s: Bool(True) #104
+atom %= false, lambda h,s: Bool(False) #105
+atom %= string, lambda h,s: Str(s[1]) #106
+atom %= func_call, lambda h,s: s[1] #107
+atom %= e_num, lambda h,s: s[1] #108
+atom %= built_in, lambda h,s: s[1] #109
+atom %= obrace + expr_list + cbrace, lambda h,s: Vector(s[2], len(s[2])) #110
+atom %= obrace + expr + dpipe + idx + inx + expr + cbrace, lambda h,s: VectorComprehension(s[6], len(s[6]), (s[4], s[2])) #111
+atom %= atom + dot + idx, lambda h,s: Invoke(s[1], s[3]) #112
+atom %= atom + dot + idx + func_call, lambda h,s: Invoke(s[1], s[3]) #113
+atom %= atom + obrace + expr + cbrace, lambda h,s: Indexing(s[1], s[3]) #114
+atom %= atom + obrace + expr_block + cbrace, lambda h,s: Indexing(s[1], s[3]) #115
 
-built_in %= sinx + opar + expr_list + cpar, lambda h,s: Sin(s[3])
-built_in %= cosx + opar + expr_list + cpar, lambda h,s: Cos(s[3])
-built_in %= randx + opar + expr_list + cpar, lambda h,s: Rand(s[3])
-built_in %= randx + opar + cpar, lambda h,s: Rand(None)
-built_in %= expx + opar + expr_list + cpar, lambda h,s: Exp(s[3])
-built_in %= logx + opar + expr_list + cpar, lambda h,s: Log(s[3])
-built_in %= sqrtx + opar + expr_list + cpar, lambda h,s: Sqrt(s[3])
-built_in %= printx + opar + expr_list + cpar, lambda h,s: Print(s[3])
-built_in %= rangex + opar + expr_list + cpar, lambda h,s: Range(s[3])
+built_in %= sinx + opar + expr_list + cpar, lambda h,s: Sin(s[3]) #116
+built_in %= cosx + opar + expr_list + cpar, lambda h,s: Cos(s[3]) #117
+built_in %= randx + opar + expr_list + cpar, lambda h,s: Rand(s[3]) #118
+built_in %= randx + opar + cpar, lambda h,s: Rand(None) #119
+built_in %= expx + opar + expr_list + cpar, lambda h,s: Exp(s[3]) #120
+built_in %= logx + opar + expr_list + cpar, lambda h,s: Log(s[3]) #121
+built_in %= sqrtx + opar + expr_list + cpar, lambda h,s: Sqrt(s[3]) #122
+built_in %= printx + opar + expr_list + cpar, lambda h,s: Print(s[3]) #123
+built_in %= rangex + opar + expr_list + cpar, lambda h,s: Range(s[3]) #124
+built_in %= base + opar + expr_list + cpar, lambda h,s: Base(s[3]) #125
+built_in %= base + opar + cpar, lambda h,s: Base(None) #126
 
-e_num %= pi, lambda h,s: Pi()
-e_num %= e, lambda h,s: E()
+e_num %= pi, lambda h,s: Pi() #127
+e_num %= e, lambda h,s: E() #128
 
-func_call %= idx + opar + expr_list + cpar, lambda h,s: Call(s[1], s[3])
+func_call %= idx + opar + expr_list + cpar, lambda h,s: Call(s[1], s[3]) #129
+func_call %= idx + opar + cpar, lambda h,s: Call(s[1], None) #130
 
-expr_list %= stat, lambda h,s: [s[1]]
-expr_list %= stat + comma + expr_list, lambda h,s: [s[1]] + s[3]
+expr_list %= expr, lambda h,s: [s[1]] #131
+expr_list %= expr_block, lambda h,s: [s[1]] #132
+expr_list %= expr + comma + expr_list, lambda h,s: [s[1]] + s[3] #133
+expr_list %= expr_block + comma + expr_list, lambda h,s: [s[1]] + s[3] #134
 
-loop_expr %= while_expr, lambda h,s: s[1]
-loop_expr %= for_expr, lambda h,s: s[1]
+def_type %= typex + idx + obracket + cbracket, lambda h,s: TypeDef(s[2], None, None) #135
+def_type %= typex + idx + inheritsx + idx + obracket + cbracket, lambda h,s: TypeDef(s[2], None, None, s[4]) #136
+def_type %= typex + idx + inheritsx + idx + opar + expr_list + cpar + obracket + cbracket, lambda h,s: TypeDef(s[2], None, None, s[4], s[6]) #137
 
-while_expr %= whilex + opar + expr + cpar + stat, lambda h,s: While(s[3], s[5])
-while_expr_block %= whilex + opar + expr + cpar + block, lambda h,s: While(s[3], s[5])
-while_expr_block %= whilex + opar + expr + cpar + if_expr_block, lambda h,s: While(s[3], s[5])
-while_expr_block %= whilex + opar + expr + cpar + let_var_block, lambda h,s: While(s[3], s[5])
-while_expr_block %= whilex + opar + expr + cpar + def_func_block, lambda h,s: While(s[3], s[5])
+def_type %= typex + idx + opar + arg_list + cpar + obracket + cbracket, lambda h,s: TypeDef(s[2], None, s[4]) #138
+def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + obracket + cbracket, lambda h,s: TypeDef(s[2], None, s[4], s[7]) #139
+def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + opar + expr_list + cpar + obracket + cbracket, lambda h,s: TypeDef(s[2], None, s[4], s[7], s[9]) #140
 
-for_expr %= forx + opar + for_var + inx + expr + cpar + stat, lambda h,s: For(s[3], s[5], s[7])
-for_expr_block %= forx + opar + for_var + inx + expr + cpar + block, lambda h,s: For(s[3], s[5], s[7])
-for_expr_block %= forx + opar + for_var + inx + expr + cpar + if_expr_block, lambda h,s: For(s[3], s[5], s[7])
-for_expr_block %= forx + opar + for_var + inx + expr + cpar + let_var_block, lambda h,s: For(s[3], s[5], s[7])
-for_expr_block %= forx + opar + for_var + inx + expr + cpar + def_func_block, lambda h,s: For(s[3], s[5], s[7])
+def_type %= typex + idx + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[4], None) #141
+def_type %= typex + idx + inheritsx + idx + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[6], None, s[4]) #142
+def_type %= typex + idx + inheritsx + idx + opar + expr_list + cpar + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[9], None, s[4], s[6]) #143
 
-for_var %= idx, lambda h,s: ForVar(name = s[1])
-for_var %= idx + typed, lambda h,s: ForVar(name = s[1], type = s[2])
+def_type %= typex + idx + opar + arg_list + cpar + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[7], s[4]) #144
+def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[9], s[4], s[7]) #145
+def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + opar + expr_list + cpar + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[12], s[4], s[7], s[9]) #146
 
-stat %= loop_expr, lambda h,s: s[1]
+type_corpse %= prop + semi, lambda h,s: [s[1]] #147
+type_corpse %= prop + semi + type_corpse, lambda h,s: [s[1]] + s[3] #148
+type_corpse %= method + semi, lambda h,s: [s[1]] #149
+type_corpse %= method + semi + type_corpse, lambda h,s: [s[1]] + s[3] #150
+type_corpse %= method_block, lambda h,s: [s[1]] #151
+type_corpse %= method_block + semi, lambda h,s: [s[1]] #152
+type_corpse %= method_block + type_corpse, lambda h,s: [s[1]] + s[2] #153
+type_corpse %= method_block + semi + type_corpse, lambda h,s: [s[1]] + s[3] #154
+type_corpse %= def_type, lambda h,s: [s[1]] #155
+type_corpse %= def_type + type_corpse, lambda h,s: [s[1]] + s[2] #156
 
-atom %= atom + dot + idx, lambda h,s: Invoke(s[1], s[3])
-atom %= atom + dot + func_call, lambda h,s: Invoke(s[1], s[3])
-atom %= atom + obrace + atom + cbrace, lambda h,s: Indexing(s[1], s[3])
+prop %= idx + equal + expr, lambda h,s: Property(s[1], s[3]) #157
+prop %= idx + equal + expr_block, lambda h,s: Property(s[1], s[3]) #158
+prop %= idx + typed + equal + expr, lambda h,s: Property(s[1], s[4], s[2]) #159
+prop %= idx + typed + equal + expr_block, lambda h,s: Property(s[1], s[4], s[2]) #160
 
-func_call %= idx + opar + cpar, lambda h,s: Call(s[1], None)
+method %= idx + opar + arg_list + cpar + arrow + expr, lambda h,s: Function(s[1], s[3], s[6]) #161
+method %= idx + opar + cpar + arrow + expr, lambda h,s: Function(s[1], None, s[5]) #162
+method_block %= idx + opar + arg_list + cpar + expr_block, lambda h,s: Function(s[1], s[3], s[5]) #163
+method_block %= idx + opar + cpar + expr_block, lambda h,s: Function(s[1], None, s[4]) #164
 
-let_var_block %= let + var_corpse + inx + while_expr_block, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]])
-let_var_block %= let + var_corpse + inx + for_expr_block, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]])
+method %= idx + opar + arg_list + cpar + typed + arrow + expr, lambda h,s: Function(s[1], s[3], s[7], s[5]) #165
+method %= idx + opar + cpar + typed + arrow + expr, lambda h,s: Function(s[1], None, s[6], s[4]) #166
+method_block %= idx + opar + arg_list + cpar + typed + expr_block, lambda h,s: Function(s[1], s[3], s[6], s[5]) #167
+method_block %= idx + opar + cpar + typed + expr_block, lambda h,s: Function(s[1], None, s[5], s[4]) #168
 
-def_func_block %= func + idx + opar + arg_list + cpar + while_expr_block, lambda h,s: Function(s[2], s[4], s[7])
-def_func_block %= func + idx + opar + arg_list + cpar + for_expr_block, lambda h,s: Function(s[2], s[4], s[7])
+typed %= colon + idx, lambda h,s: s[2] #169
+typed %= colon + strx, lambda h,s: s[2] #170
+typed %= colon + numx, lambda h,s: s[2] #171
+typed %= colon + objx, lambda h,s: s[2] #172
+typed %= colon + boolx, lambda h,s: s[2] #173
 
-def_func_block %= func + idx + opar + arg_list + cpar + typed + while_expr_block, lambda h,s: Function(s[2], s[4], s[7], s[6])
-def_func_block %= func + idx + opar + arg_list + cpar + typed + for_expr_block, lambda h,s: Function(s[2], s[4], s[7], s[6])
+protocol %= proto + idx + obracket + def_list + cbracket, lambda h,s: Protocol(s[2], s[4]) #174
+protocol %= proto + idx + extends + idx + obracket + def_list + cbracket, lambda h,s: Protocol(s[2], s[6], s[4]) #175
 
-def_func %= func + idx + opar + arg_list + cpar + arrow + while_expr_block, lambda h,s: Function(s[2], s[4], s[7])#TODO: type is giving errors
-def_func %= func + idx + opar + arg_list + cpar + arrow + for_expr_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
+def_list %= define + semi, lambda h,s: [s[1]] #176
+def_list %= define_block, lambda h,s: [s[1]] #177
+def_list %= define + semi + def_list, lambda h,s: [s[1]] + s[3] #178
+def_list %= define_block + semi, lambda h,s: [s[1]] #179
+def_list %= define_block + def_list, lambda h,s: [s[1]] + s[2] #180
+def_list %= define_block + semi + def_list, lambda h,s: [s[1]] + s[2] #181
 
-def_func %= func + idx + opar + arg_list + cpar + typed + arrow + while_expr_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
-def_func %= func + idx + opar + arg_list + cpar + typed + arrow + for_expr_block, lambda h,s: Function(s[2], s[4], s[8], s[6])
+define_block %= idx + opar + cpar + obracket + cbracket, lambda h,s: Function(s[1], None, None) #182
+define_block %= idx + opar + arg_list + cpar + obracket + cbracket, lambda h,s: Function(s[1], s[3], None) #183
+define_block %= idx + opar + cpar + typed + obracket + cbracket, lambda h,s: Function(s[1], None, None, s[4]) #184
+define_block %= idx + opar + arg_list + cpar + typed + obracket + cbracket, lambda h,s: Function(s[1], s[3], None, s[5]) #185
 
-def_type %= typex + idx + obracket + cbracket, lambda h,s: TypeDef(s[2], None, None)
-def_type %= typex + idx + inheritsx + idx + obracket + cbracket, lambda h,s: TypeDef(s[2], None, None, s[4])
-def_type %= typex + idx + inheritsx + idx + opar + expr_list + cpar + obracket + cbracket, lambda h,s: TypeDef(s[2], None, None, s[4], s[6])
+define %= idx + opar + cpar, lambda h,s: Function(s[1], None, None) #186
+define %= idx + opar + arg_list + cpar, lambda h,s: Function(s[1], s[3], None) #187
+define %= idx + opar + cpar + typed, lambda h,s: Function(s[1], None, None, s[4]) #188
+define %= idx + opar + arg_list + cpar + typed, lambda h,s: Function(s[1], s[3], None, s[5]) #189
 
-def_type %= typex + idx + opar + arg_list + cpar + obracket + cbracket, lambda h,s: TypeDef(s[2], None, s[4])
-def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + obracket + cbracket, lambda h,s: TypeDef(s[2], None, s[4], s[7])
-def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + opar + expr_list + cpar + obracket + cbracket, lambda h,s: TypeDef(s[2], None, s[4], s[7], s[9])
-
-def_type %= typex + idx + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[4], None)
-def_type %= typex + idx + inheritsx + idx + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[6], None, s[4])
-def_type %= typex + idx + inheritsx + idx + opar + expr_list + cpar + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[9], None, s[4], s[6])
-
-def_type %= typex + idx + opar + arg_list + cpar + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[7], s[4])
-def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[9], s[4], s[7])
-def_type %= typex + idx + opar + arg_list + cpar + inheritsx + idx + opar + expr_list + cpar + obracket + type_corpse + cbracket, lambda h,s: TypeDef(s[2], s[12], s[4], s[7], s[9])
-
-type_corpse %= method + semi + type_corpse, lambda h,s: [s[1]] + s[3]
-type_corpse %= prop + semi + type_corpse, lambda h,s: [s[1]] + s[3]
-type_corpse %= method + semi, lambda h,s: [s[1]]
-type_corpse %= method_block, lambda h,s: [s[1]]
-type_corpse %= method_block + semi, lambda h,s: [s[1]]
-type_corpse %= method_block + type_corpse, lambda h,s: [s[1]] + s[2]
-type_corpse %= method_block + semi + type_corpse, lambda h,s: [s[1]] + s[3]
-type_corpse %= prop + semi, lambda h,s: [s[1]]
-
-atom %= selfx, lambda h,s: Self(s[1])
-
-prop %= idx + equal + expr, lambda h,s: Property(s[1], s[3])
-prop %= idx + typed + equal + expr, lambda h,s: Property(s[1], s[4], s[2])
-
-method %= idx + opar + arg_list + cpar + arrow + stat, lambda h,s: Function(s[1], s[3], s[6])
-method %= idx + opar + cpar + arrow + stat, lambda h,s: Function(s[1], None, s[5])
-method_block %= idx + opar + arg_list + cpar + block, lambda h,s: Function(s[1], s[3], s[5])
-method_block %= idx + opar + cpar + block, lambda h,s: Function(s[1], None, s[4])
-
-method %= idx + opar + arg_list + cpar + typed + arrow + stat, lambda h,s: Function(s[1], s[3], s[7], s[5])
-method %= idx + opar + cpar + typed + arrow + stat, lambda h,s: Function(s[1], None, s[6], s[4])
-method_block %= idx + opar + arg_list + cpar + typed + block, lambda h,s: Function(s[1], s[3], s[6], s[5])
-method_block %= idx + opar + cpar + typed + block, lambda h,s: Function(s[1], None, s[5], s[4])
-
-stat_list %= def_type, lambda h,s: [s[1]]
-stat_list %= def_type + stat_list, lambda h,s: [s[1]] + s[2]
-
-expr %= newx + func_call, lambda h,s: CreateInstance(s[2].idx, s[2].args)
-
-typed %= colon + idx, lambda h,s: s[2]
-typed %= colon + strx, lambda h,s: s[2]
-typed %= colon + numx, lambda h,s: s[2]
-typed %= colon + iterx, lambda h,s: s[2]
-typed %= colon + objx, lambda h,s: s[2]
-typed %= colon + boolx, lambda h,s: s[2]
-
-protocol %= proto + idx + obracket + def_list + cbracket, lambda h,s: Protocol(s[2], s[4])
-protocol %= proto + idx + extends + idx + obracket + def_list + cbracket, lambda h,s: Protocol(s[2], s[6], s[4])
-
-def_list %= define + semi, lambda h,s: [s[1]]
-def_list %= define_block, lambda h,s: [s[1]]
-def_list %= define + semi + def_list, lambda h,s: [s[1]] + s[3]
-def_list %= define_block + def_list, lambda h,s: [s[1]] + s[2]
-
-define_block %= idx + opar + cpar + obracket + cbracket, lambda h,s: Function(s[1], None, None)
-define_block %= idx + opar + arg_list + cpar + obracket + cbracket, lambda h,s: Function(s[1], s[3], None)
-define_block %= idx + opar + cpar + typed + obracket + cbracket, lambda h,s: Function(s[1], None, None, s[4])
-define_block %= idx + opar + arg_list + cpar + typed + obracket + cbracket, lambda h,s: Function(s[1], s[3], None, s[5])
-
-define %= idx + opar + cpar, lambda h,s: Function(s[1], None, None)
-define %= idx + opar + arg_list + cpar, lambda h,s: Function(s[1], s[3], None)
-define %= idx + opar + cpar + typed, lambda h,s: Function(s[1], None, None, s[4])
-define %= idx + opar + arg_list + cpar + typed, lambda h,s: Function(s[1], s[3], None, s[5])
-
-stat_list %= protocol, lambda h,s: [s[1]]
-stat_list %= protocol + stat_list, lambda h,s: [s[1]] + s[2]
 
 #endregion
 #endregion

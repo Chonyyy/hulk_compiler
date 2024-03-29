@@ -252,8 +252,9 @@ class For(Statement):
         self.collection = collection
         self.body = body
 
-class Self(Atom):
-    pass
+class Base(Call):
+    def __init__(self, args):
+        super().__init__("base", args)
 
 class Property(Expression):
     def __init__(self, name, body, type = None):
