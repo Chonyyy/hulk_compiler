@@ -188,10 +188,12 @@ class Assign(Atom):
         self.body = body
 
 class Pi(Expression):
-    pass
+    def __init__(self):
+        self.lex = "Pi"
 
 class E(Expression):
-    pass
+    def __init__(self):
+        self.lex = "E"
 
 class Indexing(Atom):
     def __init__(self, name, index):

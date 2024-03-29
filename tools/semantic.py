@@ -377,11 +377,8 @@ class Scope:
                 return var.var_type
         return
     
-    def get_local_function_info(self, fname, n):# TODO: CHange this so it also looks information on parent scopes
+    def get_local_function_info(self, fun_name, params_num):# TODO: Change this so it also looks information on parent scopes
         for func in self.local_funcs:
-            # if (fname, n) == (func[0][0], func[0][1]):
-            a = func.name
-            b = len(func.params)
-            if fname == a and  n == b :
-                return FunctionInfo(fname, func.params, func.function_type)
-        return
+            if fun_name == func.name and  params_num == len(func.params):
+                return func
+        return self.parent.get_local_function_info(fun_name, params_num)

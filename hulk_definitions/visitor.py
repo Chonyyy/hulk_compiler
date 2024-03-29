@@ -629,16 +629,11 @@ class TypeChecker(object):
 
     @visitor.when(Function)
     def visit(self, node: Function, scope: Scope):
-        # Add function to the current scope
+        
         try:
-            # Divide the params into names and types from node.params: List[Tuple[str, str]
-            param_names, param_types = [], []
-            return_type = None
-            if node.params:
-                param_names, param_types = zip(*node.params)
             if node.type:
                 return_type = self.context.get_type(node.type)
-            scope.define_function(node.name, param_names, return_type)
+            scope.define_function(node.name, node.params, return_type)
         except SemanticError as se:
             self.errors.append(se.text)
 
@@ -656,7 +651,7 @@ class TypeChecker(object):
                 continue
     
             # Agregar el parámetro al alcance de la función con su tipo
-            body_scope.define_variable(param_name)
+            body_scope.define_variable(param_name,param_type)
     
         # Verificar el cuerpo de la función
         body_type = self.visit(node.body, body_scope)
@@ -689,13 +684,28 @@ class TypeChecker(object):
         # Verificar que los tipos de los argumentos sean compatibles con los parámetros de la función
         for arg, param_type in zip(node.args, function.params):
             # arg_type = self.visit(arg, scope)
-            arg_type = self.context.get_type(scope.get_local_variable_info(arg.lex))
+            if arg.lex in ["Pi","E"]: #TODO arreglar
+                arg_type = self.context.get_type("Number")
+            else:
+                arg_type = self.context.get_type(scope.get_local_variable_info(arg.lex))
+            
             param_type = self.context.get_type(param_type[1])
             if not arg_type.conforms(param_type):
                 self.errors.append(f'TypeError: Argument type {arg_type.name} does not conform to parameter type {param_type.name} in function call {node.idx}')
     
         # Devolver el tipo de retorno de la función
-        return function.function_type
+        return self.context.get_type(function.function_type)
+    
+    @visitor.when(Block)
+    def visit(self, node: Block, scope: Scope):
+        # Crear un nuevo alcance para el bloque
+        # block_scope = scope.create_child_scope()
+    
+        # Recorrer cada uno de los nodos hijos y realizar el chequeo de tipos
+        for child in node.body:
+            type = self.visit(child, scope)
+    
+        return type
     
     @visitor.when(LetList)
     def visit(self, node: Let, scope: Scope):
@@ -736,13 +746,22 @@ class TypeChecker(object):
         for arg in node.args:
             arg_type = self.visit(arg, scope)
           
-        # La función print no tiene un tipo de retorno, por lo que se puede devolver un tipo void
-        return self.context.get_type('Void')
+        return self.context.get_type('Object')
     
+    @visitor.when(Var)
+    def visit(self, node: Var, scope: Scope):
+        # Buscar el tipo de la variable en el alcance actual
+        try:
+            var_info = scope.get_local_variable_info(node.lex)
+            return self.context.get_type(var_info)
+        except SemanticError as se:
+            self.errors.append(se.text)
+           
+
     @visitor.when(Str)
     def visit(self, node: Number, scope: Scope):
         # El tipo de un Number es predefinido como "Number"
-        return self.context.get_type('Str')
+        return self.context.get_type('String')
     
     @visitor.when(Number)
     def visit(self, node: Number, scope: Scope):
