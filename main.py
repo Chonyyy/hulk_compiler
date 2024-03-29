@@ -85,10 +85,10 @@ def main(debug = True, verbose = False, force = False):
             # print('Context:')
             # print(context)
 
-            logger.info('=== Building Global Scope ===')
-            global_scope_builder = GlobalScopeBuilder(context, errors)
-            global_scope_builder.visit(ast)
-            global_scope = global_scope_builder.global_scope
+            # logger.info('=== Building Global Scope ===')
+            # global_scope_builder = GlobalScopeBuilder(context, errors)
+            # global_scope_builder.visit(ast)
+            # global_scope = global_scope_builder.global_scope
 
             logger.info('=== Type Inference ===')
 

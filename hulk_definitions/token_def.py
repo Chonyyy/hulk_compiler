@@ -78,7 +78,7 @@ LEXER = Lexer([
     ('WHILE', 'while'),
     ('FOR', 'for'),
     ('TYPE', 'type'),
-    ('SELF', 'self'),
+    ('BASE', 'base'),
     ('NEW', 'new'),
     ('INHERITS', 'inherits'),
     ('NUMBER', 'Number'),
