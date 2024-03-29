@@ -1,6 +1,6 @@
 import itertools as itt
 from collections import OrderedDict
-
+from typing import Tuple, Union
 
 class SemanticError(Exception):
     @property
@@ -18,7 +18,7 @@ class Attribute:
     def __repr__(self):
         return str(self)
 
-class Method:
+class Function:
     def __init__(self, name, param_names, params_types, return_type):
         self.name = name
         self.param_names = param_names
@@ -34,7 +34,7 @@ class Method:
             other.return_type == self.return_type and \
             other.param_types == self.param_types
 
-class MethodDef:
+class FunctionDef:
     def __init__(self, name, param_names, params_types, return_type):
         self.name = name
         self.param_names = param_names
@@ -108,17 +108,17 @@ class Type:
             return next(method for method in self.methods if method.name == name)
         except StopIteration:
             if self.parent is None:
-                raise SemanticError(f'Method "{name}" is not defined in {self.name}.')
+                raise SemanticError(f'Function "{name}" is not defined in {self.name}.')
             try:
                 return self.parent.get_method(name)
             except SemanticError:
-                raise SemanticError(f'Method "{name}" is not defined in {self.name}.')
+                raise SemanticError(f'Function "{name}" is not defined in {self.name}.')
 
     def define_method(self, name:str, param_names:list, param_types:list, return_type):
         if name in (method.name for method in self.methods):
-            raise SemanticError(f'Method "{name}" already defined in {self.name}')
+            raise SemanticError(f'Function "{name}" already defined in {self.name}')
 
-        method = Method(name, param_names, param_types, return_type)
+        method = Function(name, param_names, param_types, return_type)
         self.methods.append(method)
         return method
 
@@ -163,9 +163,9 @@ class Protocol(Type):
 
     def define_method(self, name:str, param_names:list, param_types:list, return_type):
         if name in (method.name for method in self.methods_def):
-            raise SemanticError(f'Method "{name}" already defined in {self.name}')
+            raise SemanticError(f'Function "{name}" already defined in {self.name}')
 
-        method = MethodDef(name, param_names, param_types, return_type)
+        method = FunctionDef(name, param_names, param_types, return_type)
         self.methods_def.append(method)
         return method
 
@@ -177,7 +177,7 @@ class Protocol(Type):
 
     def all_attributes(self, clean=True):
         raise SemanticError(f'Protocol "{self.name}" has no attributes.')
-    
+
 class ErrorType(Type):
     def __init__(self):
         Type.__init__(self, '<error>')
@@ -210,6 +210,85 @@ class IntType(Type):
 
     def __eq__(self, other):
         return other.name == self.name or isinstance(other, IntType)
+
+class Variable:
+    def __init__(self, name, var_type):
+        self.name = name
+        self.var_type = var_type
+
+class Scope:
+    def __init__(self, parent = None, index = 0):
+        self.local_vars: list[Tuple[int, Variable]] = []
+        self.local_funcs: list[Tuple[int, Function]] = []
+        self.local_types: list[Tuple[int, Type]] = []
+        self.local_protocols: list[Tuple[int, Protocol]] = []
+        self.parent: Scope = parent
+        self.children: list[Tuple[int, Scope]] = []
+        self.index: int = 1
+        self.index_at_parent: int = index
+        # self.func_index_at_parent = 0 if parent is None else len(parent.local_funcs)
+        # self.type_index_at_parent = 0 if parent is None else len(parent.local_types)
+        # self.protocol_index_at_parent = 0 if parent is None else len(parent.local_protocols)
+        
+    def create_child_scope(self) -> "Scope":
+        self.index += 1
+
+        child_scope = Scope(self)
+        child_scope.index_at_parent = self.index
+        self.children.append((self.index, child_scope))
+        return child_scope
+
+    def define_variable(self, var_name:str, var_type:str) -> None:
+        self.index += 1
+        self.local_vars.append((self.index, Variable(var_name, var_type)))
+    
+    def define_function(self, func_name:str, param_names:list[str], param_types:list[str], return_type:str) -> None:
+        self.index += 1
+        self.local_funcs.append((self.index, Function(func_name, param_names, param_types, return_type)))
+
+    def define_type(self, type_name: str) -> None:
+        self.index += 1
+        self.local_types.append((self.index, type_name))
+
+    def get_local_variable(self, var_name: str, current_index = None) -> Union[Variable, SemanticError]:
+        for index, var in self.local_vars:
+            if current_index and index > current_index:
+                continue
+            if var_name == var.name:
+                return var
+
+        return self.parent.get_local_variable(var_name, self.index_at_parent) if self.parent else SemanticError(f'Variable "{var_name}" is not defined.')
+    
+    def get_local_function_info(self, fun_name:str, params_num:int, current_index = None) -> Union[Function, SemanticError]:
+        for index, fun in self.local_funcs:
+            if current_index and index > current_index:
+                continue
+            if fun_name == fun.name and len(fun.param_names) == params_num:
+                return fun
+
+        return self.parent.get_local_function_info(fun_name, params_num, self.index_at_parent) if self.parent else None
+
+    # def is_var_defined(self, vname):
+    #     if vname not in [var[0] for var in self.local_vars]:
+    #         if self.parent:
+    #             return self.parent.is_var_defined(vname)
+    #         else:
+    #             return False
+    #     return True
+    
+    # def is_func_defined(self, fname, n):
+    #     if (fname, n) not in [(fun[0][0], len(fun[0][1])) for fun in self.local_funcs]:
+    #         if self.parent:
+    #             return self.parent.is_func_defined(fname, n)
+    #         else:
+    #             return False
+    #     return True
+
+    # def is_local_var(self, vname):
+    #     return self.get_local_variable_info(vname) is not None
+    
+    # def is_local_func(self, fname, n):
+        return self.get_local_function_info(fname, n) is not None
 
 class Context:
     def __init__(self):
@@ -245,126 +324,3 @@ class Context:
 
     def __repr__(self):
         return str(self)
-
-class VariableInfo:
-    def __init__(self, name, vtype):
-        self.name = name
-        self.type = vtype
-
-class Scope:
-    def __init__(self, parent=None):
-        self.locals = []
-        self.parent = parent
-        self.children = []
-        self.index = 0 if parent is None else len(parent)
-
-    def __len__(self):
-        return len(self.locals)
-
-    def create_child(self):
-        child = Scope(self)
-        self.children.append(child)
-        return child
-
-    def define_variable(self, vname, vtype):
-        info = VariableInfo(vname, vtype)
-        self.locals.append(info)
-        return info
-
-    def find_variable(self, vname, index=None):
-        locals = self.locals if index is None else itt.islice(self.locals, index)
-        try:
-            return next(x for x in locals if x.name == vname)
-        except StopIteration:
-            return self.parent.find_variable(vname, self.index) if self.parent is None else None
-
-    def is_defined(self, vname):
-        return self.find_variable(vname) is not None
-
-    def is_local(self, vname):
-        return any(True for x in self.locals if x.name == vname)
-
-# Mauro's Scope
-
-class VariableInfo:
-    def __init__(self, name):
-        self.name = name
-
-class FunctionInfo:
-    def __init__(self, name, params):
-        self.name = name
-        self.params = params
-
-class TypeInfo:
-    def __init__(self, name):
-        self.name = name
-
-class ProtocolInfo:
-    def __init__(self, name):
-        self.name = name
-
-class Scope:
-    def __init__(self, parent = None):
-        self.local_vars = []
-        self.local_funcs = []
-        self.local_types = []
-        self.local_protocols = []
-        self.parent = parent
-        self.children = []
-        self.var_index_at_parent = 0 if parent is None else len(parent.local_vars)
-        self.func_index_at_parent = 0 if parent is None else len(parent.local_funcs)
-        self.type_index_at_parent = 0 if parent is None else len(parent.local_types)
-        self.protocol_index_at_parent = 0 if parent is None else len(parent.local_protocols)
-        
-    def create_child_scope(self):
-        child_scope = Scope(self)
-        self.children.append(child_scope)
-        return child_scope
-
-    def define_variable(self, vname):
-        self.local_vars.append((vname, len(self.children)))
-        self.create_child_scope()
-    
-    def define_function(self, fname, params):
-        self.local_funcs.append(((fname, params), len(self.children)))
-        self.create_child_scope()
-
-    def define_type(self, tname):
-        self.local_types.append((tname, len(self.children)))
-        self.create_child_scope()
-
-    def is_var_defined(self, vname):
-        if vname not in [var[0] for var in self.local_vars]:
-            if self.parent:
-                return self.parent.is_var_defined(vname)
-            else:
-                return False
-        return True
-    
-    
-    def is_func_defined(self, fname, n):
-        if (fname, n) not in [(fun[0][0], len(fun[0][1])) for fun in self.local_funcs]:
-            if self.parent:
-                return self.parent.is_func_defined(fname, n)
-            else:
-                return False
-        return True
-
-
-    def is_local_var(self, vname):
-        return self.get_local_variable_info(vname) is not None
-    
-    def is_local_func(self, fname, n):
-        return self.get_local_function_info(fname, n) is not None
-
-    def get_local_variable_info(self, vname):
-        for var in self.local_vars:
-            if vname == var[0]:
-                return VariableInfo(vname)
-        return
-    
-    def get_local_function_info(self, fname, n):
-        for func in self.local_funcs:
-            if (fname, n) == (func[0][0], func[0][1]):
-                return FunctionInfo(fname, func[1])
-        return
