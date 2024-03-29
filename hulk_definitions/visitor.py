@@ -535,26 +535,49 @@ class TypeBuilder(object):
         except SemanticError as se:
             self.errors.append(se.text)
 
-# class GlobalScopeConstructor(object):
-#     def __init__(self, scope: Scope, errors=[]):
-#         self.context = context
-#         self.errors = errors
+class GlobalScopeBuilder(object):
+    def __init__(self, context: Context, errors=[]):
+        self.context = context
+        self.errors = errors
+        self.global_scope = Scope()
+        self.global_scope.define_function('print', ['msg'], self.context.get_type('String').name)
+        self.global_scope.define_function('sin', ['x'], self.context.get_type('Number').name)
+        self.global_scope.define_function('cos', ['x'], self.context.get_type('Number').name)
+        
+        self.global_scope.define_variable('Pi', self.context.get_type('Number').name)
     
-#     @visitor.on('node')
-#     def visit(self, node):
-#         pass
+    @visitor.on('node')
+    def visit(self, node):
+        pass
     
-#     @visitor.when(Program)
-#     def visit(self, node: Program):
-#         for child in node.statements:
-#             if isinstance(child, TypeDef) or isinstance(child, Protocol):
-#                 self.visit(child, self.context)
+    @visitor.when(Program)
+    def visit(self, node: Program):
+        for child in node.statements:
+            self.visit(child, self.global_scope)
 
-#         return self.errors
+        return self.errors
 
-#     @visitor.when(Function)
-#     def visit(self, node: Function):
-#         pass
+    @visitor.when(Function)
+    def visit(self, node: Function, scope: Scope):
+        try:
+            scope.define_function(node.name, [p for p in node.params], node.type)
+        except SemanticError as se:
+            self.errors.append(se.text)
+
+        new_scope = scope.create_child_scope()
+
+        for param_name, param_type in node.params:
+            try:
+                new_scope.define_variable(param_name, param_type)
+            except SemanticError as se:
+                self.errors.append(se.text)
+
+        self.visit(node.body, new_scope)
+
+    @visitor.when(Div)
+    def visit(self, node: Div, scope: Scope):
+        self.visit(node.left, scope)
+        self.visit(node.right, scope)
 
 # class SemanticChecker(object):
 #     def __init__(self, context: Context, errors=[]):

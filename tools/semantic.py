@@ -19,10 +19,9 @@ class Attribute:
         return str(self)
 
 class Function:
-    def __init__(self, name, param_names, params_types, return_type):
+    def __init__(self, name, params, return_type):
         self.name = name
-        self.param_names = param_names
-        self.param_types = params_types
+        self.params = params
         self.return_type = return_type
 
     # def __str__(self):
@@ -260,8 +259,7 @@ class Scope:
     
     def define_function(self, func_name:str, params:list[Tuple[str, str]], return_type:str) -> None:
         self.index += 1
-        param_names, param_types = zip(*params)
-        self.local_funcs.append((self.index, Function(func_name, param_names, param_types, return_type)))
+        self.local_funcs.append((self.index, Function(func_name, params, return_type)))
 
     def define_type(self, type_name: str) -> None:
         self.index += 1
