@@ -35,7 +35,7 @@ def main(debug = True, verbose = False, force = False):
             "8_example_protocol.hlk",
             "9_example_vector.hlk",
             "11_example_expressions.hlk",
-            "12_example_functions.hlk",
+            # "12_example_functions.hlk",
             "13_example_variables.hlk",
             "14_example_conditionals.hlk",
             "15_example_loops.hlk",
