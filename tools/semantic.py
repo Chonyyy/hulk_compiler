@@ -261,6 +261,8 @@ class Scope:
     
     def define_function(self, func_name:str, params:list[Tuple[str, str]], return_type:str) -> None:
         self.index += 1
+        if self.get_local_function_info(func_name, len(params)):
+            raise SemanticError(f'Function "{func_name}" is already defined.')
         self.local_funcs.append((self.index, Function(func_name, params, return_type)))
 
     def define_type(self, type_name: str) -> None:
