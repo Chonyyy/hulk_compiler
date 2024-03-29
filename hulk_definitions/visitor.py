@@ -794,9 +794,9 @@ class GlobalScopeBuilder(object):
     def visit(self, node: TypeDef, scope: Scope):
         raise Exception('Error: TypeDef not implemented')
     
-    @visitor.when(Self)
-    def visit(self, node: Self, scope: Scope):
-        raise Exception('Error: Self not implemented')
+    @visitor.when(Base)
+    def visit(self, node: Base, scope: Scope):
+        raise Exception('Error: Base not implemented')
     
     @visitor.when(Property)
     def visit(self, node: Property, scope: Scope):
