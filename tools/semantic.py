@@ -259,6 +259,8 @@ class Scope:
     
     def define_function(self, func_name:str, params:list[Tuple[str, str]], return_type:str) -> None:
         self.index += 1
+        if self.get_local_function_info(func_name, len(params)):
+            raise SemanticError(f'Function "{func_name}" is already defined.')
         self.local_funcs.append((self.index, Function(func_name, params, return_type)))
 
     def define_type(self, type_name: str) -> None:
@@ -272,13 +274,13 @@ class Scope:
             if var_name == var.name:
                 return var
 
-        return self.parent.get_local_variable(var_name, self.index_at_parent) if self.parent else SemanticError(f'Variable "{var_name}" is not defined.')
+        return self.parent.get_local_variable(var_name, self.index_at_parent) if self.parent else None
     
     def get_local_function_info(self, fun_name:str, params_num:int, current_index = None) -> Union[Function, SemanticError]:
         for index, fun in self.local_funcs:
             if current_index and index > current_index:
                 continue
-            if fun_name == fun.name and len(fun.param_names) == params_num:
+            if fun_name == fun.name and len(fun.params) == params_num:
                 return fun
 
         return self.parent.get_local_function_info(fun_name, params_num, self.index_at_parent) if self.parent else None
