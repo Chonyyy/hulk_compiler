@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from hulk_definitions.ast import *
 from tools.semantic import Context, SemanticError, Type
 from tools import visitor
-from tools.semantic import Scope
+from tools.semantic import Scope, VariableInfo
 from typing import Union
 
 class FormatVisitor(object):
@@ -614,170 +614,182 @@ class TypeChecker(object):
         self.current_type = None
         self.current_method = None
         self.errors = errors
-    
+        
     @visitor.on('node')
     def visit(self, node, scope):
         pass
     
     @visitor.when(Program)
     def visit(self, node: Program, scope: Scope = None):
-        scope = Scope()
+        if not scope:
+            scope = Scope()
         for child in node.statements:
-            self.visit(child, scope.create_child_scope())
+            self.visit(child, scope)
         return scope
 
-    @visitor.when(LetList)
-    def visit(self, node: Let, scope):
-        for child in node.children:
-            child_scope = self.context.create_child_scope()
-            self.visit(child, child_scope)
-    
-    @visitor.when(Let)
-    def visit(self, node: Let, scope):
+    @visitor.when(Function)
+    def visit(self, node: Function, scope: Scope):
+        # Add function to the current scope
         try:
-            type_expr = self.visit(node.expr, scope)
-            if not type_expr.conforms(self.context.get_type(node.type)):
-                self.errors.append(f'TypeError: Type {type_expr.name} does not conform to {node.type}')
+            # Divide the params into names and types from node.params: List[Tuple[str, str]
+            param_names, param_types = [], []
+            return_type = None
+            if node.params:
+                param_names, param_types = zip(*node.params)
+            if node.type:
+                return_type = self.context.get_type(node.type)
+            scope.define_function(node.name, param_names, return_type)
         except SemanticError as se:
             self.errors.append(se.text)
 
-    # @visitor.when(Assign)
-    # def visit(self, node: Assign, ctx: Context):
-    #     try:
-    #         type_expr = self.visit(node.body, ctx)
-    #         if not type_expr.conforms(ctx.get_type(node.type)):
-    #             self.errors.append(f'TypeError: Type {type_expr.name} does not conform to {node.type}')
-    #     except SemanticError as se:
-    #         self.errors.append(se.text)
-
-    # @visitor.when(Conditional)
-    # def visit(self, node: Conditional, ctx: Context):
-    #     try:
-    #         type_expr = self.visit(node.if_expr, ctx)
-    #         if type_expr.name != 'Bool':
-    #             self.errors.append(f'TypeError: Type {type_expr.name} does not conform to Bool')
-    #     except SemanticError as se:
-    #         self.errors.append(se.text)
-
-    #     self.visit(node.if_body, ctx)
-    #     self.visit(node.else_body, ctx)
-
-    # @visitor.when(For)
-    # def visit(self, node: For, ctx: Context):
-    #     try:
-    #         type_expr = self.visit(node.collection, ctx)
-    #         if type_expr.name != 'Vector':
-    #             self.errors.append(f'TypeError: Type {type_expr.name} does not conform to Vector')
-    #     except SemanticError as se:
-    #         self.errors.append(se.text)
-
-    #     self.visit(node.body, ctx)
-
-    # @visitor.when(While)
-    # def visit(self, node: While, ctx: Context):
-    #     try:
-    #         type_expr = self.visit(node.stop, ctx)
-    #         if type_expr.name != 'Bool':
-    #             self.errors.append(f'TypeError: Type {type_expr.name} does not conform to Bool')
-    #     except SemanticError as se:
-    #         self.errors.append(se.text)
-
-    #     self.visit(node.body, ctx)
-
-    # @visitor.when(Block)
-    # def visit(self, node: Block, ctx: Context):
-    #     for child in node.body:
-    #         self.visit(child, ctx)
-
-    # @visitor.when(Call)
-    # def visit(self, node: Call, ctx: Context):
-    #     try:
-    #         obj_type = self.visit(node.obj, ctx)
-    #         if not obj_type.has_method(node.idx):
-    #             self.errors.append(f'TypeError: Type {obj_type.name} does not have method {node.idx}')
-    #         else:
-    #             method = obj_type.get_method(node.idx)
-    #             if len(node.args) != len(method.params):
-    #                 self.errors.append(f'TypeError: Method {node.idx} expects {len(method.params)} arguments, got {len(node.args)}')
-    #             else:
-    #                 for arg, param in zip(node.args, method.params):
-    #                     arg_type = self.visit(arg, ctx)
-    #                     if not arg_type.conforms(param):
-    #                         self.errors.append(f'TypeError: Type {arg_type.name} does not conform to {param}')
-    #     except SemanticError as se:
-    #         self.errors.append(se.text)
-
-    # @visitor.when(Invoke)
-    # def visit(self, node: Invoke, ctx: Context):
-    #     try:
-    #         obj_type = self.visit(node.container, ctx)
-    #         if not obj_type.has_attribute(node.lex):
-    #             self.errors.append(f'TypeError: Type {obj_type.name} does not have attribute {node.lex}')
-    #     except SemanticError as se:
-    #         self.errors.append(se.text)
-
-    # @visitor.when(Indexing)
-    # def visit(self, node: Indexing, ctx: Context):
-    #     try:
-    #         obj_type = self.visit(node.lex, ctx)
-    #         if obj_type.name != 'Vector':
-    #             self.errors.append(f'TypeError: Type {obj_type.name} does not conform to Vector')
-    #         else:
-    #             index_type = self.visit(node.index, ctx)
-    #             if index_type.name != 'Number':
-    #                 self.errors.append(f'TypeError: Type {index_type.name} does not conform to Number')
-    #     except SemanticError as se:
-    #         self.errors.append(se.text)
-
-    # @visitor.when(VectorComprehension)
-    # def visit(self, node: VectorComprehension, ctx: Context):
-    #     try:
-    #         operation_type = self.visit(node.operation, ctx)
-    #         if operation_type.name != 'Number':
-    #             self.errors.append(f'TypeError: Type {operation_type.name} does not conform to Number')
-    #     except SemanticError as se:
-    #         self.errors.append(se.text)
-
-    # @visitor.when(Unary)
-    # def visit(self, node: Unary, ctx: Context):
-    #     return self.visit(node.right, ctx)
+        body_scope = scope.create_child_scope()
+        for i in range(0,len(node.params)):
+            body_scope.define_variable(node.params[i][0], node.params[i][1])
+            
+        # Verificar los parámetros de la función
+        for param_name, param_type in node.params:
+            # Asegurarse de que el tipo del parámetro esté definido en el contexto
+            try:
+                declared_type = self.context.get_type(param_type)
+            except SemanticError as se:
+                self.errors.append(se.text)
+                continue
     
-    # @visitor.when(Binary)
-    # def visit(self, node: Binary, ctx: Context):
-    #     left = self.visit(node.left, ctx)
-    #     right = self.visit(node.right, ctx)
-    #     if left.name != right.name:
-    #         self.errors.append(f'TypeError: Type {left.name} does not conform to {right.name}')
-    #     return left
+            # Agregar el parámetro al alcance de la función con su tipo
+            body_scope.define_variable(param_name)
     
-    # @visitor.when(Plus)
-    # def visit(self, node: Plus, ctx: Context):
-    #     return self.visit(node.left, ctx)
+        # Verificar el cuerpo de la función
+        body_type = self.visit(node.body, body_scope)
     
-    # @visitor.when(BinaryMinus)
-    # def visit(self, node: BinaryMinus, ctx: Context):
-    #     return self.visit(node.left, ctx)
+        # Verificar que el tipo de retorno de la función sea compatible con el tipo declarado
+        if node.type is not None:
+            declared_return_type = self.context.get_type(node.type)
+            if not body_type.conforms(declared_return_type):
+                self.errors.append(f'TypeError: Return type {body_type.name} does not conform to declared return type {node.type}')
+            
     
-    # @visitor.when(Star)
-    # def visit(self, node: Star, ctx: Context):
-    #     return self.visit(node.left, ctx)
+        # Devolver el tipo de retorno de la función
+        return declared_return_type
     
-    # @visitor.when(Pow)
-    # def visit(self, node: Pow, ctx: Context):
-    #     return self.visit(node.left, ctx)
     
-    # @visitor.when(Div)
-    # def visit(self, node: Div, ctx: Context):
-    #     return self.visit(node.left, ctx)
+    @visitor.when(Call)
+    def visit(self, node: Call, scope: Scope):
+        # Obtener la función llamada por su nombre
+        try:
+            function = scope.get_local_function_info(node.lex, len(node.args))
+        except SemanticError as se:
+            self.errors.append(se.text)
+            return self.context.get_type('ErrorType') # Retornar un tipo de error como marcador de posición
     
-    # @visitor.when(Mod)
-    # def visit(self, node: Mod, ctx: Context):
-    #     return self.visit(node.left, ctx)
+        # Verificar que el número de argumentos sea correcto
+        if len(node.args) != len(function.params):
+            self.errors.append(f'TypeError: Incorrect number of arguments for function {node.idx}')
+            return self.context.get_type('ErrorType') # Retornar un tipo de error como marcador de posición
     
-    # @visitor.when(Is)
-    # def visit(self, node: Is, ctx: Context):
-    #     return self.visit(node.left, ctx)
+        # Verificar que los tipos de los argumentos sean compatibles con los parámetros de la función
+        for arg, param_type in zip(node.args, function.params):
+            # arg_type = self.visit(arg, scope)
+            arg_type = self.context.get_type(scope.get_local_variable_info(arg.lex))
+            param_type = self.context.get_type(param_type[1])
+            if not arg_type.conforms(param_type):
+                self.errors.append(f'TypeError: Argument type {arg_type.name} does not conform to parameter type {param_type.name} in function call {node.idx}')
     
-    # @visitor.when(As)
-    # def visit(self, node: As, ctx: Context):
-    #     return self.visit(node.left, ctx)
+        # Devolver el tipo de retorno de la función
+        return function.function_type
+    
+    @visitor.when(LetList)
+    def visit(self, node: Let, scope: Scope):
+        for child in node.children:
+            child_scope = scope.create_child_scope()
+            self.visit(child, child_scope)
+        return scope
+    
+    @visitor.when(Let)
+    def visit(self, node: Let, scope: Scope):
+        # Realizar el chequeo de tipos para la expresión asignada
+        type_expr = self.visit(node.expr, scope)
+        
+        # Verificar que el tipo de la expresión sea compatible con el tipo declarado
+        if node.type is not None:
+            declared_type = self.context.get_type(node.type)
+            if not type_expr.conforms(declared_type):
+                self.errors.append(f'TypeError: Type {type_expr.name} does not conform to {node.type}')
+        
+        # Agregar la variable al alcance actual con su tipo
+        scope.define_variable(node.name)
+        return scope
+
+    @visitor.when(Binary)
+    def visit(self, node: Binary, scope: Scope):
+        type_left = self.visit(node.left, scope)
+        type_right = self.visit(node.right, scope)
+        
+        # Verificar que los tipos de los operandos sean compatibles con la operación
+        if not type_left.conforms(type_right):
+            self.errors.append(f'TypeError: Type {type_left.name} does not conform to {type_right.name} in binary operation')
+        
+        return type_left
+    
+    @visitor.when(Print)
+    def visit(self, node: Print, scope: Scope):
+        # Verificar que los argumentos de la función print sean del tipo correcto
+        for arg in node.args:
+            arg_type = self.visit(arg, scope)
+          
+        # La función print no tiene un tipo de retorno, por lo que se puede devolver un tipo void
+        return self.context.get_type('Void')
+    
+    @visitor.when(Str)
+    def visit(self, node: Number, scope: Scope):
+        # El tipo de un Number es predefinido como "Number"
+        return self.context.get_type('Str')
+    
+    @visitor.when(Number)
+    def visit(self, node: Number, scope: Scope):
+        # El tipo de un Number es predefinido como "Number"
+        return self.context.get_type('Number')
+    
+    @visitor.when(Bool)
+    def visit(self, node: Number, scope: Scope):
+        # El tipo de un Number es predefinido como "Number"
+        return self.context.get_type('Bool')
+    
+    @visitor.when(Sin)
+    def visit(self, node: Sin, scope: Scope):
+        # Verificar que el argumento de la función sin es del tipo correcto
+        # for arg in node.args:
+        #     type_arg = scope.get_local_variable_info(arg.lex) # TODO DEVOLVER EL TIPO DE LA VAR DEL SCOPE
+        #     if not type_arg.conforms(self.context.get_type('Number')):
+        #         self.errors.append(f'TypeError: Argument of sin function must be of type Number')
+        # Devolver el tipo de la función sin, que es Number
+        return self.context.get_type('Number')
+    
+    @visitor.when(Cos)
+    def visit(self, node: Cos, scope: Scope):
+        # Verificar que el argumento de la función cos es del tipo correcto
+        # for arg in node.args:
+        #     type_arg = self.visit(arg, scope)
+        #     if not type_arg.conforms(self.context.get_type('Number')): #TODO LO MISMO
+        #         self.errors.append(f'TypeError: Argument of cos function must be of type Number')
+        # Devolver el tipo de la función cos, que es Number
+        return self.context.get_type('Number')
+    
+    @visitor.when(Log)
+    def visit(self, node: Log, scope: Scope):
+        # Verificar que los argumentos de la función log sean del tipo correcto
+        for arg in node.args:
+            arg_type = self.visit(arg, scope)
+            if not arg_type.conforms(self.context.get_type('Number')):
+                self.errors.append(f'TypeError: Argument of log function must be of type Number')
+        # Devolver el tipo de la función log, que es Number
+        return self.context.get_type('Number')
+    
+    @visitor.when(Sqrt)
+    def visit(self, node: Sqrt, scope: Scope):
+        # Verificar que los argumentos de la función sqrt sean del tipo correcto
+        for arg in node.args:
+            arg_type = self.visit(arg, scope)
+            if not arg_type.conforms(self.context.get_type('Number')):
+                self.errors.append(f'TypeError: Argument of sqrt function must be of type Number')
+        # Devolver el tipo de la función sqrt, que es Number
+        return self.context.get_type('Number')

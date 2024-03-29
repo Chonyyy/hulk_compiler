@@ -58,6 +58,20 @@ class Type:
         self.args = []
         self.parent = None
 
+    def conforms(self, other):
+        # Si el tipo actual es el mismo que el otro tipo, entonces conforma
+        if self == other:
+            return True
+        # Si el tipo actual tiene un tipo padre y este conforma con el otro tipo, entonces también conforma
+        elif self.parent is not None and self.parent.conforms(other):
+            return True
+        # Si el tipo actual es un tipo especial que puede conformar con cualquier otro tipo, entonces conforma
+        elif self.bypass():
+            return True
+        # En cualquier otro caso, el tipo actual no conforma con el otro tipo
+        else:
+            return False
+    
     def set_parent(self, parent):
         if self.parent is not None:
             raise SemanticError(f'Parent type is already set for {self.name}.')
@@ -287,13 +301,15 @@ class Scope:
 # Mauro's Scope
 
 class VariableInfo:
-    def __init__(self, name):
+    def __init__(self, name, var_type):
         self.name = name
+        self.var_type = var_type
 
 class FunctionInfo:
-    def __init__(self, name, params):
+    def __init__(self, name, params, function_type):
         self.name = name
         self.params = params
+        self.function_type = function_type
 
 class TypeInfo:
     def __init__(self, name):
@@ -321,15 +337,15 @@ class Scope:
         self.children.append(child_scope)
         return child_scope
 
-    def define_variable(self, vname):
-        self.local_vars.append((vname, len(self.children)))
+    def define_variable(self, var_name, var_type= None):
+        self.local_vars.append(VariableInfo(var_name, var_type))
         self.create_child_scope()
     
-    def define_function(self, fname, params):
-        self.local_funcs.append(((fname, params), len(self.children)))
+    def define_function(self, fun_name, params, function_type):
+        self.local_funcs.append(FunctionInfo(fun_name, params, function_type))
         self.create_child_scope()
 
-    def define_type(self, tname):
+    def define_type(self, tname):#TODO check
         self.local_types.append((tname, len(self.children)))
         self.create_child_scope()
 
@@ -341,7 +357,6 @@ class Scope:
                 return False
         return True
     
-    
     def is_func_defined(self, fname, n):
         if (fname, n) not in [(fun[0][0], len(fun[0][1])) for fun in self.local_funcs]:
             if self.parent:
@@ -349,7 +364,6 @@ class Scope:
             else:
                 return False
         return True
-
 
     def is_local_var(self, vname):
         return self.get_local_variable_info(vname) is not None
@@ -359,12 +373,15 @@ class Scope:
 
     def get_local_variable_info(self, vname):
         for var in self.local_vars:
-            if vname == var[0]:
-                return VariableInfo(vname)
+            if vname == var.name:
+                return var.var_type
         return
     
-    def get_local_function_info(self, fname, n):
+    def get_local_function_info(self, fname, n):# TODO: CHange this so it also looks information on parent scopes
         for func in self.local_funcs:
-            if (fname, n) == (func[0][0], func[0][1]):
-                return FunctionInfo(fname, func[1])
+            # if (fname, n) == (func[0][0], func[0][1]):
+            a = func.name
+            b = len(func.params)
+            if fname == a and  n == b :
+                return FunctionInfo(fname, func.params, func.function_type)
         return
