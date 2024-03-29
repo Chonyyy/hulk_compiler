@@ -256,8 +256,9 @@ class Scope:
         self.index += 1
         self.local_vars.append((self.index, Variable(var_name, var_type)))
     
-    def define_function(self, func_name:str, param_names:list[str], param_types:list[str], return_type:str) -> None:
+    def define_function(self, func_name:str, params:list[Tuple[str, str]], return_type:str) -> None:
         self.index += 1
+        param_names, param_types = zip(*params)
         self.local_funcs.append((self.index, Function(func_name, param_names, param_types, return_type)))
 
     def define_type(self, type_name: str) -> None:
