@@ -545,6 +545,7 @@ class GlobalScopeBuilder(object):
         self.global_scope.define_function('cos', ['x'], self.context.get_type('Number').name)
         
         self.global_scope.define_variable('Pi', self.context.get_type('Number').name)
+        self.global_scope.define_variable('E', self.context.get_type('Number').name)
     
     @visitor.on('node')
     def visit(self, node):
@@ -574,10 +575,42 @@ class GlobalScopeBuilder(object):
 
         self.visit(node.body, new_scope)
 
-    @visitor.when(Div)
-    def visit(self, node: Div, scope: Scope):
+    @visitor.when(Block)
+    def visit(self, node: Block, scope: Scope):
+        for child in node.body:
+            self.visit(child, scope)
+
+    @visitor.when(Binary)
+    def visit(self, node: Binary, scope: Scope):
         self.visit(node.left, scope)
         self.visit(node.right, scope)
+
+    @visitor.when(Call)
+    def visit(self, node: Call, scope: Scope):
+        if not scope.get_local_function_info(node.idx, len(node.args)):
+            self.errors.append(f'Function {node.idx} not defined')
+
+        for arg in node.args:
+            self.visit(arg, scope)
+
+    @visitor.when(Var)
+    def visit(self, node: Var, scope: Scope):
+        if not scope.get_local_variable(node.lex):
+            self.errors.append(f'Variable {node.lex} not defined')
+
+    @visitor.when(LetList)
+    def visit(self, node: LetList, scope: Scope):
+        self.visit(node.child, scope)
+
+    @visitor.when(Let)
+    def visit(self, node: Let, scope: Scope):
+        new_scope = scope.create_child_scope()
+        try:
+            new_scope.define_variable(node.name, node.type)
+        except SemanticError as se:
+            self.errors.append(se.text)
+
+        self.visit(node.scope, new_scope)
 
 # class SemanticChecker(object):
 #     def __init__(self, context: Context, errors=[]):
