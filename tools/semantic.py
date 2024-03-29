@@ -274,7 +274,7 @@ class Scope:
             if var_name == var.name:
                 return var
 
-        return self.parent.get_local_variable(var_name, self.index_at_parent) if self.parent else SemanticError(f'Variable "{var_name}" is not defined.')
+        return self.parent.get_local_variable(var_name, self.index_at_parent) if self.parent else None
     
     def get_local_function_info(self, fun_name:str, params_num:int, current_index = None) -> Union[Function, SemanticError]:
         for index, fun in self.local_funcs:
