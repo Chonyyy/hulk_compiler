@@ -36,7 +36,6 @@ eof = G.EOF
 #region Productions Definition
 program %= stat_list, lambda h,s: Program(s[1]) #1
 
-
 stat_list %= eexpr, lambda h,s: s[1] #2
 stat_list %= definitions + eexpr, lambda h,s: s[1] + s[2] #3
 
@@ -44,7 +43,9 @@ definitions %= definition, lambda h,s: [s[1]] #4
 definitions %= definition + definitions, lambda h,s: [s[1]] + s[2] #5
 
 definition %= protocol, lambda h,s: s[1] #6
+definition %= protocol + semi, lambda h,s: s[1] #6
 definition %= def_type, lambda h,s: s[1] #7
+definition %= def_type + semi, lambda h,s: s[1] #7
 definition %= def_func, lambda h,s: s[1] #8
 
 eexpr %= expr + semi, lambda h,s: [s[1]] #9
@@ -53,15 +54,15 @@ eexpr %= expr_block + semi, lambda h,s: [s[1]] #11
 
 expr %= atom + dassign + expr, lambda h,s: Assign(s[1], s[3]) #12
 expr %= let + var_corpse + inx + expr, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]]) #13
-expr %= atom + asx + idx, lambda h,s: As(s[1], s[3]) #14
-expr %= atom + asx + strx, lambda h,s: As(s[1], s[3]) #15
-expr %= atom + asx + numx, lambda h,s: As(s[1], s[3]) #16
-expr %= atom + asx + objx, lambda h,s: As(s[1], s[3]) #17
-expr %= atom + asx + boolx, lambda h,s: As(s[1], s[3]) #18
+expr %= idx + asx + idx, lambda h,s: As(s[1], s[3]) #14
+expr %= idx + asx + strx, lambda h,s: As(s[1], s[3]) #15
+expr %= idx + asx + numx, lambda h,s: As(s[1], s[3]) #16
+expr %= idx + asx + objx, lambda h,s: As(s[1], s[3]) #17
+expr %= idx + asx + boolx, lambda h,s: As(s[1], s[3]) #18
 expr %= newx + func_call, lambda h,s: CreateInstance(s[2].idx, s[2].args) #19
 expr %= or_expr, lambda h,s: s[1] #20
-expr %= or_expr + datx + or_expr, lambda h,s: DoubleAt(s[1], s[3]) #21
-expr %= or_expr + atx + or_expr, lambda h,s: At(s[1], s[3]) #22
+expr %= or_expr + datx + expr, lambda h,s: DoubleAt(s[1], s[3]) #21
+expr %= or_expr + atx + expr, lambda h,s: At(s[1], s[3]) #22
 expr %= ifx + opar + expr + cpar + expr + elsex + expr, lambda h,s: Conditional(s[3], s[5], s[7]) #23
 expr %= ifx + opar + expr + cpar + expr_block + elsex + expr, lambda h,s: Conditional(s[3], s[5], s[7]) #24
 expr %= ifx + opar + expr_block + cpar + expr + elsex + expr, lambda h,s: Conditional(s[3], s[5], s[7]) #25
@@ -77,6 +78,8 @@ expr %= forx + opar + idx + inx + expr_block + cpar + expr, lambda h,s: For(s[3]
 
 expr_block %= obracket + block_corpse + cbracket, lambda h,s: Block(s[2]) #34
 expr_block %= atom + dassign + expr_block, lambda h,s: Assign(s[1], s[3]) #35
+expr_block %= or_expr + datx + expr_block, lambda h,s: DoubleAt(s[1], s[3]) 
+expr_block %= or_expr + atx + expr_block, lambda h,s: At(s[1], s[3])
 expr_block %= let + var_corpse + inx + expr_block, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]]) #36
 expr_block %= ifx + opar + expr + cpar + expr + elsex + expr_block, lambda h,s: Conditional(s[3], s[5], s[7]) #37
 expr_block %= ifx + opar + expr + cpar + expr_block + elsex + expr_block, lambda h,s: Conditional(s[3], s[5], s[7]) #38
@@ -114,6 +117,8 @@ def_func %= func + idx + opar + arg_list + cpar + arrow + eexpr, lambda h,s: Fun
 def_func %= func + idx + opar + arg_list + cpar + typed + arrow + eexpr, lambda h,s: Function(s[2], s[4], s[7], s[5]) #64
 def_func %= func + idx + opar + arg_list + cpar + expr_block, lambda h,s: Function(s[2], s[4], s[6]) #65
 def_func %= func + idx + opar + arg_list + cpar + typed + expr_block, lambda h,s: Function(s[2], s[4], s[7], s[5]) #66
+def_func %= func + idx + opar + arg_list + cpar + expr_block + semi, lambda h,s: Function(s[2], s[4], s[6]) #65
+def_func %= func + idx + opar + arg_list + cpar + typed + expr_block + semi, lambda h,s: Function(s[2], s[4], s[7], s[5]) #66
 
 arg_list %= idx, lambda h,s: [(s[1], None)] #67
 arg_list %= idx + typed, lambda h,s: [(s[1], s[2])] #68
