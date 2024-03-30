@@ -1,7 +1,7 @@
 import itertools as itt
 from collections import OrderedDict
 from typing import Tuple, Union
-
+from typing import Callable
 class SemanticError(Exception):
     @property
     def text(self):
@@ -309,6 +309,77 @@ class Scope:
     # def is_local_func(self, fname, n):
         return self.get_local_function_info(fname, n) is not None
 
+
+class ScopeInterpreter:
+    def __init__(self, parent = None, index = 0):
+        self.local_vars: dict = {}
+        self.local_funcs: dict = {}
+        self.local_types: dict = {}
+        self.local_protocols: dict = {}
+        self.parent: ScopeInterpreter = parent
+        self.children: list[Tuple[int, ScopeInterpreter]] = []
+        self.index: int = 1
+        self.index_at_parent: int = index
+        
+    def create_child_scope(self) -> "ScopeInterpreter":
+        self.index += 1
+
+        child_scope = ScopeInterpreter(self)
+        child_scope.index_at_parent = self.index
+        self.children.append((self.index, child_scope))
+        return child_scope
+
+    def define_variable(self, var_name:str, var, var_type = None) -> None:
+        self.index += 1
+        # if self.get_local_variable(var_name):
+        #     raise SemanticError(f'Variable "{var_name}" is already defined.')
+        self.local_vars[var_name] = (var,var_type)
+    
+    def define_function(self, func_name:str, func: Callable) -> None:
+        self.index += 1
+        if self.get_local_function(func_name):
+            raise SemanticError(f'Function "{func_name}" is already defined.')
+        self.local_funcs[func_name] = func
+        
+    def define_protocol(self, var_name:str, var_type) -> None:
+        if self.get_local_protocol(var_name):
+            raise SemanticError(f'Protocol "{var_name}" is already defined.')
+        self.local_protocols[var_name] = var_type
+    
+    def define_type(self, var_name:str, var_type) -> None:
+        if self.get_local_type(var_name):
+            raise SemanticError(f'Type "{var_name}" is already defined.')
+        self.local_types[var_name] = var_type
+
+    def get_local_variable(self, var_name: str) -> Union[Variable, SemanticError]:
+        for var in self.local_vars:
+            if var_name == var:
+                return self.local_vars[var]
+
+        return self.parent.get_local_variable(var_name) if self.parent else None
+    
+    def get_local_function(self, fun_name:str) -> Union[Function, SemanticError]:
+        for fun in self.local_funcs:
+            if fun_name == fun:
+                return self.local_funcs[fun_name]
+
+        return self.parent.get_local_function(fun_name) if self.parent else None
+
+    def get_local_protocol(self, fun_name:str):
+        for fun in self.local_protocols:
+            if fun_name == fun:
+                return self.local_protocols[fun_name]
+
+        return self.parent.get_local_protocol(fun_name) if self.parent else None
+
+    def get_local_type(self, fun_name:str):
+        for fun in self.local_types:
+            if fun_name == fun:
+                return self.local_types[fun_name]
+
+        return self.parent.get_local_type(fun_name) if self.parent else None
+
+
 class Context:
     def __init__(self):
         self.types = {}
@@ -349,3 +420,5 @@ class Context:
 
     def __repr__(self):
         return str(self)
+
+

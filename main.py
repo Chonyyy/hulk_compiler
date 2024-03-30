@@ -5,6 +5,7 @@ from parser_gen.parser_lr1 import LR1Parser as My_Parser
 from tools.evaluation import evaluate_reverse_parse
 from tools.semantic import Context, Scope
 from hulk_definitions.visitor import FormatVisitor, TypeCollector, TypeBuilder, TypeChecker, GlobalScopeBuilder
+from hulk_definitions.interpreter import Interpreter
 
 import sys,logging
 
@@ -36,13 +37,13 @@ def main(debug = True, verbose = False, force = False):
             "9_example_vector.hlk",
             "11_example_expressions.hlk",
             "12_example_functions.hlk",
-            "13_example_variables.hlk",#---------------
+            "13_example_variables.hlk",
             "14_example_conditionals.hlk",
-            # "15_example_loops.hlk",
+            "15_example_loops.hlk",
             # "16_example_types.hlk",
-            # "17_example_type_checking.hlk",
-            # "18_example_protocol.hlk",
-            # "19_example_vector.hlk",
+            "17_example_type_checking.hlk",
+            "18_example_protocol.hlk",
+            "19_example_vector.hlk",
             "testing_TypeChecker.hlk"
         ]:
             continue
@@ -77,30 +78,38 @@ def main(debug = True, verbose = False, force = False):
                     iterable_protocol.define_method("next", [], [], "Object")
                     iterable_protocol.define_method("current", [], [], "Object")
 
-            collector = TypeCollector(context, errors)
-            collector.visit(ast)
-            context = collector.context
+            # collector = TypeCollector(context, errors)
+            # collector.visit(ast)
+            # context = collector.context
 
-            logger.info('=== Building Types ===')
-            builder = TypeBuilder(context, errors)
-            builder.visit(ast)
-            context = builder.context
+            # logger.info('=== Building Types ===')
+            # builder = TypeBuilder(context, errors)
+            # builder.visit(ast)
+            # context = builder.context
             # print('Errors:', errors)
             # print('Context:')
             # print(context)
 
-            logger.info('=== Building Global Scope ===')
-            global_scope_builder = GlobalScopeBuilder(context, errors)
-            global_scope_builder.visit(ast)
-            global_scope = global_scope_builder.global_scope
+            # logger.info('=== Building Global Scope ===')
+            # global_scope_builder = GlobalScopeBuilder(context, errors)
+            # global_scope_builder.visit(ast)
+            
+            # global_scope = global_scope_builder.global_scope
 
-            logger.info('=== Type Inference ===')
+            # logger.info('=== Type Inference ===')
 
-            logger.info('=== Type Checking ===')
-            checker = TypeChecker(context,  errors)
-            checker.visit(ast)
-            context = checker.context
-            # global_scope = checker.scope
+            # logger.info('=== Type Checking ===')
+            # checker = TypeChecker(context,  errors)
+            # checker.visit(ast)
+            # context = checker.context
+            
+            # logger.info('=== Interpreter ===')
+            
+            inter = Interpreter( context, errors)
+            inter.visit(ast)
+            
+            
+            
             
 
 

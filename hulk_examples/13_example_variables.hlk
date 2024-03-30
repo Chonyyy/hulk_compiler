@@ -1,22 +1,22 @@
 let msg: String = "Hello World" in print(msg);
 let number: Number = 42, text: String = "The meaning of life is" in
     print(text @ number);
-let number: Number = 42 in
+let number1: Number = 42 in
     let text: String = "The meaning of life is" in
-        print(text @ number);
-let number: Number = 42 in (
+        print(text @ number1);
+let number2: Number = 42 in (
     let text: String = "The meaning of life is" in (
-            print(text @ number)
+            print(text @ number2)
         )
     );
 let a: Number = 6, b: Number = a * 7 in print(b);
-let a: Number = 6 in
-    let b: Number = a * 7 in
+let a1: Number = 6 in
+    let b: Number = a1 * 7 in
         print(b);
-let a: Number = 5, b: Number = 10, c: Number = 20 in {
-    print(a+b);
+let a2: Number = 5, b: Number = 10, c: Number = 20 in {
+    print(a2+b);
     print(b*c);
-    print(c/a);
+    print(c/a2);
 }
 let a: Number = (let b: Number = 6 in b * 7) in print(a);
 print(let b: Number = 6 in b * 7);

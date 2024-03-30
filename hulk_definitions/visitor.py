@@ -760,9 +760,12 @@ class TypeChecker(object):
     @visitor.when(Program)
     def visit(self, node: Program, scope: Scope = None):
         if not scope:
-            scope = Scope()
+            self.scope = Scope()
+        if scope:
+            self.scope = scope
+            
         for child in node.statements:
-            self.visit(child, scope)
+            self.visit(child, self.scope)
 
 
     @visitor.when(Function)
