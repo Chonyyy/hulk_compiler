@@ -272,7 +272,7 @@ type_corpse %= method_block + type_corpse, lambda h,s: [s[1]] + s[2]
 type_corpse %= method_block + semi + type_corpse, lambda h,s: [s[1]] + s[3]
 type_corpse %= prop + semi, lambda h,s: [s[1]]
 
-atom %= selfx, lambda h,s: Self(s[1])
+atom %= selfx, lambda h,s: Base(s[1])
 
 prop %= idx + equal + expr, lambda h,s: Property(s[1], s[3])
 prop %= idx + typed + equal + expr, lambda h,s: Property(s[1], s[4], s[2])
