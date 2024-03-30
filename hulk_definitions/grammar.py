@@ -94,8 +94,8 @@ expr_block %= whilex + opar + expr_block + cpar + expr_block, lambda h,s: While(
 expr_block %= forx + opar + idx + inx + expr + cpar + expr_block, lambda h,s: For(s[3], s[5], s[7]) #47
 expr_block %= forx + opar + idx + inx + expr_block + cpar + expr_block, lambda h,s: For(s[3], s[5], s[7]) #48
 
-block_corpse %= eexpr, lambda h,s: [s[1]] #49
-block_corpse %= block_corpse + eexpr, lambda h,s: s[1] + [s[2]] #50
+block_corpse %= eexpr, lambda h,s: s[1] #49
+block_corpse %= block_corpse + eexpr, lambda h,s: s[1] + s[2] #50
 
 var_corpse %= idx + equal + expr, lambda h,s: [[s[1], s[3], None]] #51
 var_corpse %= idx + equal + expr + comma + var_corpse, lambda h,s: [[s[1], s[3], None]] + s[5] #52

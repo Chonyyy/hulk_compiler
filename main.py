@@ -29,12 +29,12 @@ def main(debug = True, verbose = False, force = False):
 
     for i, file in enumerate(files):
         if file in [
-            # "1_example_expressions.hlk",
-            # "2_example_functions.hlk",
-            # "3_example_variables.hlk",
-            # "4_example_conditionals.hlk",
-            # "5_example_loops.hlk",
-            # "6_example_types.hlk",
+            "1_example_expressions.hlk",
+            "2_example_functions.hlk",
+            "3_example_variables.hlk",
+            "4_example_conditionals.hlk",
+            "5_example_loops.hlk",
+            "6_example_types.hlk",
             # "7_example_type_checking.hlk",
             # "8_example_protocol.hlk",
             # "9_example_vector.hlk",
@@ -63,8 +63,8 @@ def main(debug = True, verbose = False, force = False):
             
             logger.info('=== Visualizing AST ===')
             formatter = FormatVisitor()
-            tree = formatter.visit(ast)
-            print(tree)
+            # tree = formatter.visit(ast)
+            # print(tree)
             
             logger.info('=== Collecting Types ===')
             errors = []
@@ -85,14 +85,12 @@ def main(debug = True, verbose = False, force = False):
             builder = TypeBuilder(context, errors)
             builder.visit(ast)
             context = builder.context
-            print('Errors:', errors)
-            print('Context:')
-            print(context)
 
             logger.info('=== Building Global Scope ===')
-            # global_scope_builder = GlobalScopeBuilder(context, errors)
-            # global_scope_builder.visit(ast)
-            # global_scope = global_scope_builder.global_scope
+            global_scope_builder = GlobalScopeBuilder(context, errors)
+            global_scope_builder.visit(ast)
+            global_scope = global_scope_builder.global_scope
+            print('Errors:', errors)
 
             logger.info('=== Type Inference ===')
 
