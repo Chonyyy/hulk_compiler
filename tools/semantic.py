@@ -90,7 +90,8 @@ class Type:
         try:
             self.get_attribute(name)
         except SemanticError:
-            attribute = Attribute(name, typex)
+            attr_type = typex if typex else None
+            attribute = Attribute(name, attr_type)
             self.attributes.append(attribute)
             return attribute
         else:
@@ -266,23 +267,40 @@ class Scope:
         self.index += 1
         self.local_types.append((self.index, type_name))
 
-    def get_local_variable(self, var_name: str, current_index = None) -> Union[Variable, SemanticError]:
+    def get_variable(self, var_name: str, current_index = None) -> Union[Variable, None]:
         for index, var in self.local_vars:
             if current_index and index > current_index:
                 continue
             if var_name == var.name:
                 return var
 
-        return self.parent.get_local_variable(var_name, self.index_at_parent) if self.parent else None
+        return self.parent.get_variable(var_name, self.index_at_parent) if self.parent else None
     
-    def get_local_function_info(self, fun_name:str, params_num:int, current_index = None) -> Union[Function, SemanticError]:
+    def get_local_variable(self, var_name: str, current_index = None) -> Union[Variable, None]:
+        for index, var in self.local_vars:
+            if current_index and index > current_index:
+                continue
+            if var_name == var.name:
+                return var
+        return None
+
+    def get_function_info(self, fun_name:str, params_num:int, current_index = None) -> Union[Function, None]:
         for index, fun in self.local_funcs:
             if current_index and index > current_index:
                 continue
             if fun_name == fun.name and len(fun.params) == params_num:
                 return fun
 
-        return self.parent.get_local_function_info(fun_name, params_num, self.index_at_parent) if self.parent else None
+        return self.parent.get_function_info(fun_name, params_num, self.index_at_parent) if self.parent else None
+
+    def get_local_function_info(self, fun_name:str, params_num:int, current_index = None) -> Union[Function, None]:
+        for index, fun in self.local_funcs:
+            if current_index and index > current_index:
+                continue
+            if fun_name == fun.name and len(fun.params) == params_num:
+                return fun
+        return None
+
 
     # def is_var_defined(self, vname):
     #     if vname not in [var[0] for var in self.local_vars]:

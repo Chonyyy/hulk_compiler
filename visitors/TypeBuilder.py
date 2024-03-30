@@ -31,9 +31,9 @@ class TypeBuilder(object):
             self.errors.append(se.text)
         
         if node.args:
-            for argument in node.args:
+            for arg_name, arg_type in node.args:
                 try:
-                    type_info.define_argument(argument[0], ctx.get_type(argument[1]))
+                    type_info.define_argument(arg_name, arg_type)
                 except SemanticError as se:
                     self.errors.append(se.text)
         
@@ -57,8 +57,9 @@ class TypeBuilder(object):
 
     @visitor.when(Property)
     def visit(self, node: Property, ctx: Context, current_type: Union[Type, Protocol]):
+        attr_type = ctx.get_type(node.type) if node.type else None
         try:
-            current_type.define_attribute(node.name, ctx.get_type(node.type))
+            current_type.define_attribute(node.name, attr_type)
         except SemanticError as se:
             self.errors.append(se.text)
                 
