@@ -252,7 +252,7 @@ class For(Statement):
         self.collection = collection
         self.body = body
 
-class Self(Atom):
+class Base(Atom):
     pass
 
 class Property(Expression):

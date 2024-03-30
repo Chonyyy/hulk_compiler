@@ -338,7 +338,8 @@ class ScopeInterpreter:
     def define_function(self, func_name:str, func: Callable) -> None:
         self.index += 1
         if self.get_local_function(func_name):
-            raise SemanticError(f'Function "{func_name}" is already defined.')
+            # raise SemanticError(f'Function "{func_name}" is already defined.')
+            pass
         self.local_funcs[func_name] = func
         
     def define_protocol(self, var_name:str, var_type) -> None:
@@ -348,7 +349,8 @@ class ScopeInterpreter:
     
     def define_type(self, var_name:str, var_type) -> None:
         if self.get_local_type(var_name):
-            raise SemanticError(f'Type "{var_name}" is already defined.')
+            # raise SemanticError(f'Type "{var_name}" is already defined.')
+            pass
         self.local_types[var_name] = var_type
 
     def get_local_variable(self, var_name: str) -> Union[Variable, SemanticError]:
