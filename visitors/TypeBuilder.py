@@ -68,10 +68,9 @@ class TypeBuilder(object):
             # Divide the params into names and types from node.params: List[Tuple[str, str]]
             param_names, param_types = [], []
             return_type = None
-            if node.params:
-                param_names, param_types = zip(*node.params)
+            
             if node.type:
                 return_type = ctx.get_type(node.type)
-            current_type.define_method(node.name, param_names, param_types, return_type)
+            current_type.define_method(node.name, node.params, return_type)
         except SemanticError as se:
             self.errors.append(se.text)

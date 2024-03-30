@@ -4,7 +4,11 @@ from hulk_definitions.grammar import G
 from parser_gen.parser_lr1 import LR1Parser as My_Parser
 from tools.evaluation import evaluate_reverse_parse
 from tools.semantic import Context, Scope
-from visitors.visitor import FormatVisitor, TypeCollector, TypeBuilder, TypeChecker, GlobalScopeBuilder
+from visitors.Formater import FormatVisitor
+from visitors.ScopeGen import GlobalScopeBuilder
+from visitors.SemanticChecker import SemanticChecker
+from visitors.TypeCollector import TypeCollector
+from visitors.TypeBuilder import TypeBuilder
 
 import sys,logging
 
@@ -86,9 +90,9 @@ def main(debug = True, verbose = False, force = False):
             print(context)
 
             logger.info('=== Building Global Scope ===')
-            global_scope_builder = GlobalScopeBuilder(context, errors)
-            global_scope_builder.visit(ast)
-            global_scope = global_scope_builder.global_scope
+            # global_scope_builder = GlobalScopeBuilder(context, errors)
+            # global_scope_builder.visit(ast)
+            # global_scope = global_scope_builder.global_scope
 
             logger.info('=== Type Inference ===')
 
