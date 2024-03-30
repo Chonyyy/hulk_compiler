@@ -37,7 +37,7 @@ class Interpreter(object):
     def visit(self, node, scope: ScopeInterpreter):
         pass
 
-    @visitor.when(Let)# TODO revisar
+    @visitor.when(Let)
     def visit(self, node: Let, scope: ScopeInterpreter):
         child_scope = scope.create_child_scope()
         value_exp = self.visit(node.expr,scope)
@@ -86,28 +86,19 @@ class Interpreter(object):
 
     @visitor.when(Branch)
     def visit(self, node, scope: ScopeInterpreter):
-        # Evaluar la condición de la rama
         condition_value = self.visit( node.condition, scope)
         if condition_value:
-            # Si la condición es verdadera, visitar el cuerpo de la rama
             return self.visit(node.body)
         else:
-            # Si la condición es falsa, no hacer nada (o manejar de otra manera si es necesario)
-            pass
+             pass
 
     @visitor.when(Expression)
     def visit(self, node, scope: ScopeInterpreter):
-        # Este método se llamará para todos los nodos que hereden de Expression
-        # pero no tengan un método visit_ específico.
-        # Puedes implementar la lógica común aquí o simplemente pasar.
         pass
 
     @visitor.when(Unary)
     def visit(self, node, scope: ScopeInterpreter):
-        # Evaluar la expresión unaria
         right_value = self.visit(node.right, scope)
-        # Realizar la operación unaria y devolver el resultado
-        # (aquí se asume que la operación unaria es negativo, pero puedes ajustar según sea necesario)
         return right_value
 
     @visitor.when(Number)
@@ -125,41 +116,35 @@ class Interpreter(object):
     
     @visitor.when(Print)
     def visit(self, node: Print, scope: ScopeInterpreter):
-        # Evaluar los argumentos de la llamada a print
         args = [self.visit(arg, scope) for arg in node.args]
         print(*args)
         
     @visitor.when(Plus)
     def visit(self, node: Plus, scope: ScopeInterpreter):
-        # Evaluar las expresiones y sumar los resultados
         left_value = self.visit(node.left, scope)
         right_value = self.visit(node.right, scope)
         return left_value + right_value
 
     @visitor.when(BinaryMinus)
     def visit(self, node: BinaryMinus, scope: ScopeInterpreter):
-        # Evaluar las expresiones y restar los resultados
         left_value = self.visit(node.left, scope)
         right_value = self.visit(node.right, scope)
         return left_value - right_value
 
     @visitor.when(Star)
     def visit(self, node: Star, scope: ScopeInterpreter):
-        # Evaluar las expresiones y multiplicar los resultados
         left_value = self.visit(node.left, scope)
         right_value = self.visit(node.right, scope)
         return left_value * right_value
 
     @visitor.when(Pow)
     def visit(self, node: Pow, scope: ScopeInterpreter):
-        # Evaluar las expresiones y elevar el resultado izquierdo a la potencia del resultado derecho
         left_value = self.visit(node.left, scope)
         right_value = self.visit(node.right, scope)
         return left_value ** right_value
 
     @visitor.when(Div)
     def visit(self, node: Div, scope: ScopeInterpreter):
-        # Evaluar las expresiones y dividir el resultado izquierdo por el resultado derecho
         left_value = self.visit(node.left, scope)
         right_value = self.visit(node.right, scope)
         return left_value / right_value
@@ -171,19 +156,19 @@ class Interpreter(object):
         return left_value % right_value
     
     @visitor.when(Is)
-    def visit(self, node, scope: ScopeInterpreter):
+    def visit(self, node: Is, scope: ScopeInterpreter):
         left_value = self.visit(node.left, scope)
         right_value = self.visit(node.right, scope)
         return left_value is right_value
 
     @visitor.when(As)
-    def visit(self, node, scope: ScopeInterpreter):
+    def visit(self, node: As, scope: ScopeInterpreter):
         left_value = self.visit(node.left, scope)
         right_value = self.visit(node.right, scope)
         return left_value == right_value
 
     @visitor.when(At)
-    def visit(self, node, scope: ScopeInterpreter):
+    def visit(self, node: At, scope: ScopeInterpreter):
         left_value = self.visit(node.left, scope)
         right_value = self.visit(node.right, scope)
         return str(left_value) + ' @ ' + str(right_value)
@@ -252,15 +237,14 @@ class Interpreter(object):
         value = self.visit(node.right, scope)
         return -value
 
-    @visitor.when(Atom)# TODO revisar
-    def visit(self, node, scope: ScopeInterpreter):
+    @visitor.when(Atom)
+    def visit(self, node: Atom, scope: ScopeInterpreter):
         return node.lex
 
     @visitor.when(Call)
     def visit(self, node: Call, scope: ScopeInterpreter):
         # Evaluar los argumentos de la llamada
         args = [self.visit(arg, scope) for arg in node.args]
-        # Llamar a la función y devolver el resultado
         func = scope.get_local_function(node.idx)
         return func(*args)
 
@@ -275,8 +259,11 @@ class Interpreter(object):
     @visitor.when(Invoke)# TODO: malllllllllllllll
     def visit(self, node: Invoke, scope: ScopeInterpreter):
         child_scope = scope.create_child_scope()
-        container_value = self.visit(node.container, scope)
-        container_type = scope.get_local_type(node.container.lex)
+        container_type = self.visit(node.container, scope)
+        a = container_type.call(node.lex.lex)
+        container_value = self.visit(a, scope)
+        # container_type = scope.get_local_type(scope.get_local_variable(node.container.lex)[1])
+       
                                                
         child_scope.define_variable(node.container.lex, container_value, container_type)
         var_type = self.context.get_protocol(scope.get_local_variable(node.container.lex)[1])
@@ -315,38 +302,39 @@ class Interpreter(object):
 
     @visitor.when(TypeDef)
     def visit(self, node: TypeDef, scope: ScopeInterpreter):
-        body_scope = scope.create_child_scope()
+        # body_scope = scope.create_child_scope()
+        visitor = self
         
         class NewType:
-            def __init__(self, params):
-                variables = []
-                funciones = []
+            def __init__(self, params = None):
+                typeScope = scope.create_child_scope()
                 
-                for i in range(len(node.args)if node.args else 0):
-                    body_scope.define_variable(node.args[i][0], params[i])
-                    
-                for x in [x for x in node.body if type(x) is Var]:
-                    self.visit(x, body_scope)
-                    body_scope.define_variable(x.lex, body_scope)
-            
+                for i in range(params if params else 0):
+                    typeScope.define_variable(node.args[i][0], params[i])
+                 
+                   
+                for x in [x for x in node.body if type(x) is Property]:
+                    if not typeScope.get_local_variable(x):
+                        b = visitor.visit(x, typeScope)
+                   
                 for x in [x for x in node.body if type(x) is Function]:
-                    self.visit(x, body_scope)
-                    body_scope.define_function(x.name, body_scope)
-            
+                    if scope.get_local_function(x.name):
+                        continue
+                    a = visitor.visit(x, scope)
+                   
             def call(self, name):
-                return body_scope.get_local_function(name) 
+                return scope.get_local_function(name) 
             
             def create_new_instance(params):
                 return NewType(params)       
                     
         scope.define_type(node.name, NewType)
+        NewType()
         return NewType
-
+    
     @visitor.when(Protocol)
     def visit(self, node, scope: ScopeInterpreter):
-        # Crear un nuevo protocolo en el entorno
-        # self.environment[node.name] = Protocol(node.name, node, scope: ScopeInterpreter.body, node, scope: ScopeInterpreter.extension)
-        pass
+         pass
     
     @visitor.when(Assign)
     def visit(self, node: Assign, scope: ScopeInterpreter):
@@ -366,39 +354,32 @@ class Interpreter(object):
         return math.sin(*args)
 
     @visitor.when(Cos)
-    def visit(self, node, scope: ScopeInterpreter):
+    def visit(self, node: Cos, scope: ScopeInterpreter):
         args = [self.visit(arg, scope) for arg in node.args]
         return math.cos(*args)
 
     @visitor.when(Rand)
-    def visit(self, node, scope: ScopeInterpreter):
+    def visit(self, node: Rand, scope: ScopeInterpreter):
         args = [self.visit(arg, scope) for arg in node.args]
         return random.random(*args)
 
     @visitor.when(Exp)
-    def visit(self, node, scope: ScopeInterpreter):
-        # Evaluar los argumentos de la llamada a exp
+    def visit(self, node: Exp, scope: ScopeInterpreter):
         args = [self.visit(arg, scope) for arg in node.args]
-        # Devolver el resultado de la función exp
         return math.exp(*args)
 
     @visitor.when(Log)
-    def visit(self, node, scope: ScopeInterpreter):
-        # Evaluar los argumentos de la llamada a log
+    def visit(self, node: Log, scope: ScopeInterpreter):
         args = [self.visit(arg, scope) for arg in node.args]
-        # Devolver el resultado de la función log
         return math.log(*args)
 
     @visitor.when(Sqrt)
-    def visit(self, node, scope: ScopeInterpreter):
-        # Evaluar los argumentos de la llamada a sqrt
+    def visit(self, node: Sqrt, scope: ScopeInterpreter):
         args = [self.visit(arg, scope) for arg in node.args]
-        # Devolver el resultado de la función sqrt
         return math.sqrt(*args)
 
     @visitor.when(Range)
     def visit(self, node: Range, scope: ScopeInterpreter):
-        # Evaluar los argumentos de la llamada a range
         args = [self.visit(arg, scope) for arg in node.args]
         args_int = []
         for i in range(len(args)):
@@ -428,17 +409,15 @@ class Interpreter(object):
         return value    
         
     @visitor.when(Self)
-    def visit(self, node, scope: ScopeInterpreter):
-        # Devolver el objeto actual (necesitarás implementar la lógica para determinar qué es el objeto actual)
+    def visit(self, node: Self, scope: ScopeInterpreter):
         return self.current_object
 
     @visitor.when(Property)
-    def visit(self, node, scope: ScopeInterpreter):
-        # Evaluar el nombre y el cuerpo
-        name_value = self.visit(node.name, scope)
-        body_value = self.visit(node.body)
-        # Devolver el valor de la propiedad
-        return getattr(name_value, body_value)
+    def visit(self, node: Property, scope: ScopeInterpreter):
+        name = node.name
+        body_value = self.visit(node.body, scope)
+        scope.define_variable(name, body_value, node.type)
+        return body_value
 
     @visitor.when(CreateInstance)
     def visit(self, node: CreateInstance, scope: ScopeInterpreter):
