@@ -11,7 +11,6 @@ class Interpreter(object):
         self.current_type = None
         self.current_method = None
         
-
     @visitor.on('node')
     def visit(self, node):
         pass
@@ -42,10 +41,7 @@ class Interpreter(object):
         child_scope = scope.create_child_scope()
         value_exp = self.visit(node.expr,scope, type_def)
         child_scope.define_variable(node.name, value_exp, node.type)
-        
-        # if value_exp in scope.local_types.values():
-        #     value_body = self.visit( node.scope, child_scope , value_exp )
-            
+  
         value_body = self.visit( node.scope, child_scope , value_exp ) 
         return value_body
         
@@ -116,7 +112,6 @@ class Interpreter(object):
     @visitor.when(E)
     def visit(self, node, scope: ScopeInterpreter, type_def = None):
         return math.e
-    
     
     @visitor.when(Print)
     def visit(self, node: Print, scope: ScopeInterpreter, type_def = None):
