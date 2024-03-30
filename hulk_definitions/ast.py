@@ -8,16 +8,23 @@ class Program(Node):
        self.statements  = statements
 
 class Statement(Node):
-    pass
-
-class Let(Statement):
-    def __init__(self, name, expr, scope, type = None):
+    def __init__(self, name, body, type = None):
         self.name = name
-        self.expr = expr
-        self.scope = scope
+        self.body = body
         self.type = type
 
-class LetList(Statement):
+class Expression(Node):
+    def __init__(self, value):
+        self.value = value
+
+class Let(Expression):
+    def __init__(self, name, expr, scope, type = None):
+        super().__init__(scope)
+        self.name = name
+        self.expr = expr
+        self.type = type
+
+class LetList(Node):
     def __init__(self, let_statements: list[Let]):
         self.child = None
         current = self.child
@@ -29,40 +36,37 @@ class LetList(Statement):
                 current.scope = let
                 current = let
 
-class Block(Statement):
+class Block(Expression):
     def __init__(self, body):
-        self.body = body
+        super().__init__(body)
 
 class Function(Statement):
     def __init__(self, name, params, body, type = None):
-        self.name = name
+        super().__init__(name, body, type)
         self.params = params
-        self.body = body
-        self.type = type
 
-class Conditional(Statement):
+class Conditional(Expression):
     def __init__(self, if_expr, if_body, else_body, branches = None):
+        super().__init__(None)
         self.if_expr = if_expr
         self.if_body = if_body
         self.branches = branches
         self.else_body = else_body
 
-class Branch(Node):
+class Branch(Expression):
     def __init__(self, condition, body):
+        super().__init__(body)
         self.condition = condition
-        self.body = body
-
-class Expression(Statement):
-    pass
 
 class Unary(Expression):
     def __init__(self, right):
-        self.right = right
+        super().__init__(right)
 
 class Binary(Expression):
     def __init__(self, left, right):
+        super().__init__(right)
         self.left = left
-        self.right = right
+
 
 class Plus(Binary):
     pass
@@ -126,42 +130,37 @@ class UnaryMinus(Unary):
 
 class Atom(Expression):
     def __init__(self, lex):
-        self.lex = lex
+        super().__init__(lex)
 
 class Call(Atom):
     def __init__(self, idx, args):
         Atom.__init__(self, idx)
-        self.idx = idx
         self.args = args
 
 class Number(Atom):
     def __init__(self, lex):
         super().__init__(lex)
-        self.type = "Number"
 
 class Str(Atom):
     def __init__(self, lex):
         super().__init__(lex)
-        self.type = "String"
 
 class Bool(Atom):
     def __init__(self, lex):
         super().__init__(lex)
-        self.type = "Bool"
 
 class Invoke(Atom):
-    def __init__(self, container, property):
-        Atom.__init__(self, property)
-        self.container = container
+    def __init__(self, container, prop):
+        Atom.__init__(self, container)
+        self.prop = prop
 
 class Vector(Atom):
-    def __init__(self, values, len):
+    def __init__(self, values):
         Atom.__init__(self, values)
-        self.len = len
 
-class VectorComprehension(Vector):
-    def __init__(self, values, len, operation):
-        Vector.__init__(self, values, len)
+class VectorComprehension(Expression):
+    def __init__(self, values, operation):
+        Vector.__init__(self, values)
         self.operation = operation
 
 class Var(Atom):
@@ -169,14 +168,12 @@ class Var(Atom):
 
 class ForVar(Var):
     def __init__(self, name, type = None):
-        self.name = name
+        super().__init__(name)
         self.type = type
 
 class TypeDef(Statement):
     def __init__(self, name, body, args, inheritance = None, inner_args = None):
-        self.name = name
-        self.body = body
-        self.inheritance = inheritance
+        super().__init__(name, body, inheritance)
         self.args = args
         self.inner_args = inner_args
 
@@ -185,9 +182,7 @@ class TypeCreation(Atom):
 
 class Protocol(Statement):
     def __init__(self, name, body, extension = None):
-        self.name = name
-        self.body = body
-        self.extension = extension
+        super().__init__(name, body, extension)
 
 class Assign(Atom):
     def __init__(self, name, body):
@@ -238,19 +233,19 @@ class Print(Call):
 class Range(Call):
     def __init__(self, args):
         super().__init__("range",args)
-    def __len__(self):#TODO: Parche arreglar esto
+    def __len__(self):
         return int(self.args[1].lex - self.args[0].lex)
 
-class While(Statement):
+class While(Expression):
     def __init__(self, stop, body):
+        super().__init__(body)
         self.stop = stop
-        self.body = body
 
-class For(Statement):
+class For(Expression):
     def __init__(self, item, collection, body):
+        super().__init__(body)
         self.item = item
         self.collection = collection
-        self.body = body
 
 class Base(Call):
     def __init__(self, args):
@@ -258,11 +253,11 @@ class Base(Call):
 
 class Property(Expression):
     def __init__(self, name, body, type = None):
+        super().__init__(body)
         self.name = name
-        self.body = body
         self.type = type
 
 class CreateInstance(Expression):
     def __init__(self, type, params):
-        self.type = type
+        super.__init__(self, type)
         self.params = params

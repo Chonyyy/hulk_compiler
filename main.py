@@ -4,9 +4,9 @@ from hulk_definitions.grammar import G
 from parser_gen.parser_lr1 import LR1Parser as My_Parser
 from tools.evaluation import evaluate_reverse_parse
 from tools.semantic import Context, Scope
-from hulk_definitions.visitor import FormatVisitor, TypeCollector, TypeBuilder, TypeChecker, GlobalScopeBuilder
+from visitors import CodeGen, Evaluate, Formatter, ScopeGen, SemanticChecker, TypeBuilder, TypeChecker, TypeCollector, TypeInferer
 
-import sys,logging
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ def main(debug = True, verbose = False, force = False):
             ast = evaluate_reverse_parse(right_parse, operations, tokens)
             
             logger.info('=== Visualizing AST ===')
-            formatter = FormatVisitor()
+            formatter = Formatter.FormatVisitor()
             tree = formatter.visit(ast)
             print(tree)
             
