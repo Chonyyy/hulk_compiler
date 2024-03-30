@@ -4,7 +4,7 @@ from hulk_definitions.grammar import G
 from parser_gen.parser_lr1 import LR1Parser as My_Parser
 from tools.evaluation import evaluate_reverse_parse
 from tools.semantic import Context, Scope
-from hulk_definitions.visitor import FormatVisitor, TypeCollector, TypeBuilder, TypeChecker, GlobalScopeBuilder
+from visitors.visitor import FormatVisitor, TypeCollector, TypeBuilder, TypeChecker, GlobalScopeBuilder
 
 import sys,logging
 
@@ -63,32 +63,32 @@ def main(debug = True, verbose = False, force = False):
             print(tree)
             
             logger.info('=== Collecting Types ===')
-            # errors = []
-            # context = Context()
-            # built_in_types = ["Object", "Number", "String", "Boolean", "Vector"]
-            # built_in_protocols = ["Iterable"]
+            errors = []
+            context = Context()
+            built_in_types = ["Object", "Number", "String", "Boolean", "Vector"]
+            built_in_protocols = ["Iterable"]
 
-            # for bi_type in built_in_types:
-            #     context.create_type(bi_type)
-            # for bi_protocol in built_in_protocols:
-            #     context.create_protocol(bi_protocol)
+            for bi_type in built_in_types:
+                context.create_type(bi_type)
+            for bi_protocol in built_in_protocols:
+                context.create_protocol(bi_protocol)
 
-            # collector = TypeCollector(context, errors)
-            # collector.visit(ast)
-            # context = collector.context
+            collector = TypeCollector(context, errors)
+            collector.visit(ast)
+            context = collector.context
 
             logger.info('=== Building Types ===')
-            # builder = TypeBuilder(context, errors)
-            # builder.visit(ast)
-            # context = builder.context
-            # print('Errors:', errors)
-            # print('Context:')
-            # print(context)
+            builder = TypeBuilder(context, errors)
+            builder.visit(ast)
+            context = builder.context
+            print('Errors:', errors)
+            print('Context:')
+            print(context)
 
-            # logger.info('=== Building Global Scope ===')
-            # global_scope_builder = GlobalScopeBuilder(context, errors)
-            # global_scope_builder.visit(ast)
-            # global_scope = global_scope_builder.global_scope
+            logger.info('=== Building Global Scope ===')
+            global_scope_builder = GlobalScopeBuilder(context, errors)
+            global_scope_builder.visit(ast)
+            global_scope = global_scope_builder.global_scope
 
             logger.info('=== Type Inference ===')
 
