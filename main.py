@@ -58,29 +58,29 @@ def main(debug = True, verbose = False, force = False):
             ast = evaluate_reverse_parse(right_parse, operations, tokens)
             
             logger.info('=== Visualizing AST ===')
-            # formatter = FormatVisitor()
-            # tree = formatter.visit(ast)
-            # print(tree)
+            formatter = FormatVisitor()
+            tree = formatter.visit(ast)
+            print(tree)
             
             logger.info('=== Collecting Types ===')
-            errors = []
-            context = Context()
-            built_in_types = ["Object", "Number", "String", "Boolean", "Vector"]
-            built_in_protocols = ["Iterable"]
+            # errors = []
+            # context = Context()
+            # built_in_types = ["Object", "Number", "String", "Boolean", "Vector"]
+            # built_in_protocols = ["Iterable"]
 
-            for bi_type in built_in_types:
-                context.create_type(bi_type)
-            for bi_protocol in built_in_protocols:
-                context.create_protocol(bi_protocol)
+            # for bi_type in built_in_types:
+            #     context.create_type(bi_type)
+            # for bi_protocol in built_in_protocols:
+            #     context.create_protocol(bi_protocol)
 
-            collector = TypeCollector(context, errors)
-            collector.visit(ast)
-            context = collector.context
+            # collector = TypeCollector(context, errors)
+            # collector.visit(ast)
+            # context = collector.context
 
             logger.info('=== Building Types ===')
-            builder = TypeBuilder(context, errors)
-            builder.visit(ast)
-            context = builder.context
+            # builder = TypeBuilder(context, errors)
+            # builder.visit(ast)
+            # context = builder.context
             # print('Errors:', errors)
             # print('Context:')
             # print(context)
