@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from hulk_definitions.ast import *
-from tools.semantic import Context, SemanticError, Type
+from tools.semantic import Context, SemanticError, Type, get_safe_type
 from tools import visitor
 from tools.semantic import Scope
 from hulk_definitions.types import * 
@@ -12,6 +12,14 @@ class TypeInferer(object):
 
         self.type: Type = None
     
+    def _get_safe_type(self, type, ctx: Context):
+        try:
+            type = ctx.get_protocol_or_type(type)            
+            return type
+
+        except SemanticError:
+            self.errors.append(f'Name {type} is not a defined Type or Protocol.')
+
     @visitor.on('node')
     def visit(self, node):
         pass
@@ -38,6 +46,18 @@ class TypeInferer(object):
             self.visit(child, self.context)
 
         return self.errors
+    
+    @visitor.when(CreateInstance)
+    def visit(self, node: CreateInstance, ctx: Context, scope: Scope):
+        for arg in node.args:
+            self.visit(arg, ctx, scope)
+
+        it = self._get_safe_type(node.type, ctx)
+        for arg, pt in zip(node.args, it.params.values()):
+            if pt is not None:
+                self._infer(arg, scope, pt)
+
+        return it
 
     @visitor.when(Let)
     def visit(self, node: Let, ctx: Context):
