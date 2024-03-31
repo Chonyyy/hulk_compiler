@@ -30,10 +30,10 @@ def main(debug = True, verbose = False, force = False):
 
     for i, file in enumerate(files):
         if file in [
-            # "1_example_expressions.hlk",
-            # "2_example_functions.hlk",
-            # "3_example_variables.hlk",
-            # "4_example_conditionals.hlk",
+            "1_example_expressions.hlk",
+            "2_example_functions.hlk",
+            "3_example_variables.hlk",
+            "4_example_conditionals.hlk",
             # "5_example_loops.hlk",
             # "6_example_types.hlk",
             # "7_example_type_checking.hlk",
