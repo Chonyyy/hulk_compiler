@@ -40,13 +40,13 @@ class Interpreter(object):
     @visitor.when(Let)
     def visit(self, node: Let, scope: ScopeInterpreter, type_def = None):
         child_scope = scope.create_child_scope()
-        value_exp = self.visit(node.expr,scope, type_def)
+        value_exp = self.visit(node.expr, scope, type_def)
         child_scope.define_variable(node.name, value_exp, node.type)
         
         # if value_exp in scope.local_types.values():
         #     value_body = self.visit( node.scope, child_scope , value_exp )
             
-        value_body = self.visit( node.scope, child_scope , value_exp ) 
+        value_body = self.visit( node.value, child_scope , value_exp ) 
         return value_body
         
     @visitor.when(LetList)
@@ -56,8 +56,8 @@ class Interpreter(object):
     @visitor.when(Block)
     def visit(self, node: Block, scope: ScopeInterpreter, type_def = None):
         body = None
-        if node.body:
-            for statement in node.body:
+        if node.value:
+            for statement in node.value:
                 body = self.visit( statement, scope, type_def)
         return body
     
@@ -89,10 +89,10 @@ class Interpreter(object):
             return self.visit(node.else_body, body_scope)
 
     @visitor.when(Branch)
-    def visit(self, node, scope: ScopeInterpreter, type_def = None):
-        condition_value = self.visit( node.condition, scope)
+    def visit(self, node: Branch, scope: ScopeInterpreter, type_def = None):
+        condition_value = self.visit( node.value, scope)
         if condition_value:
-            return self.visit(node.body)
+            return self.visit(node.value)
         else:
              pass
 
@@ -101,16 +101,16 @@ class Interpreter(object):
         pass
 
     @visitor.when(Unary)
-    def visit(self, node, scope: ScopeInterpreter, type_def = None):
-        right_value = self.visit(node.right, scope)
+    def visit(self, node: Unary, scope: ScopeInterpreter, type_def = None):
+        right_value = self.visit(node.value, scope)
         return right_value
 
     @visitor.when(Number)
-    def visit(self, node, scope: ScopeInterpreter, type_def = None):
-        return float(node.lex)
+    def visit(self, node: Number, scope: ScopeInterpreter, type_def = None):
+        return float(node.value)
     
     @visitor.when(Pi)
-    def visit(self, node, scope: ScopeInterpreter, type_def = None):
+    def visit(self, node: Pi, scope: ScopeInterpreter, type_def = None):
         return math.pi
     
     @visitor.when(E)
@@ -126,164 +126,164 @@ class Interpreter(object):
     @visitor.when(Plus)
     def visit(self, node: Plus, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope, type_def)
-        right_value = self.visit(node.right, scope, type_def)
+        right_value = self.visit(node.value, scope, type_def)
         return left_value + right_value
 
     @visitor.when(BinaryMinus)
     def visit(self, node: BinaryMinus, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope)
-        right_value = self.visit(node.right, scope)
+        right_value = self.visit(node.value, scope)
         return left_value - right_value
 
     @visitor.when(Star)
     def visit(self, node: Star, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope)
-        right_value = self.visit(node.right, scope)
+        right_value = self.visit(node.value, scope)
         return left_value * right_value
 
     @visitor.when(Pow)
     def visit(self, node: Pow, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope, type_def)
-        right_value = self.visit(node.right, scope, TypeDef)
+        right_value = self.visit(node.value, scope, TypeDef)
         return left_value ** right_value
 
     @visitor.when(Div)
     def visit(self, node: Div, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope)
-        right_value = self.visit(node.right, scope)
+        right_value = self.visit(node.value, scope)
         return left_value / right_value
 
     @visitor.when(Mod)
     def visit(self, node: Mod, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope)
-        right_value = self.visit(node.right, scope)
+        right_value = self.visit(node.value, scope)
         return left_value % right_value
     
     @visitor.when(Is)
     def visit(self, node: Is, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope)
-        right_value = self.visit(node.right, scope)
+        right_value = self.visit(node.value, scope)
         return left_value is right_value
 
     @visitor.when(As)
     def visit(self, node: As, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope)
-        right_value = self.visit(node.right, scope)
+        right_value = self.visit(node.value, scope)
         return left_value == right_value
 
     @visitor.when(At)
     def visit(self, node: At, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope, type_def)
-        right_value = self.visit(node.right, scope, type_def)
+        right_value = self.visit(node.value, scope, type_def)
         return str(left_value) + '' + str(right_value)
 
     @visitor.when(DoubleAt)
     def visit(self, node: DoubleAt, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope, type_def)
-        right_value = self.visit(node.right, scope, type_def)
+        right_value = self.visit(node.value, scope, type_def)
         return str(left_value) + '  ' + str(right_value)
 
 
     @visitor.when(Or)
-    def visit(self, node, scope: ScopeInterpreter, type_def = None):
+    def visit(self, node: Or, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope)
-        right_value = self.visit(node.right, scope)
+        right_value = self.visit(node.value, scope)
         return left_value or right_value
 
     @visitor.when(And)
-    def visit(self, node, scope: ScopeInterpreter, type_def = None):
+    def visit(self, node: And, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope)
-        right_value = self.visit(node.right, scope)
+        right_value = self.visit(node.value, scope)
         return left_value and right_value
 
     @visitor.when(GreaterThan)
-    def visit(self, node, scope: ScopeInterpreter, type_def = None):
+    def visit(self, node: GreaterThan, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope)
-        right_value = self.visit(node.right, scope)
+        right_value = self.visit(node.value, scope)
         return left_value > right_value
 
     @visitor.when(LessThan)
-    def visit(self, node, scope: ScopeInterpreter, type_def = None):
+    def visit(self, node: LessThan, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope)
-        right_value = self.visit(node.right, scope)
+        right_value = self.visit(node.value, scope)
         return left_value < right_value
 
     @visitor.when(GreaterEqual)
-    def visit(self, node, scope: ScopeInterpreter, type_def = None):
+    def visit(self, node: GreaterEqual, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope)
-        right_value = self.visit(node.right, scope)
+        right_value = self.visit(node.value, scope)
         return left_value >= right_value
 
     @visitor.when(LessEqual)
-    def visit(self, node, scope: ScopeInterpreter, type_def = None):
+    def visit(self, node: LessEqual, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope)
-        right_value = self.visit(node.right, scope)
+        right_value = self.visit(node.value, scope)
         return left_value <= right_value
 
     @visitor.when(NotEqual)
-    def visit(self, node, scope: ScopeInterpreter, type_def = None):
+    def visit(self, node: NotEqual, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope)
-        right_value = self.visit(node.right, scope)
+        right_value = self.visit(node.value, scope)
         return left_value != right_value
 
     @visitor.when(CompareEqual)
     def visit(self, node: CompareEqual, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope)
-        right_value = self.visit(node.right, scope)
+        right_value = self.visit(node.value, scope)
         return left_value == right_value
 
     @visitor.when(Not)
-    def visit(self, node, scope: ScopeInterpreter, type_def = None):
-        value = self.visit(node.right, scope)
+    def visit(self, node: Not, scope: ScopeInterpreter, type_def = None):
+        value = self.visit(node.value, scope)
         return not value
 
     @visitor.when(UnaryMinus)
-    def visit(self, node, scope: ScopeInterpreter, type_def = None):
-        value = self.visit(node.right, scope)
+    def visit(self, node: UnaryMinus, scope: ScopeInterpreter, type_def = None):
+        value = self.visit(node.value, scope)
         return -value
 
     @visitor.when(Atom)
     def visit(self, node: Atom, scope: ScopeInterpreter, type_def = None):
-        return node.lex
+        return node.value
 
     @visitor.when(Call)
     def visit(self, node: Call, scope: ScopeInterpreter, type_def = None):
         # Evaluar los argumentos de la llamada
         args = [self.visit(arg, scope) for arg in node.args]
-        func = scope.get_local_function(node.idx)
+        func = scope.get_local_function(node.value)
         return func(*args)
 
     @visitor.when(Str)
     def visit(self, node: Str, scope: ScopeInterpreter, type_def = None):
-        return str(node.lex)
+        return str(node.value)
 
     @visitor.when(Bool)
     def visit(self, node: Bool, scope: ScopeInterpreter, type_def = None):
-        return bool(node.lex)
+        return bool(node.value)
 
     @visitor.when(Invoke)
     def visit(self, node: Invoke, scope: ScopeInterpreter, type_def = None):
         child_scope = scope.create_child_scope()
-        container_type = self.visit(node.container, scope, type_def)
+        container_type: Atom = self.visit(node.value, scope, type_def)
         
         func = None
         
         if type_def is not None:
-            if node.container.lex == 'self':
-                if type(node.lex) == str:
-                    func = container_type.call(None, node.lex)
+            if node.value.value == 'self':
+                if type(node.value) == str:
+                    func = container_type.call(None, node.value)
                 else:
-                    func = container_type.call(None, node.lex.lex)
+                    func = container_type.call(None, node.value.value)
             else:
-                func = type_def.call( node.lex)
+                func = type_def.call( node.value)
         
-        if node.container.lex == 'self':
-            if type(node.lex) == str:
-                func = container_type.call(None, node.lex)
+        if node.value.value == 'self':
+            if type(node.value) == str:
+                func = container_type.call(None, node.value)
             else:
-                func = container_type.call(None, node.lex.lex)
+                func = container_type.call(None, node.value.value)
         else:
-            arg = node.lex.lex
+            arg = node.value.value
             func = container_type.call(arg)
             
         try:
@@ -294,13 +294,13 @@ class Interpreter(object):
              
     @visitor.when(Vector)
     def visit(self, node: Vector, scope: ScopeInterpreter, type_def = None):
-        values = [self.visit(value, scope) for value in node.lex]
+        values = [self.visit(value, scope) for value in node.value]
         return values
 
     @visitor.when(VectorComprehension)
     def visit(self, node: VectorComprehension, scope: ScopeInterpreter, type_def = None):
         
-        a = self.visit(node.lex, scope)
+        a = self.visit(node.value, scope)
         values = []
         for value in a:
             scope_body = scope.create_child_scope()
@@ -312,7 +312,7 @@ class Interpreter(object):
 
     @visitor.when(Var)
     def visit(self, node: Var, scope: ScopeInterpreter, type_def = None):
-        var = scope.get_local_variable(node.lex)
+        var = scope.get_local_variable(node.value)
         return var[0] if var else None
 
     @visitor.when(TypeDef)
@@ -408,12 +408,12 @@ class Interpreter(object):
     @visitor.when(Assign)
     def visit(self, node: Assign, scope: ScopeInterpreter, type_def = None):
         value = self.visit(node.body, scope)
-        scope.define_variable(node.lex.lex, value, None) 
+        scope.define_variable(node.value.value, value, None) 
         return value
 
     @visitor.when(Indexing)
     def visit(self, node: Indexing, scope: ScopeInterpreter, type_def = None):
-        name_value = self.visit(node.lex, scope)
+        name_value = self.visit(node.value, scope)
         index_value = int(self.visit(node.index, scope))
         return name_value[index_value]
 
@@ -462,7 +462,7 @@ class Interpreter(object):
 
     @visitor.when(For)
     def visit(self, node: For, scope: ScopeInterpreter, type_def = None):
-        if node.collection.lex == 'range':
+        if node.collection.value == 'range':
             x = int(self.visit(node.collection.args[0],scope))
             y = int(self.visit(node.collection.args[1],scope))
             for item in range(x, y):

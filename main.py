@@ -9,6 +9,7 @@ from visitors.ScopeGen import GlobalScopeBuilder
 from visitors.SemanticChecker import SemanticChecker
 from visitors.TypeCollector import TypeCollector
 from visitors.TypeBuilder import TypeBuilder
+from visitors.interpreter import Interpreter
 
 import logging
 
@@ -29,21 +30,21 @@ def main(debug = True, verbose = False, force = False):
 
     for i, file in enumerate(files):
         if file in [
-            "1_example_expressions.hlk",
-            "2_example_functions.hlk",
-            "3_example_variables.hlk",
-            "4_example_conditionals.hlk",
-            "5_example_loops.hlk",
+            # "1_example_expressions.hlk",
+            # "2_example_functions.hlk",
+            # "3_example_variables.hlk",
+            # "4_example_conditionals.hlk",
+            # "5_example_loops.hlk",
             # "6_example_types.hlk",
-            "7_example_type_checking.hlk",
-            "8_example_protocol.hlk",
-            "9_example_vector.hlk",
+            # "7_example_type_checking.hlk",
+            # "8_example_protocol.hlk",
+            # "9_example_vector.hlk",
             "11_example_expressions.hlk",
             "12_example_functions.hlk",
             "13_example_variables.hlk",
             "14_example_conditionals.hlk",
             "15_example_loops.hlk",
-            # "16_example_types.hlk",
+            "16_example_types.hlk",
             "17_example_type_checking.hlk",
             "18_example_protocol.hlk",
             "19_example_vector.hlk",
@@ -78,8 +79,8 @@ def main(debug = True, verbose = False, force = False):
                 context.create_protocol(bi_protocol)
                 if bi_protocol == "Iterable":
                     iterable_protocol = context.get_protocol(bi_protocol)
-                    iterable_protocol.define_method("next", [], [], "Object")
-                    iterable_protocol.define_method("current", [], [], "Object")
+                    iterable_protocol.define_method("next", [], "Object")
+                    iterable_protocol.define_method("current", [], "Object")
 
             print('=== Collecting Types ===')
             collector = TypeCollector(context, errors)
@@ -102,9 +103,13 @@ def main(debug = True, verbose = False, force = False):
             print("=== Done ===")
             print('Errors', errors)
 
+            print("=== AST Interpreter ===")
+            tree_interpreter = Interpreter(context)
+            tree_interpreter.visit(ast)
+
             # logger.info('=== Type Inference ===')
 
-            logger.info('=== Type Checking ===')
+            # logger.info('=== Type Checking ===')
             # checker = TypeChecker(context,  errors)
             # checker.visit(ast)
             # context = checker.context
