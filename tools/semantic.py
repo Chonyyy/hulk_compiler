@@ -129,7 +129,7 @@ class Type:
             return False
     
     def set_parent(self, parent):
-        if self.parent is not OBJECT_TYPE:
+        if self.parent is not None:
             raise SemanticError(f'Parent type is already set for {self.name}.')
         self.parent = parent
 

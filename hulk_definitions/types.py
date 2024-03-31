@@ -1,7 +1,7 @@
 from typing import Union
 
 from tools.semantic import Type, Protocol
-
+from hulk_definitions.names import *
 
 class ErrorType(Type):
     def __init__(self):
