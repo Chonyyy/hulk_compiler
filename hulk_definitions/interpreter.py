@@ -317,12 +317,12 @@ class Interpreter(object):
 
     @visitor.when(TypeDef)
     def visit(self, node: TypeDef, scope: ScopeInterpreter, type_def = None):
-        # body_scope = scope.create_child_scope()
+        #body_scope = scope.create_child_scope()
         visitor = self
         
         if node.inheritance:
             inher = scope.get_local_type(node.inheritance)
-            
+            inst = inher.create_new_instance()
             class NewType(inher):
                 def __init__(self, params = None):
                     self.typeScope = scope.create_child_scope()
@@ -333,6 +333,11 @@ class Interpreter(object):
                         for i in range(len(params) if params else 0):
                             self.typeScope.define_variable(node.args[i][0], params[i])
                             self.vars.append((node.args[i][0],params[i]))
+                    
+                    if len(inst.vars)if inst.vars else 0 > 0:
+                        for i in range(len(params) if params else 0):
+                            self.typeScope.define_variable(inst.vars[i][0], params[i])
+                            self.vars.append((inst.vars[i][0], params[i]))
                     
                     if node.body:
                         for x in [x for x in node.body if type(x) is Property]:
@@ -389,7 +394,7 @@ class Interpreter(object):
                     else:
                         scope.get_local_variable(name)
                 
-                def create_new_instance(params):
+                def create_new_instance(params = None):
                     return NewType(params)       
                     
         scope.define_type(node.name, NewType)
@@ -486,4 +491,5 @@ class Interpreter(object):
     def visit(self, node: CreateInstance, scope: ScopeInterpreter, type_def = None):
         params_value = [self.visit(param, scope, type_def ) for param in node.params]
         type_value = scope.get_local_type(node.type)
-        return type_value.create_new_instance(params_value)
+        instance = type_value.create_new_instance(params_value)
+        return instance
