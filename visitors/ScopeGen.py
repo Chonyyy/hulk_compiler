@@ -47,26 +47,26 @@ class GlobalScopeBuilder(object):
 
     @visitor.when(Block)
     def visit(self, node: Block, scope: Scope, defining_type: str = None):
-        for child in node.body:
+        for child in node.value:
             self.visit(child, scope, defining_type)
 
     @visitor.when(Binary)
     def visit(self, node: Binary, scope: Scope, defining_type: str = None):
         self.visit(node.left, scope, defining_type)
-        self.visit(node.right, scope, defining_type)
+        self.visit(node.value, scope, defining_type)
 
     @visitor.when(Call)
     def visit(self, node: Call, scope: Scope, defining_type: str = None):
-        if not scope.get_function_info(node.idx, len(node.args)):
-            self.errors.append(f'Function {node.idx} not defined')
+        if not scope.get_function_info(node.value, len(node.args)):
+            self.errors.append(f'Function {node.value} not defined')
 
         for arg in node.args:
             self.visit(arg, scope, defining_type)
 
     @visitor.when(Var)
     def visit(self, node: Var, scope: Scope, defining_type: str = None):
-        if not scope.get_variable(node.lex):
-            self.errors.append(f'Variable {node.lex} not defined')
+        if not scope.get_variable(node.value):
+            self.errors.append(f'Variable {node.value} not defined')
 
     @visitor.when(LetList)
     def visit(self, node: LetList, scope: Scope, defining_type: str = None):
@@ -80,7 +80,7 @@ class GlobalScopeBuilder(object):
         except SemanticError as se:
             self.errors.append(se.text)
 
-        self.visit(node.scope, new_scope, defining_type)
+        self.visit(node.value, new_scope, defining_type)
 
     @visitor.when(Conditional)
     def visit(self, node: Conditional, scope: Scope, defining_type: str = None):
@@ -94,42 +94,6 @@ class GlobalScopeBuilder(object):
     @visitor.when(Branch)
     def visit(self, node: Branch, scope: Scope, defining_type: str = None):
         raise Exception('Error: Branch not implemented')
-    
-    # @visitor.when(At)
-    # def visit(self, node: At, scope: Scope):
-    #     raise Exception('Error: At not implemented')
-    
-    # @visitor.when(DoubleAt)
-    # def visit(self, node: DoubleAt, scope: Scope):
-    #     raise Exception('Error: DoubleAt not implemented')
-    
-    # @visitor.when(Or)
-    # def visit(self, node: Or, scope: Scope):
-    #     raise Exception('Error: Or not implemented')
-    
-    # @visitor.when(Plus)
-    # def visit(self, node: Plus, scope: Scope):
-    #     raise Exception('Error: Plus not implemented')
-    
-    # @visitor.when(BinaryMinus)
-    # def visit(self, node: BinaryMinus, scope: Scope):
-    #     raise Exception('Error: BinaryMinus not implemented')
-    
-    # @visitor.when(Star)
-    # def visit(self, node: Star, scope: Scope):
-    #     raise Exception('Error: Star not implemented')
-    
-    # @visitor.when(Div)
-    # def visit(self, node: Div, scope: Scope):
-    #     raise Exception('Error: Div not implemented')
-    
-    # @visitor.when(Mod)
-    # def visit(self, node: Mod, scope: Scope):
-    #     raise Exception('Error: Mod not implemented')
-    
-    # @visitor.when(And)
-    # def visit(self, node: And, scope: Scope):
-    #     raise Exception('Error: And not implemented')
     
     @visitor.when(Not)
     def visit(self, node: Not, scope: Scope, defining_type: str = None):
@@ -149,8 +113,8 @@ class GlobalScopeBuilder(object):
     
     @visitor.when(Var)
     def visit(self, node: Var, scope: Scope, defining_type: str = None):
-        if scope.get_variable(node.lex) is None:
-            self.errors.append(SemanticError(f'Variable {node.lex} not defined'))
+        if scope.get_variable(node.value) is None:
+            self.errors.append(SemanticError(f'Variable {node.value} not defined'))
     
     @visitor.when(Vector)
     def visit(self, node: Vector, scope: Scope, defining_type: str = None):
@@ -171,14 +135,14 @@ class GlobalScopeBuilder(object):
     @visitor.when(Call)
     def visit(self, node: Call, scope: Scope, defining_type: str = None):
         args = node.args if node.args else []
-        if scope.get_function_info(node.idx, len(args)) is None:
-            self.errors.append(SemanticError(f'Function {node.idx} not defined'))
+        if scope.get_function_info(node.value, len(args)) is None:
+            self.errors.append(SemanticError(f'Function {node.value} not defined'))
     
     @visitor.when(While)
     def visit(self, node: While, scope: Scope, defining_type: str = None):
         new_scope = scope.create_child_scope()
         self.visit(node.stop, scope, defining_type)
-        self.visit(node.body, new_scope, defining_type)
+        self.visit(node.value, new_scope, defining_type)
 
     
     @visitor.when(For)
@@ -186,25 +150,25 @@ class GlobalScopeBuilder(object):
         new_scope = scope.create_child_scope()
         new_scope.define_variable(node.item, None)
         self.visit(node.collection, scope, defining_type)
-        self.visit(node.body, new_scope, defining_type)
+        self.visit(node.value, new_scope, defining_type)
     
     @visitor.when(ForVar)
     def visit(self, node: ForVar, scope: Scope, defining_type: str = None):
         raise Exception('Error: ForVar not implemented')
     
     @visitor.when(Invoke)
-    def visit(self, node: Invoke, scope: Scope, defining_type: str = None):#TODO: Fix on self
-        if not (node.container.lex and node.container.lex == 'self'):
-            self.visit(node.container, scope, defining_type)
+    def visit(self, node: Invoke, scope: Scope, defining_type: str = None):
+        if not (node.value.value and node.value.value == 'self'):
+            self.visit(node.value, scope, defining_type)
         try:
-            scope.get_variable(node.container.lex)
+            scope.get_variable(node.value.value)
         except SemanticError as se:
             self.errors.append(se.text)
 
     
     @visitor.when(Indexing)
     def visit(self, node: Indexing, scope: Scope, defining_type: str = None):
-        self.visit(node.lex, scope, defining_type)
+        self.visit(node.value, scope, defining_type)
     
     @visitor.when(TypeDef)
     def visit(self, node: TypeDef, scope: Scope):
@@ -213,25 +177,15 @@ class GlobalScopeBuilder(object):
         for item in body:
             self.visit(item, new_scope, node.name)
     
-    @visitor.when(Base)
-    def visit(self, node: Base, scope: Scope, defining_type: str = None):
-
-        # raise Exception('Error: Base not implemented')
-        pass
-    
     @visitor.when(Property)
     def visit(self, node: Property, scope: Scope, defining_type: str = None):
         pass
     
     @visitor.when(Assign)
     def visit(self, node: Assign, scope: Scope, defining_type: str = None):
-        self.visit(node.lex, scope, defining_type)
+        self.visit(node.value, scope, defining_type)
         self.visit(node.body, scope, defining_type)
     
     @visitor.when(CreateInstance)
     def visit(self, node: CreateInstance, scope: Scope, defining_type: str = None):
         raise Exception('Error: CreateInstance not implemented')
-    
-    @visitor.when(Protocol)
-    def visit(self, node: Protocol, scope: Scope, defining_type: str = None):
-        pass

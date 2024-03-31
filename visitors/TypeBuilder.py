@@ -24,8 +24,8 @@ class TypeBuilder(object):
     def visit(self, node: TypeDef, ctx: Context):
         type_info = ctx.get_type(node.name)
         try:
-            if node.inheritance:
-                parent = ctx.get_type(node.inheritance)
+            if node.type:
+                parent = ctx.get_type(node.type)
                 type_info.set_parent(parent)
         except SemanticError as se:
             self.errors.append(se.text)
@@ -45,8 +45,8 @@ class TypeBuilder(object):
     def visit(self, node: Protocol, ctx: Context):
         protocol_info = ctx.get_protocol(node.name)
         try:
-            if node.extension:
-                parent = ctx.get_protocol(node.extension)
+            if node.type:
+                parent = ctx.get_protocol(node.type)
                 protocol_info.set_parent(parent)
         except SemanticError as se:
             self.errors.append(se.text)

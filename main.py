@@ -4,7 +4,7 @@ from hulk_definitions.grammar import G
 from parser_gen.parser_lr1 import LR1Parser as My_Parser
 from tools.evaluation import evaluate_reverse_parse
 from tools.semantic import Context, Scope
-from visitors.Formater import FormatVisitor
+from visitors.Formatter import FormatVisitor
 from visitors.ScopeGen import GlobalScopeBuilder
 from visitors.SemanticChecker import SemanticChecker
 from visitors.TypeCollector import TypeCollector
