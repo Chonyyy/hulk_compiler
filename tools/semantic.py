@@ -3,6 +3,7 @@ from collections import OrderedDict
 from typing import Tuple, Union, Any, Callable
 
 from hulk_definitions.ast import Expression
+from hulk_definitions.names import CURRENT_METHOD_NAME, NEXT_METHOD_NAME, SIZE_METHOD_NAME
 
 class SemanticError(Exception):
     @property
@@ -128,7 +129,7 @@ class Type:
             return False
     
     def set_parent(self, parent):
-        if self.parent is not None:
+        if self.parent is not OBJECT_TYPE:
             raise SemanticError(f'Parent type is already set for {self.name}.')
         self.parent = parent
 

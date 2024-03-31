@@ -1,7 +1,6 @@
 from typing import Union
 
 from tools.semantic import Type, Protocol
-from hulk_definitions.names import CURRENT_METHOD_NAME, NEXT_METHOD_NAME, SIZE_METHOD_NAME
 
 
 class ErrorType(Type):

@@ -339,15 +339,6 @@ class Interpreter(object):
                 else:
                     type = 'Any'
                 child_scope.define_variable(arg[0], Var('x'), type)
-        
-        if node.type is not None:
-            try:
-                parent_type = self.context.get_type(node.type)
-                self.current_type.set_parent(parent_type)
-            except SemanticError as se:
-                self.errors.append(se.text)
-        else:
-            self.current_type.set_parent(OBJECT_TYPE)
 
         if node.body:
             for member in node.body:
@@ -477,7 +468,7 @@ class Interpreter(object):
 
         dyn_type: Type = self.context.get_type(node.value)
 
-        arg_values = [self.visit(arg, scope) for arg in node.args]
+        arg_values = [self.visit(arg, scope) for arg in node.params]
         instance: Type = dyn_type.clone()
 
         while True:
@@ -490,7 +481,7 @@ class Interpreter(object):
             for attr in instance.attributes:
                 attr.set_value(self.visit(attr.init_expr, child_scope))
 
-            if instance.parent == OBJECT_TYPE:
+            if instance.parent is OBJECT_TYPE:
                 break
 
             parent_args = (
@@ -500,6 +491,6 @@ class Interpreter(object):
             )
 
             arg_values = [self.visit(arg, child_scope) for arg in parent_args]
-            instance = instance.parent
+            instance = OBJECT_TYPE if instance.parent else instance.parent
 
         return (instance, dyn_type)
