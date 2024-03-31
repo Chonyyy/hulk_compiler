@@ -11,6 +11,7 @@ class Interpreter(object):
         self.current_type = None
         self.current_method = None
         
+
     @visitor.on('node')
     def visit(self, node):
         pass
@@ -41,7 +42,10 @@ class Interpreter(object):
         child_scope = scope.create_child_scope()
         value_exp = self.visit(node.expr,scope, type_def)
         child_scope.define_variable(node.name, value_exp, node.type)
-  
+        
+        # if value_exp in scope.local_types.values():
+        #     value_body = self.visit( node.scope, child_scope , value_exp )
+            
         value_body = self.visit( node.scope, child_scope , value_exp ) 
         return value_body
         
@@ -112,6 +116,7 @@ class Interpreter(object):
     @visitor.when(E)
     def visit(self, node, scope: ScopeInterpreter, type_def = None):
         return math.e
+    
     
     @visitor.when(Print)
     def visit(self, node: Print, scope: ScopeInterpreter, type_def = None):
@@ -264,16 +269,22 @@ class Interpreter(object):
         func = None
         
         if type_def is not None:
-                func = type_def.call( node.lex)
-        else:
             if node.container.lex == 'self':
                 if type(node.lex) == str:
                     func = container_type.call(None, node.lex)
                 else:
                     func = container_type.call(None, node.lex.lex)
             else:
-                arg = node.lex.lex
-                func = container_type.call(arg)
+                func = type_def.call( node.lex)
+        
+        if node.container.lex == 'self':
+            if type(node.lex) == str:
+                func = container_type.call(None, node.lex)
+            else:
+                func = container_type.call(None, node.lex.lex)
+        else:
+            arg = node.lex.lex
+            func = container_type.call(arg)
             
         try:
             return func()
@@ -342,7 +353,7 @@ class Interpreter(object):
                     if scope.get_local_function(name):
                         return scope.get_local_function(name)
                     else:
-                        scope.get_local_variable(name) 
+                        return scope.get_local_variable(name) 
                 
                 def create_new_instance(params = None):
                     return NewType(params)
