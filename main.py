@@ -20,7 +20,7 @@ def main(debug = True, verbose = False, force = False):
 
     if os.path.exists(file_path):
         os.remove(file_path)
-        # print(f"The file {file_path} has been deleted.")
+        print(f"The file {file_path} has been deleted.")
 
     logging.basicConfig(filename='hulk_compiler.log', level=logging.DEBUG)
     files = os.listdir('./hulk_examples')
@@ -30,7 +30,7 @@ def main(debug = True, verbose = False, force = False):
 
     for i, file in enumerate(files):
         if file in [
-            "1_example_expressions.hlk",
+            # "1_example_expressions.hlk",
             # "2_example_functions.hlk",
             # "3_example_variables.hlk",
             # "4_example_conditionals.hlk",
@@ -82,26 +82,26 @@ def main(debug = True, verbose = False, force = False):
                     iterable_protocol.define_method("next", [], "Object")
                     iterable_protocol.define_method("current", [], "Object")
 
-            # print('=== Collecting Types ===')
+            print('=== Collecting Types ===')
             collector = TypeCollector(context, errors)
             collector.visit(ast)
             context = collector.context
-            # print("=== Done ===")
-            # print('Errors', errors)
+            print("=== Done ===")
+            print('Errors', errors)
 
-            # print('=== Building Types ===')
+            print('=== Building Types ===')
             builder = TypeBuilder(context, errors)
             builder.visit(ast)
             context = builder.context
-            # print("=== Done ===")
-            # print('Errors', errors)
+            print("=== Done ===")
+            print('Errors', errors)
 
-            # print('=== Building Global Scope ===')
-            # global_scope_builder = GlobalScopeBuilder(context, errors)
-            # global_scope_builder.visit(ast)
-            # global_scope = global_scope_builder.global_scope
-            # print("=== Done ===")
-            # print('Errors', errors)
+            print('=== Building Global Scope ===')
+            global_scope_builder = GlobalScopeBuilder(context, errors)
+            global_scope_builder.visit(ast)
+            global_scope = global_scope_builder.global_scope
+            print("=== Done ===")
+            print('Errors', errors)
 
             print("=== AST Interpreter ===")
             tree_interpreter = Interpreter(context)
