@@ -13,4 +13,16 @@
             elif (mod % 3 == 1) "Woke"
             else "Dumb"
         );
+    let a = 43, let mod = a % 3 in
+        print(
+            if (mod == 0) "Magic"
+            elif (mod % 3 == 1) "Woke"
+            else "Dumb"
+        );
+    let a = 44, let mod = a % 3 in
+        print(
+            if (mod == 0) "Magic"
+            elif (mod % 3 == 1) "Woke"
+            else "Dumb"
+        );
 }
