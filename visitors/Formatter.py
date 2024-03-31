@@ -23,15 +23,14 @@ class FormatVisitor(object):
     def visit(self, node: Statement, tabs=0):
         return '\t' * tabs + f'\\__Statement: {node.__class__.__name__}'
 
-    # @visitor.when(LetList)
-    # def visit(self, node: LetList, tabs=0):
-    #     for child in node.children:
-    #         return f'{self.visit(child, tabs)}'
+    @visitor.when(LetList)
+    def visit(self, node: LetList, tabs=0):
+        return f'{self.visit(node.child, tabs)}'
 
     @visitor.when(Assign)
     def visit(self, node:Assign, tabs=0):
-        ans = '\t' * tabs + f'\\__Assign: {node.lex} = <expr>'
-        expr = self.visit(node.body, tabs + 1)
+        ans = '\t' * tabs + f'\\__Assign: {node.value} = <expr>'
+        expr = self.visit(node.value, tabs + 1)
         return f'{ans}\n{expr}'
 
     @visitor.when(Function)
@@ -51,10 +50,10 @@ class FormatVisitor(object):
 
     @visitor.when(TypeDef)
     def visit(self, node:TypeDef, tabs=0):
-        if node.inheritance is None:
+        if node.type is None:
             ans = '\t' * tabs + f'\\__TypeDef: {node.name}'
         else:
-            ans = '\t' * tabs + f'\\__TypeDef: {node.name} inherits from {node.inheritance}'#TODO: Check this
+            ans = '\t' * tabs + f'\\__TypeDef: {node.name} inherits from {node.type}'#TODO: Check this
         body = '<empty_body>'
         if node.body:
             body = '\n'.join(self.visit(child, tabs + 1) for child in node.body)
@@ -73,30 +72,31 @@ class FormatVisitor(object):
 
     @visitor.when(Number)
     def visit(self, node: Number, tabs=0):
-        return '\t' * tabs + f'\\__Number: {node.lex}'
+        return '\t' * tabs + f'\\__Number: {node.value}'
 
     @visitor.when(For)
     def visit(self, node:For, tabs=0):
         ans = '\t' * tabs + f'\\__For: {node.item} in <collection> -> <body>'
         collection = self.visit(node.collection, tabs + 1)
-        body = self.visit(node.body, tabs + 1)
+        body = self.visit(node.value, tabs + 1)
         return f'{ans}\n{collection}\n{body}'
 
     @visitor.when(Block)
     def visit(self, node: Block, tabs=0):
-        if node.body:
-            ans = '\t' * tabs + f'\\__Block: {len(node.body)} statements'
+        if node.value:
+            ans = '\t' * tabs + f'\\__Block: {len(node.value)} statements'
+            value = ''
+            for val in node.value:
+               value += self.visit(val, tabs + 1)
         else:
             ans = '\t' * tabs + f'\\__Block: {0} statements'
-        print(type(node.body))
-        body = ''.join(self.visit(node.body, tabs + 1))
-        return f'{ans}\n{body}'
+        return f'{ans}\n{value}'
 
     @visitor.when(Let)
     def visit(self, node: Let, tabs=0):
         ans = '\t' * tabs + f'\\__Let: {node.name} = <expr>'
         expr = self.visit(node.expr, tabs + 1)
-        return f'{ans}\n{expr}'
+        return f'{ans}\n{expr}\n'
 
     @visitor.when(Conditional)
     def visit(self, node: Conditional, tabs=0):
@@ -110,7 +110,7 @@ class FormatVisitor(object):
     def visit(self, node: Branch, tabs=0):
         ans = '\t' * tabs + f'\\__Branch: <condition> -> <body>'
         condition = self.visit(node.condition, tabs + 1)
-        body = self.visit(node.body, tabs + 1)
+        body = self.visit(node.value, tabs + 1)
         return f'{ans}\n{condition}\n{body}'
 
     @visitor.when(Expression)
@@ -120,163 +120,162 @@ class FormatVisitor(object):
     @visitor.when(Unary)
     def visit(self, node: Unary, tabs=0):
         ans = '\t' * tabs + f'\\__Unary: {node.__class__.__name__} <expr>'
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{right}'
 
     @visitor.when(Binary)
     def visit(self, node: Binary, tabs=0):
         ans = '\t' * tabs + f'\\__Binary: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(Plus)
     def visit(self, node: Plus, tabs=0):
         ans = '\t' * tabs + f'\\__Plus: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(BinaryMinus)
     def visit(self, node: BinaryMinus, tabs=0):
         ans = '\t' * tabs + f'\\__BinaryMinus: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(Star)
     def visit(self, node: Star, tabs=0):
         ans = '\t' * tabs + f'\\__Star: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(Pow)
     def visit(self, node: Pow, tabs=0):
         ans = '\t' * tabs + f'\\__Pow: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(Div)
     def visit(self, node: Div, tabs=0):
         ans = '\t' * tabs + f'\\__Div: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(Mod)
     def visit(self, node: Mod, tabs=0):
         ans = '\t' * tabs + f'\\__Mod: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(Is)
     def visit(self, node: Is, tabs=0):
         ans = '\t' * tabs + f'\\__Is: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(As)
     def visit(self, node: As, tabs=0):
         ans = '\t' * tabs + f'\\__As: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(At)
     def visit(self, node: At, tabs=0):
         ans = '\t' * tabs + f'\\__At: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(DoubleAt)
     def visit(self, node: DoubleAt, tabs=0):
         ans = '\t' * tabs + f'\\__DoubleAt: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(Or)
     def visit(self, node: Or, tabs=0):
         ans = '\t' * tabs + f'\\__Or: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(And)
     def visit(self, node: And, tabs=0):
         ans = '\t' * tabs + f'\\__And: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(GreaterThan)
     def visit(self, node: GreaterThan, tabs=0):
         ans = '\t' * tabs + f'\\__GreaterThan: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(LessThan)
     def visit(self, node: LessThan, tabs=0):
         ans = '\t' * tabs + f'\\__LessThan: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(GreaterEqual)
     def visit(self, node: GreaterEqual, tabs=0):
         ans = '\t' * tabs + f'\\__GreaterEqual: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(LessEqual)
     def visit(self, node: LessEqual, tabs=0):
         ans = '\t' * tabs + f'\\__LessEqual: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(NotEqual)
     def visit(self, node: NotEqual, tabs=0):
         ans = '\t' * tabs + f'\\__NotEqual: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(CompareEqual)
     def visit(self, node: CompareEqual, tabs=0):
         ans = '\t' * tabs + f'\\__CompareEqual: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
 
     @visitor.when(Not)
     def visit(self, node: Not, tabs=0):
         ans = '\t' * tabs + f'\\__Not: <expr> {node.__class__.__name__} <expr>'
         left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
+        right = self.visit(node.value, tabs + 1)
         return f'{ans}\n{left}\n{right}'
     
     @visitor.when(UnaryMinus)
     def visit(self, node: UnaryMinus, tabs=0):
         ans = '\t' * tabs + f'\\__UnaryMinus: <expr> {node.__class__.__name__} <expr>'
-        left = self.visit(node.left, tabs + 1)
-        right = self.visit(node.right, tabs + 1)
-        return f'{ans}\n{left}\n{right}'
+        right = self.visit(node.value, tabs + 1)
+        return f'{ans}\n{right}'
 
     @visitor.when(Atom)
     def visit(self, node:Atom, tabs=0):
-        return '\t' * tabs + f'\\__ {node.__class__.__name__}: {node.lex}'
+        return '\t' * tabs + f'\\__ {node.__class__.__name__}: {node.value}'
 
     @visitor.when(Call)
     def visit(self, node:Call, tabs=0):
-        ans = '\t' * tabs + f'\\__Call: <obj>.{node.idx}(<args>)'
+        ans = '\t' * tabs + f'\\__Call: <obj>.{node.value}(<args>)'
         args = '<empty>'
         if node.args:
             args = ''.join(self.visit(arg, tabs + 1) for arg in node.args)
@@ -284,35 +283,35 @@ class FormatVisitor(object):
 
     @visitor.when(Str)
     def visit(self, node: Str, tabs=0):
-        return '\t' * tabs + f'\\__Str: {node.lex}'
+        return '\t' * tabs + f'\\__Str: {node.value}'
     
     @visitor.when(Bool)
     def visit(self, node: Bool, tabs=0):
-        return '\t' * tabs + f'\\__Bool: {node.lex}'
+        return '\t' * tabs + f'\\__Bool: {node.value}'
     
     @visitor.when(Invoke)
     def visit(self, node: Invoke, tabs=0):
-        ans = '\t' * tabs + f'\\__Invoke: <container>.{node.lex}'
-        container = self.visit(node.container, tabs + 1)
+        ans = '\t' * tabs + f'\\__Invoke: <container>.{node.value}'
+        container = self.visit(node.value, tabs + 1)
         return f'{ans}\n{container}'
     
     @visitor.when(Vector)
     def visit(self, node: Vector, tabs=0):
         ans = '\t' * tabs + f'\\__Vector: <values> with length {node.len}'
-        values = ''.join(self.visit(value, tabs + 1) for value in node.lex)
+        values = ''.join(self.visit(value, tabs + 1) for value in node.value)
         return f'{ans}\n{values}'
     
     @visitor.when(VectorComprehension)
     def visit(self, node: VectorComprehension, tabs=0):
         ans = '\t' * tabs + f'\\__VectorComprehension: <values> with length {node.len} and operation <operation>'
-        # values = ''.join(self.visit(value, tabs + 1) for value in node.lex)
+        # values = ''.join(self.visit(value, tabs + 1) for value in node.value)
         values = "TODO: FIx later"
         operation = self.visit(node.operation, tabs + 1)
         return f'{ans}\n{values}\n{operation}'
     
     @visitor.when(Var)
     def visit(self, node: Var, tabs=0):
-        return '\t' * tabs + f'\\__Var: {node.lex}'
+        return '\t' * tabs + f'\\__Var: {node.value}'
 
     @visitor.when(TypeCreation)
     def visit(self, node: TypeCreation, tabs=0):
@@ -328,7 +327,7 @@ class FormatVisitor(object):
 
     @visitor.when(Indexing)
     def visit(self, node:Indexing, tabs=0):
-        ans = '\t' * tabs + f'\\__Indexing: {node.lex}[<index>]'
+        ans = '\t' * tabs + f'\\__Indexing: {node.value}[<index>]'
         index = self.visit(node.index, tabs + 1)
         return f'{ans}\n{index}'
 
@@ -406,7 +405,7 @@ class FormatVisitor(object):
     def visit(self, node:While, tabs=0):
         ans = '\t' * tabs + f'\\__While: <expr> -> <body>'
         expr = self.visit(node.stop, tabs + 1)
-        body = self.visit(node.body, tabs + 1)
+        body = self.visit(node.value, tabs + 1)
         return f'{ans}\n{expr}\n{body}'
 
     @visitor.when(Base)
@@ -418,7 +417,7 @@ class FormatVisitor(object):
     @visitor.when(Property)
     def visit(self, node:Property, tabs=0):
         ans = '\t' * tabs + f'\\__Property: {node.name} = <expr>'
-        expr = self.visit(node.body, tabs + 1)
+        expr = self.visit(node.value, tabs + 1)
         return f'{ans}\n{expr}'
 
     @visitor.when(CreateInstance)
