@@ -34,23 +34,23 @@ eof = G.EOF
 #endregion
 
 #region Productions Definition
-program %= stat_list, lambda h,s: Program(s[1]) #1
+program %= stat_list, lambda h,s: Program(s[1]) #0
 
-stat_list %= eexpr, lambda h,s: s[1] #2
-stat_list %= definitions + eexpr, lambda h,s: s[1] + s[2] #3
+stat_list %= eexpr, lambda h,s: [s[1]] #1
+stat_list %= definitions + eexpr, lambda h,s: s[1] + [s[2]] #2
 
-definitions %= definition, lambda h,s: [s[1]] #4
-definitions %= definition + definitions, lambda h,s: [s[1]] + s[2] #5
+definitions %= definition, lambda h,s: [s[1]] #3
+definitions %= definition + definitions, lambda h,s: [s[1]] + s[2] #4
 
-definition %= protocol, lambda h,s: s[1] #6
-definition %= protocol + semi, lambda h,s: s[1] #6
-definition %= def_type, lambda h,s: s[1] #7
-definition %= def_type + semi, lambda h,s: s[1] #7
-definition %= def_func, lambda h,s: s[1] #8
+definition %= protocol, lambda h,s: s[1] #5
+definition %= protocol + semi, lambda h,s: s[1] #7
+definition %= def_type, lambda h,s: s[1] #8
+definition %= def_type + semi, lambda h,s: s[1] #9
+definition %= def_func, lambda h,s: s[1] #10
 
-eexpr %= expr + semi, lambda h,s: [s[1]] #9
-eexpr %= expr_block, lambda h,s: [s[1]] #10
-eexpr %= expr_block + semi, lambda h,s: [s[1]] #11
+eexpr %= expr + semi, lambda h,s: s[1] #10
+eexpr %= expr_block, lambda h,s: s[1] #10
+eexpr %= expr_block + semi, lambda h,s: s[1] #11
 
 expr %= atom + dassign + expr, lambda h,s: Assign(s[1], s[3]) #12
 expr %= let + var_corpse + inx + expr, lambda h,s: LetList([Let(x[0], x[1], s[4], x[2]) for x in s[2]]) #13
@@ -60,7 +60,7 @@ expr %= idx + asx + numx, lambda h,s: As(s[1], s[3]) #16
 expr %= idx + asx + objx, lambda h,s: As(s[1], s[3]) #17
 expr %= idx + asx + boolx, lambda h,s: As(s[1], s[3]) #18
 expr %= newx + func_call, lambda h,s: CreateInstance(s[2].value, s[2].args) #19
-expr %= or_expr, lambda h,s: s[1] #20
+expr %= or_expr, lambda h,s: s[1] #21
 expr %= or_expr + datx + expr, lambda h,s: DoubleAt(s[1], s[3]) #21
 expr %= or_expr + atx + expr, lambda h,s: At(s[1], s[3]) #22
 expr %= ifx + opar + expr + cpar + expr + elsex + expr, lambda h,s: Conditional(s[3], s[5], s[7]) #23
@@ -94,8 +94,8 @@ expr_block %= whilex + opar + expr_block + cpar + expr_block, lambda h,s: While(
 expr_block %= forx + opar + idx + inx + expr + cpar + expr_block, lambda h,s: For(s[3], s[5], s[7]) #47
 expr_block %= forx + opar + idx + inx + expr_block + cpar + expr_block, lambda h,s: For(s[3], s[5], s[7]) #48
 
-block_corpse %= eexpr, lambda h,s: s[1] #49
-block_corpse %= block_corpse + eexpr, lambda h,s: s[1] + s[2] #50
+block_corpse %= eexpr, lambda h,s: [s[1]] #49
+block_corpse %= block_corpse + eexpr, lambda h,s: s[1] + [s[2]] #50
 
 var_corpse %= idx + equal + expr, lambda h,s: [[s[1], s[3], None]] #51
 var_corpse %= idx + equal + expr + comma + var_corpse, lambda h,s: [[s[1], s[3], None]] + s[5] #52
@@ -130,10 +130,10 @@ if_br %= elifx + opar + expr + cpar + expr_block, lambda h,s: [Branch(s[3], s[5]
 if_br %= elifx + opar + expr_block + cpar + expr, lambda h,s: [Branch(s[3], s[5])] #73
 if_br %= elifx + opar + expr_block + cpar + expr_block, lambda h,s: [Branch(s[3], s[5])] #74
 
-or_expr %= and_expr, lambda h,s: s[1] #75
+or_expr %= and_expr, lambda h,s: s[1] #81
 or_expr %= or_expr + orx + and_expr, lambda h,s: Or(s[1], s[3]) #76
 
-and_expr %= compare, lambda h,s: s[1] #77
+and_expr %= compare, lambda h,s: s[1] #83
 and_expr %= and_expr + andx + compare, lambda h,s: And(s[1], s[3]) #78
 
 compare %= arit + gt + arit, lambda h,s: GreaterThan(s[1], s[3]) #79
@@ -143,28 +143,28 @@ compare %= arit + lte + arit, lambda h,s: LessEqual(s[1], s[3]) #82
 compare %= arit + dequal + arit, lambda h,s: CompareEqual(s[1], s[3]) #83
 compare %= arit + nequal + arit, lambda h,s: NotEqual(s[1], s[3]) #84
 compare %= arit + isx + idx, lambda h,s: Is(s[1], s[3]) #85
-compare %= arit, lambda h,s: s[1] #86
+compare %= arit, lambda h,s: s[1] #92
 
-arit %= term, lambda h,s: s[1] #87
+arit %= term, lambda h,s: s[1] #93
 arit %= arit + plus + term, lambda h,s: Plus(s[1], s[3]) #88
 arit %= arit + minus + term, lambda h,s: BinaryMinus(s[1], s[3]) #89
 
-term %= factor, lambda h,s: s[1] #90
+term %= factor, lambda h,s: s[1] #96
 term %= term + star + factor, lambda h,s: Star(s[1], s[3]) #91
 term %= term + div + factor, lambda h,s: Div(s[1], s[3]) #92
 term %= term + modx + factor, lambda h,s: Mod(s[1], s[3]) #93
 
-factor %= power, lambda h,s: s[1] #94
+factor %= power, lambda h,s: s[1] #100
 factor %= notx + factor, lambda h,s: Not(s[2]) #95
 factor %= minus + factor, lambda h,s: UnaryMinus(s[2]) #96
 
-power %= atom, lambda h,s: s[1] #97
+power %= atom, lambda h,s: s[1] #103
 power %= atom + pow + power, lambda h,s: Pow(s[1], s[3]) #98
 power %= atom + dstar + power, lambda h,s: Pow(s[1], s[3]) #99
 
-atom %= opar + expr + cpar, lambda h,s: s[2] #100
-atom %= opar + expr_block + cpar, lambda h,s: s[2] #101
-atom %= num, lambda h,s: Number(float(s[1])) #102
+atom %= opar + expr + cpar, lambda h,s: s[2] #106
+atom %= opar + expr_block + cpar, lambda h,s: s[2] #107
+atom %= num, lambda h,s: Number(float(s[1])) #108
 atom %= idx, lambda h,s: Var(s[1]) #103
 atom %= true, lambda h,s: Bool(True) #104
 atom %= false, lambda h,s: Bool(False) #105
