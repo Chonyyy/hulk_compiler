@@ -261,7 +261,6 @@ class Interpreter(object):
 
     @visitor.when(Invoke)
     def visit(self, node: Invoke, scope: ScopeInterpreter, type_def = None):
-        child_scope = scope.create_child_scope()
         container_type: Atom = self.visit(node.value, scope, type_def)
         
         func = None
@@ -281,6 +280,7 @@ class Interpreter(object):
             else:
                 func = container_type.call(None, node.value.value)
         else:
+            # Diferemtiatie between call and attr
             arg = node.value.value
             func = container_type.call(arg)
             
@@ -465,13 +465,13 @@ class Interpreter(object):
             y = int(self.visit(node.collection.args[1],scope))
             for item in range(x, y):
                 body_scope = scope.create_child_scope()
-                body_scope.define_variable(node.item.name, item, node.item.type)
-                value = self.visit(node.body, body_scope)
+                body_scope.define_variable(node.item, item, None)
+                value = self.visit(node.value, body_scope)
         else:
             for item in self.visit(node.collection, scope):
                 body_scope = scope.create_child_scope()
                 body_scope.define_variable(node.item.name, item, node.item.type)
-                value = self.visit(node.body, body_scope)
+                value = self.visit(node.value, body_scope)
         return value    
         
     @visitor.when(Base)
@@ -481,7 +481,7 @@ class Interpreter(object):
     @visitor.when(Property)
     def visit(self, node: Property, scope: ScopeInterpreter, type_def = None):
         name = node.name
-        body_value = self.visit(node.body, scope)
+        body_value = self.visit(node.value, scope)
         scope.define_variable(name, body_value, node.type)
         return body_value
 
