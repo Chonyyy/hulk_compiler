@@ -12,6 +12,7 @@ class GlobalScopeBuilder(object):
         self.global_scope.define_function('sin', ['x'], self.context.get_type('Number').name)
         self.global_scope.define_function('cos', ['x'], self.context.get_type('Number').name)
         self.global_scope.define_function('range', ['start', 'end'], self.context.get_type('Vector').name)
+        self.global_scope.define_function('base', [], 'Dinamic')
         
         self.global_scope.define_variable('Pi', self.context.get_type('Number').name)
         self.global_scope.define_variable('E', self.context.get_type('Number').name)
