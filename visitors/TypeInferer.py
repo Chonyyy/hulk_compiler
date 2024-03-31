@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from hulk_definitions.ast import *
-from tools.semantic import Context, SemanticError, Type, get_safe_type
+from tools.semantic import Context, SemanticError, Type
 from tools import visitor
-from tools.semantic import Scope
+from tools.semantic import Scope, Variable
 from hulk_definitions.types import * 
 
 class TypeInferer(object):
@@ -19,6 +19,28 @@ class TypeInferer(object):
 
         except SemanticError:
             self.errors.append(f'Name {type} is not a defined Type or Protocol.')
+
+    def _infer(self, node: Expression, scope: Scope, new_type: Union[Type, Protocol]):
+        if isinstance(node, Var):
+            temp = scope.get_variable(node.value)
+            var: Variable = temp[1]
+            i: int = temp[0]
+
+            if var.type is None:
+                var.set_type(new_type)
+                self.occurs = True
+
+            elif isinstance(var.type, UnionType):
+                itsc = var.type & new_type
+                l = len(itsc)
+                if 0 < l < len(var.type):
+                    self.occurs = True
+
+                    if l == 1:
+                        type, *_ = itsc
+                        var.set_type(type)
+                    else:
+                        var.set_type(itsc)
 
     @visitor.on('node')
     def visit(self, node):
