@@ -25,7 +25,7 @@ class Interpreter(object):
         scope.define_function('cos', math.cos)
         scope.define_function('exp', math.exp)
         scope.define_function('log', math.log)
-        scope.define_function('rand', random)
+        scope.define_function('rand', random.randint)
         scope.define_function('range', range)
         scope.define_protocol('Iterable', self.context.get_protocol('Iterable'))
         
@@ -42,9 +42,6 @@ class Interpreter(object):
         child_scope = scope.create_child_scope()
         value_exp = self.visit(node.expr, scope, type_def)
         child_scope.define_variable(node.name, value_exp, node.type)
-        
-        # if value_exp in scope.local_types.values():
-        #     value_body = self.visit( node.scope, child_scope , value_exp )
             
         value_body = self.visit( node.value, child_scope , value_exp ) 
         return value_body
@@ -59,13 +56,13 @@ class Interpreter(object):
         if node.value:
             for statement in node.value:
                 body = self.visit( statement, scope, type_def)
-        return body
+        return body #TODO: add return to print
     
     @visitor.when(Function)
     def visit(self, node: Function, scope: ScopeInterpreter, type_def = None):
         body_scope = scope.create_child_scope()
 
-        def fun (*args):
+        def fun (*args):#TODO: args ?
             for i in range(len(node.params)if node.params else 0):
                 x = node.params[i][0]
                 body_scope.define_variable(x, args[i], node.params[i][1])
@@ -75,7 +72,7 @@ class Interpreter(object):
             return function_body
         
         scope.define_function(node.name, fun)
-        return fun
+        # return fun
 
     @visitor.when(Conditional)
     def visit(self, node: Conditional, scope: ScopeInterpreter, type_def = None):
@@ -175,13 +172,13 @@ class Interpreter(object):
     def visit(self, node: At, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope, type_def)
         right_value = self.visit(node.value, scope, type_def)
-        return str(left_value) + '' + str(right_value)
+        return str(left_value) + str(right_value)
 
     @visitor.when(DoubleAt)
     def visit(self, node: DoubleAt, scope: ScopeInterpreter, type_def = None):
         left_value = self.visit(node.left, scope, type_def)
         right_value = self.visit(node.value, scope, type_def)
-        return str(left_value) + '  ' + str(right_value)
+        return str(left_value) + ' ' + str(right_value)
 
 
     @visitor.when(Or)
@@ -255,7 +252,8 @@ class Interpreter(object):
 
     @visitor.when(Str)
     def visit(self, node: Str, scope: ScopeInterpreter, type_def = None):
-        return str(node.value)
+        #TODO: change \" for "
+        return str(node.value[1:-1])
 
     @visitor.when(Bool)
     def visit(self, node: Bool, scope: ScopeInterpreter, type_def = None):
