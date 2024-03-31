@@ -2,8 +2,8 @@ type Point {
     x: Number = 0;
     y: Number = 0;
 
-    getX(): Number => self.x;
-    getY(): Number => self.y;
+    getX(): Number => x;
+    getY(): Number => y;
 
     setX(x: Number): Number => self.x := x;
     setY(y: Number): Number => self.y := y;
@@ -13,11 +13,11 @@ type PointSecond(x: Number, y: Number) {
     x: Number = x;
     y: Number = y;
 
-    getX(): Number => self.x;
-    getY(): Number => self.y;
+    getX(): Number => x;
+    getY(): Number => y;
 
-    setX(x: Number): Number => self.x := x;
-    setY(y: Number): Number => self.y := y;
+    setX(x: Number): Number => x := x;
+    setY(y: Number): Number => y := y;
 }
 
 type PolarPoint inherits PointSecond {

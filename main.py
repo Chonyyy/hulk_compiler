@@ -43,7 +43,7 @@ def main(debug = True, verbose = False, force = False):
             "13_example_variables.hlk",
             "14_example_conditionals.hlk",
             "15_example_loops.hlk",
-            "16_example_types.hlk",
+            # "16_example_types.hlk",
             "17_example_type_checking.hlk",
             "18_example_protocol.hlk",
             "19_example_vector.hlk",
@@ -76,6 +76,10 @@ def main(debug = True, verbose = False, force = False):
                 context.create_type(bi_type)
             for bi_protocol in built_in_protocols:
                 context.create_protocol(bi_protocol)
+                if bi_protocol == "Iterable":
+                    iterable_protocol = context.get_protocol(bi_protocol)
+                    iterable_protocol.define_method("next", [], [], "Object")
+                    iterable_protocol.define_method("current", [], [], "Object")
 
             print('=== Collecting Types ===')
             collector = TypeCollector(context, errors)
@@ -98,7 +102,7 @@ def main(debug = True, verbose = False, force = False):
             print("=== Done ===")
             print('Errors', errors)
 
-            logger.info('=== Type Inference ===')
+            # logger.info('=== Type Inference ===')
 
             logger.info('=== Type Checking ===')
             # checker = TypeChecker(context,  errors)
