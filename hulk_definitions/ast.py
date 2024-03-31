@@ -33,7 +33,7 @@ class LetList(Node):
                 self.child = let
                 current = let
             else:
-                current.scope = let
+                current.value = let
                 current = let
 
 class Block(Expression):
