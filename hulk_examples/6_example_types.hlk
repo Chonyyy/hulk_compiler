@@ -35,6 +35,7 @@ type Knight inherits Person {
 }
 
 {
+    let o = new PointSecond(1, 1) in o;
     let p = new Knight("Phil", "Collins") in
         print(p.name()); // prints Sir Phil Collins
 

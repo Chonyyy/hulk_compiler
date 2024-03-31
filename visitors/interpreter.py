@@ -10,7 +10,8 @@ class Interpreter(object):
         self.context = context
         self.current_type = None
         self.current_method = None
-        
+        self.types = {}
+
         self.invoke = None
 
     @visitor.on('node')
@@ -319,21 +320,43 @@ class Interpreter(object):
 
     @visitor.when(TypeDef)
     def visit(self, node: TypeDef, scope: ScopeInterpreter, type_def = None):
-        def fact(self, *args):
+        definition_scope = scope.create_child_scope()
+        if node.args:
+            for arg in node.args:
+                definition_scope.define_variable(arg[0], None, None)
+        def fact(*args):
+            father_scope = None
             if node.type:
-                pass
-            class_scope = scope.create_child_scope()
-            for attr in node.args:
-                pass
-                # define attrs as scopevariables
-            # define self as an scope variable
+                parent_type = self.context.get_protocol_or_type(node.type)
+                if parent_type.args:
+                    father_scope = self.types[node.type](*args)
+                else:
+                    father_scope = self.types[node.type]()
+            else:
+                father_scope = definition_scope.create_child_scope()
+
+            class_scope = father_scope.create_child_scope()
+            arg_dict = {}
+            if node.args:
+                for i, argument in enumerate(args):
+                        definition_scope.local_vars[node.args[i][0]] = (argument[0], argument[1])
+                        definition_scope.get_local_variable
+            elif args:
+                for i, argument in enumerate(args):
+                    if argument:
+                        father_scope.local_vars[node.args[i][0]] = (argument[0], argument[1])
+                    else:
+                        break
                 
             for statemment in node.body:
+                # if isinstance(statemment, Function):
+                #     continue
                 self.visit(statemment, class_scope)
-            # get parent scope
-            return class_scope
 
-        return fact
+            
+            return class_scope, node.name
+
+        self.types[node.name] = fact
 
     @visitor.when(Protocol)
     def visit(self, node, scope: ScopeInterpreter, type_def = None):
@@ -442,16 +465,18 @@ class Interpreter(object):
         # body_value = self.visit(node.body, scope)
         # scope.define_variable(name, body_value, node.type)
         # return body_value
-        child_scope = scope.create_child_scope()
-        value_exp, value_type = self.visit(node.expr, scope, type_def)
-        child_scope.define_variable(node.name, value_exp, value_type)
+        value_exp, value_type = self.visit(node.value, scope, type_def)
+        scope.define_variable(node.name, value_exp, value_type)
             
-        value_body = self.visit( node.value, child_scope , value_exp ) 
+        value_body = self.visit( node.value, scope , value_exp ) 
         return value_body
 
     @visitor.when(CreateInstance)
     def visit(self, node: CreateInstance, scope: ScopeInterpreter, type_def = None):
-        params_value = [self.visit(param, scope, type_def ) for param in node.params]
-        type_value = scope.get_local_type(node.type)
-        instance = type_value.create_new_instance(params_value)
-        return (instance, type_value)
+        if node.params:
+            params_value = [self.visit(param, scope, type_def ) for param in node.params]
+        else:
+            params_value = []
+        type_value = self.types[node.value]
+        type_scope = type_value(*params_value)
+        return type_scope

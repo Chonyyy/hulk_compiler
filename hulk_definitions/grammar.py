@@ -18,7 +18,7 @@ def_func, arg_list, definitions, if_br = G.NonTerminals('<def-func> <arg-list> <
 assign, assign_block, var_corpse = G.NonTerminals('<assign> <assign-block> <var-corpse>')
 built_in, e_num, block, block_corpse = G.NonTerminals('<built-in> <e-num> <block> <block-corpse>')
 expr, eexpr, expr_block, term, factor, power, atom = G.NonTerminals('<expr> <eexpr> <expr-block> <term> <factor> <power> <atom>')
-func_call, expr_list, definition = G.NonTerminals('<func-call> <expr-list> <definition>')
+func_call, expr_list, definition, id_list = G.NonTerminals('<func-call> <expr-list> <definition> <id-list>')
 #endregion
 
 #region Terminals Definition
@@ -119,6 +119,13 @@ def_func %= func + idx + opar + arg_list + cpar + expr_block, lambda h,s: Functi
 def_func %= func + idx + opar + arg_list + cpar + typed + expr_block, lambda h,s: Function(s[2], s[4], s[7], s[6]) #66
 def_func %= func + idx + opar + arg_list + cpar + expr_block + semi, lambda h,s: Function(s[2], s[4], s[6]) #65
 def_func %= func + idx + opar + arg_list + cpar + typed + expr_block + semi, lambda h,s: Function(s[2], s[4], s[7], s[6]) #66
+
+def_func %= func + idx + opar + cpar + arrow + eexpr, lambda h,s: Function(s[2], None, s[6]) #63
+def_func %= func + idx + opar + cpar + typed + arrow + eexpr, lambda h,s: Function(s[2], None, s[7], s[5]) #64
+def_func %= func + idx + opar + cpar + expr_block, lambda h,s: Function(s[2], None, s[5]) #65
+def_func %= func + idx + opar + cpar + typed + expr_block, lambda h,s: Function(s[2], None, s[6], s[5]) #66
+def_func %= func + idx + opar + cpar + expr_block + semi, lambda h,s: Function(s[2], None, s[5]) #65
+def_func %= func + idx + opar + cpar + typed + expr_block + semi, lambda h,s: Function(s[2], None, s[6], s[5]) #66
 
 arg_list %= idx, lambda h,s: [(s[1], None)] #67
 arg_list %= idx + typed, lambda h,s: [(s[1], s[2])] #68
@@ -251,7 +258,12 @@ typed %= colon + objx, lambda h,s: s[2] #172
 typed %= colon + boolx, lambda h,s: s[2] #173
 
 protocol %= proto + idx + obracket + def_list + cbracket, lambda h,s: Protocol(s[2], s[4]) #174
-protocol %= proto + idx + extends + idx + obracket + def_list + cbracket, lambda h,s: Protocol(s[2], s[6], s[4]) #175
+protocol %= proto + idx + extends + id_list + obracket + def_list + cbracket, lambda h,s: Protocol(s[2], s[6], s[4]) #175
+protocol %= proto + idx + obracket + cbracket, lambda h,s: Protocol(s[2], None) #174
+protocol %= proto + idx + extends + id_list + obracket + cbracket, lambda h,s: Protocol(s[2], None, s[4]) #175
+
+id_list %= idx, lambda h,s: [s[1]] #
+id_list %= idx + comma + id_list, lambda h,s: [s[1]] + s[2] # 
 
 def_list %= define + semi, lambda h,s: [s[1]] #176
 def_list %= define_block, lambda h,s: [s[1]] #177
