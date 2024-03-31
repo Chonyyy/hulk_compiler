@@ -34,11 +34,11 @@ def main(debug = True, verbose = False, force = False):
             "2_example_functions.hlk",
             "3_example_variables.hlk",
             "4_example_conditionals.hlk",
-            # "5_example_loops.hlk",
+            "5_example_loops.hlk",
             # "6_example_types.hlk",
-            # "7_example_type_checking.hlk",
-            # "8_example_protocol.hlk",
-            # "9_example_vector.hlk",
+            "7_example_type_checking.hlk",
+            "8_example_protocol.hlk",
+            "9_example_vector.hlk",
             "11_example_expressions.hlk",
             "12_example_functions.hlk",
             "13_example_variables.hlk",
@@ -48,7 +48,8 @@ def main(debug = True, verbose = False, force = False):
             "17_example_type_checking.hlk",
             "18_example_protocol.hlk",
             "19_example_vector.hlk",
-            "testing_TypeChecker.hlk"
+            "testing_TypeChecker.hlk",
+            "TODO"
         ]:
             continue
         with open(f'./hulk_examples/{file}', 'r') as f:

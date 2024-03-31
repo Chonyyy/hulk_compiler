@@ -71,10 +71,9 @@ class Interpreter(object):
                 
             function_body, function_type = self.visit(node.body , body_scope, type_def)
             
-            return function_body, function_type #Anyadir el tipo  del retorno.
+            return function_body, function_type
         
         scope.define_function(node.name, fun)
-        # return fun
 
     @visitor.when(Conditional)
     def visit(self, node: Conditional, scope: ScopeInterpreter, type_def = None):
@@ -268,9 +267,6 @@ class Interpreter(object):
     @visitor.when(Invoke)
     def visit(self, node: Invoke, scope: ScopeInterpreter, type_def = None):
         container, type = self.visit(node.value, scope, type_def)
-
-        pass
-
         #region warever
         # func = None
         # if type_def is not None:
@@ -323,90 +319,22 @@ class Interpreter(object):
 
     @visitor.when(TypeDef)
     def visit(self, node: TypeDef, scope: ScopeInterpreter, type_def = None):
-        #body_scope = scope.create_child_scope()
-        visitor = self
-        
-        if node.inheritance:
-            inher = scope.get_local_type(node.inheritance)
-            inst = inher.create_new_instance()
-            class NewType(inher):
-                def __init__(self, params = None):
-                    self.typeScope = scope.create_child_scope()
-                    self.vars = []
-                    self.func = {}
-                    
-                    if len(node.args)if node.args else 0 > 0:
-                        for i in range(len(params) if params else 0):
-                            self.typeScope.define_variable(node.args[i][0], params[i])
-                            self.vars.append((node.args[i][0],params[i]))
-                    
-                    if len(inst.vars)if inst.vars else 0 > 0:
-                        for i in range(len(params) if params else 0):
-                            self.typeScope.define_variable(inst.vars[i][0], params[i])
-                            self.vars.append((inst.vars[i][0], params[i]))
-                    
-                    if node.body:
-                        for x in [x for x in node.body if type(x) is Property]:
-                            if not self.typeScope.get_local_variable(x):
-                                b = visitor.visit(x, self.typeScope, inher)
-                                self.typeScope.define_variable(x.name, b)
-                                scope.define_variable(x.name, b)
-                                self.vars.append((x.name, b))
-                    
-                        for x in [x for x in node.body if type(x) is Function]:
-                            self.func[x.name] = x
-                            if scope.get_local_function(x.name):
-                                visitor.visit(x, self.typeScope, inher)
-                                continue
-                            a = visitor.visit(x, scope, inher)
+        def fact(self, *args):
+            if node.type:
+                pass
+            class_scope = scope.create_child_scope()
+            for attr in node.args:
+                pass
+                # define attrs as scopevariables
+            # define self as an scope variable
                 
-                def call(self, name):
-                    if scope.get_local_function(name):
-                        return scope.get_local_function(name)
-                    else:
-                        return scope.get_local_variable(name) 
-                
-                def create_new_instance(params = None):
-                    return NewType(params)
-        else:
-            class NewType:
-                def __init__(self, params = None):
-                    self.typeScope = scope.create_child_scope()
-                    self.vars = []
-                    self.func = {}
-                    
-                    if len(node.args)if node.args else 0 > 0:
-                        for i in range(len(params) if params else 0):
-                            self.typeScope.define_variable(node.args[i][0], params[i])
-                            self.vars.append((node.args[i][0],params[i]))
-                    
-                    if node.body:
-                        for x in [x for x in node.body if type(x) is Property]:
-                            if not self.typeScope.get_local_variable(x):
-                                b = visitor.visit(x, self.typeScope, NewType)
-                                self.typeScope.define_variable(x.name, b)
-                                scope.define_variable(x.name, b)
-                                self.vars.append((x.name, b))
-                    
-                        for x in [x for x in node.body if type(x) is Function]:
-                            self.func[x.name] = x
-                            if scope.get_local_function(x.name):
-                                continue
-                            a = visitor.visit(x, scope, NewType)
-                
-                def call(self, name):
-                    if scope.get_local_function(name):
-                        return scope.get_local_function(name)
-                    else:
-                        scope.get_local_variable(name)
-                
-                def create_new_instance(params = None):
-                    return NewType(params)       
-                    
-        scope.define_type(node.name, NewType)
-        NewType()
-        return NewType
-    
+            for statemment in node.body:
+                self.visit(statemment, class_scope)
+            # get parent scope
+            return class_scope
+
+        return fact
+
     @visitor.when(Protocol)
     def visit(self, node, scope: ScopeInterpreter, type_def = None):
          pass
@@ -510,10 +438,16 @@ class Interpreter(object):
 
     @visitor.when(Property)
     def visit(self, node: Property, scope: ScopeInterpreter, type_def = None):
-        name = node.name
-        body_value = self.visit(node.body, scope)
-        scope.define_variable(name, body_value, node.type)
-        return body_value
+        # name = node.name
+        # body_value = self.visit(node.body, scope)
+        # scope.define_variable(name, body_value, node.type)
+        # return body_value
+        child_scope = scope.create_child_scope()
+        value_exp, value_type = self.visit(node.expr, scope, type_def)
+        child_scope.define_variable(node.name, value_exp, value_type)
+            
+        value_body = self.visit( node.value, child_scope , value_exp ) 
+        return value_body
 
     @visitor.when(CreateInstance)
     def visit(self, node: CreateInstance, scope: ScopeInterpreter, type_def = None):
