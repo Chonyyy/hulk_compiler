@@ -1,16 +1,42 @@
 from abc import ABC, abstractmethod
 from hulk_definitions.ast import *
-from tools.semantic import Context, SemanticError, Type
+from tools.semantic import Context, SemanticError, Type, Tuple
 from tools import visitor
-from tools.semantic import Scope
+from tools.semantic import Scope, Variable
+from tools.semantic import Function as Func
 from hulk_definitions.types import * 
+from hulk_definitions.names import *
 
 class TypeInferer(object):
-    def __init__(self, context: Context, errors=[]):
-        self.context = context
+    def __init__(self, context: Context, scope: Scope, errors=[]):
+        self.context: Context = context
         self.errors = errors
+        self.scope: Scope = scope
 
-        self.type: Type = None
+        self.current_method: Func = None
+        self.current_type: Type = None 
+
+    def _infer(self, node: Expression, scope: Scope, new_type: Union[Type, Protocol]):
+        if isinstance(node, Var):
+            temp: Tuple[int, Variable] = scope.get_variable(node.value)
+            var: Variable = temp[1]
+            i: int = temp[0]
+
+            if var.type is None:
+                var.set_type(new_type)
+                self.occurs = True
+
+            elif isinstance(var.type, UnionType):
+                itsc = var.type & new_type
+                l = len(itsc)
+                if 0 < l < len(var.type):
+                    self.occurs = True
+
+                    if l == 1:
+                        type, *_ = itsc
+                        var.set_type(type)
+                    else:
+                        var.set_type(itsc)
     
     @visitor.on('node')
     def visit(self, node):
@@ -29,13 +55,32 @@ class TypeInferer(object):
         return BOOLEAN_TYPE
     
     @visitor.when(Function)
-    def visit(self, node: Function, ctx: Context):
-        pass
+    def visit(self, node: Function, ctx: Context, scope: Scope):
+        
+        temp = scope.get_function(node.name)
+        i: int = temp[0]
+        f: Func = temp[1]
+        child_scope: Scope = scope.children[i]
+
+        rt = self.visit(node.body, ctx, child_scope)
+
+        for name, pt in f.params:
+            if pt is None:
+                var: Variable = child_scope.get_variable(name)[1]
+                if var.type is not None:
+                    v = f.set_param_type(name, var.type)
+                    if v is SemanticError:
+                        self.errors.append(v.text)
+
+        if f.return_type is None and rt is not None:
+            f.set_return_type(rt)
+            self.occurs = True
 
     @visitor.when(Program)
-    def visit(self, node: Program):
-        for child in node.statements:
-            self.visit(child, self.context)
+    def visit(self, node: Program, scope: Scope):
+
+        for i, child in enumerate(node.statements):
+            self.visit(child, self.context, scope.children[i])
 
         return self.errors
 
@@ -60,7 +105,7 @@ class TypeInferer(object):
                 node.type = types
 
             else:
-                self.errors.append(f"Variable {node.name}'s type can't be enfered")
+                self.errors.append(f"Variable {node.name}'s type can't be infered")
             
             return types
 
@@ -187,8 +232,31 @@ class TypeInferer(object):
         pass
     
     @visitor.when(Var)
-    def visit(self, node: Star, ctx: Context):
-        pass
+    def visit(self, node: Var, ctx: Context, scope: Scope):
+        if (
+            self.current_method is not None
+            and node.value == INSTANCE_NAME
+            and node.value not in self.current_method.params
+            ):
+            pscope = self._find_scope(node.lex)
+            if pscope.is_function:
+                return self.current_type
+
+        i, var = scope.get_variable(node.value)
+        if var is not None:
+            return var.type
+
+        return FUNCTION_TYPE
+    
+    def _find_var_scope(self, name: str, scope: Scope):
+        if scope.get_local_variable(name) != None:
+            return scope
+        else:
+            v = self._find_var_scope(name, scope.parent)
+            if v != None:
+                return v
+            else:
+                raise SemanticError(f'Variable {name} is not defined.')
     
     @visitor.when(TypeDef)
     def visit(self, node: TypeDef, ctx: Context):

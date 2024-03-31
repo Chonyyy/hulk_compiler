@@ -31,7 +31,23 @@ class Function:
     def __eq__(self, other):
         return other.name == self.name and \
             other.return_type == self.return_type and \
-            other.param_types == self.param_types
+            other.param_types == self.get_params_types()
+    
+    def get_params_types(self) -> list[str]:
+        return [param[1] for param in self.params]
+
+    
+    def set_param_type(self, name, type) -> (bool | SemanticError):
+        for param in self.params:
+            if param[0] == name:
+                param[1] = type
+                return True
+        
+        raise SemanticError(f'Param {name} is not defined in the function {self.name}.')
+
+    def set_return_type(self, type):
+        self.return_type = type
+
 
 class FunctionDef:
     def __init__(self, name, param_names, params_types, return_type):
@@ -229,8 +245,11 @@ class Variable:
         self.name = name
         self.var_type = var_type
 
+    def set_type(self, type):
+        self.type = type
+
 class Scope:
-    def __init__(self, parent = None, index = 0):
+    def __init__(self, parent = None, index = 0, is_function = False):
         self.local_vars: list[Tuple[int, Variable]] = []
         self.local_funcs: list[Tuple[int, Function]] = []
         self.local_types: list[Tuple[int, Type]] = []
@@ -284,6 +303,27 @@ class Scope:
                 return fun
 
         return self.parent.get_local_function_info(fun_name, params_num, self.index_at_parent) if self.parent else None
+
+    def get_function(self, name) -> (Tuple[int, Function] | SemanticError):
+        for fun in self.local_funcs:
+            if name == fun[0][0]:
+                return fun
+            
+        if self.parent:
+            return self.parent.get_function(name)
+        else:
+            return SemanticError(f'Function {name} is not defined.')
+        
+    def get_variable(self, name) -> (Tuple[int, Variable] | SemanticError):
+        for var in self.local_vars:
+            if name == var[0]:
+                return var
+            
+        if self.parent:
+            return self.parent.get_variable(name)
+        else:
+            raise SemanticError(f'Variable {name} is not defined.')
+        
 
     # def is_var_defined(self, vname):
     #     if vname not in [var[0] for var in self.local_vars]:
