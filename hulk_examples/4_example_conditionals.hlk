@@ -1,15 +1,16 @@
-{let a = 42 in if (a % 2 == 0) print("Even") else print("odd");
-let a = 42 in print(if (a % 2 == 0) "even" else "odd");
-let a = 42 in
-    if (a % 2 == 0) {
-        print(a);
-        print("Even");
-    }
-    else print("Odd");
-let a = 42, let mod = a % 3 in
-    print(
-        if (mod == 0) "Magic"
-        elif (mod % 3 == 1) "Woke"
-        else "Dumb"
-    );
+{
+    let a = 42 in if (a % 2 == 0) print("Even") else print("odd");
+    let a = 42 in print(if (a % 2 == 0) "even" else "odd");
+    let a = 42 in
+        if (a % 2 == 0) {
+            print(a);
+            print("Even");
+        }
+        else print("Odd");
+    let a = 42, let mod = a % 3 in
+        print(
+            if (mod == 0) "Magic"
+            elif (mod % 3 == 1) "Woke"
+            else "Dumb"
+        );
 }

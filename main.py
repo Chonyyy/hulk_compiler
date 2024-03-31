@@ -4,7 +4,11 @@ from hulk_definitions.grammar import G
 from parser_gen.parser_lr1 import LR1Parser as My_Parser
 from tools.evaluation import evaluate_reverse_parse
 from tools.semantic import Context, Scope
-from visitors import CodeGen, Evaluate, Formatter, ScopeGen, SemanticChecker, TypeBuilder, TypeChecker, TypeCollector, TypeInferer
+from visitors.Formatter import FormatVisitor
+from visitors.ScopeGen import GlobalScopeBuilder
+from visitors.SemanticChecker import SemanticChecker
+from visitors.TypeCollector import TypeCollector
+from visitors.TypeBuilder import TypeBuilder
 
 import logging
 
@@ -58,37 +62,41 @@ def main(debug = True, verbose = False, force = False):
             ast = evaluate_reverse_parse(right_parse, operations, tokens)
             
             logger.info('=== Visualizing AST ===')
-            formatter = Formatter.FormatVisitor()
-            tree = formatter.visit(ast)
-            print(tree)
+            formatter = FormatVisitor()
+            # tree = formatter.visit(ast)
+            # print(tree)
             
             logger.info('=== Collecting Types ===')
-            # errors = []
-            # context = Context()
-            # built_in_types = ["Object", "Number", "String", "Boolean", "Vector"]
-            # built_in_protocols = ["Iterable"]
+            errors = []
+            context = Context()
+            built_in_types = ["Object", "Number", "String", "Boolean", "Vector"]
+            built_in_protocols = ["Iterable"]
 
-            # for bi_type in built_in_types:
-            #     context.create_type(bi_type)
-            # for bi_protocol in built_in_protocols:
-            #     context.create_protocol(bi_protocol)
+            for bi_type in built_in_types:
+                context.create_type(bi_type)
+            for bi_protocol in built_in_protocols:
+                context.create_protocol(bi_protocol)
 
-            # collector = TypeCollector(context, errors)
-            # collector.visit(ast)
-            # context = collector.context
+            print('=== Collecting Types ===')
+            collector = TypeCollector(context, errors)
+            collector.visit(ast)
+            context = collector.context
+            print("=== Done ===")
+            print('Errors', errors)
 
-            logger.info('=== Building Types ===')
-            # builder = TypeBuilder(context, errors)
-            # builder.visit(ast)
-            # context = builder.context
-            # print('Errors:', errors)
-            # print('Context:')
-            # print(context)
+            print('=== Building Types ===')
+            builder = TypeBuilder(context, errors)
+            builder.visit(ast)
+            context = builder.context
+            print("=== Done ===")
+            print('Errors', errors)
 
-            # logger.info('=== Building Global Scope ===')
-            # global_scope_builder = GlobalScopeBuilder(context, errors)
-            # global_scope_builder.visit(ast)
-            # global_scope = global_scope_builder.global_scope
+            print('=== Building Global Scope ===')
+            global_scope_builder = GlobalScopeBuilder(context, errors)
+            global_scope_builder.visit(ast)
+            global_scope = global_scope_builder.global_scope
+            print("=== Done ===")
+            print('Errors', errors)
 
             logger.info('=== Type Inference ===')
 

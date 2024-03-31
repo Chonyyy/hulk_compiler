@@ -1,12 +1,10 @@
-{function tan(x: Number): Number => sin(x) / cos(x);
+function tan(x: Number): Number => sin(x) / cos(x);
 function cot(x: Number): Number => 1 / tan(x);
 function tan(x: Number): Number => sin(x) / cos(x);
-
-print(tan(PI) ** 2 + cot(PI) ** 2);
-
 function operate(x: Number, y: Number) {
     print(x + y);
     print(x - y);
     print(x * y);
     print(x / y);
-}}
+}
+print(tan(PI) ** 2 + cot(PI) ** 2);

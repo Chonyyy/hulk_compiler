@@ -160,7 +160,7 @@ class Vector(Atom):
 
 class VectorComprehension(Expression):
     def __init__(self, values, operation):
-        Vector.__init__(self, values)
+        self.value = values
         self.operation = operation
 
 class Var(Atom):
@@ -191,11 +191,11 @@ class Assign(Atom):
 
 class Pi(Expression):
     def __init__(self):
-        self.lex = "Pi"
+        self.value = "Pi"
 
 class E(Expression):
     def __init__(self):
-        self.lex = "E"
+        self.value = "E"
 
 class Indexing(Atom):
     def __init__(self, name, index):
@@ -234,7 +234,7 @@ class Range(Call):
     def __init__(self, args):
         super().__init__("range",args)
     def __len__(self):
-        return int(self.args[1].lex - self.args[0].lex)
+        return int(self.args[1].value - self.args[0].value)
 
 class While(Expression):
     def __init__(self, stop, body):
@@ -259,5 +259,5 @@ class Property(Expression):
 
 class CreateInstance(Expression):
     def __init__(self, type, params):
-        super.__init__(self, type)
+        super().__init__(type)
         self.params = params

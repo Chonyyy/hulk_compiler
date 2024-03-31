@@ -20,10 +20,6 @@ type PointSecond(x, y) {
     setY(y) => self.y := y;
 }
 
-type PolarPoint inherits PointSecond {
-    rho() => sqrt(self.getX() ^ 2 + self.getY() ^ 2);
-}
-
 type PolarPoint(phi, rho) inherits Point(rho * sin(phi), rho * cos(phi)) {
 }
 
@@ -37,15 +33,16 @@ type Person(firstname, lastname) {
 type Knight inherits Person {
     name() => "Sir" @@ base();
 }
-{
-let p = new Knight("Phil", "Collins") in
-    print(p.name()); // prints Sir Phil Collins
-    
-let pt = new Point() in
-    print("x: " @ pt.getX() @ "; y: " @ pt.getY());
-let pt = new PointSecond(3,4) in
-    print("x: " @ pt.getX() @ "; y: " @ pt.getY());
 
-let pt = new PolarPoint(3,4) in
-    print("rho: " @ pt.rho());
+{
+    let p = new Knight("Phil", "Collins") in
+        print(p.name()); // prints Sir Phil Collins
+
+    let pt = new Point() in
+        print("x: " @ pt.getX() @ "; y: " @ pt.getY());
+    let pt = new PointSecond(3,4) in
+        print("x: " @ pt.getX() @ "; y: " @ pt.getY());
+
+    let pt = new PolarPoint(3,4) in
+        print("rho: " @ pt.rho());
 }

@@ -50,10 +50,9 @@ class Function:
 
 
 class FunctionDef:
-    def __init__(self, name, param_names, params_types, return_type):
+    def __init__(self, name, params, return_type):
         self.name = name
-        self.param_names = param_names
-        self.param_types = params_types
+        self.params = params
         self.return_type = return_type
 
     def __str__(self):
@@ -107,7 +106,8 @@ class Type:
         try:
             self.get_attribute(name)
         except SemanticError:
-            attribute = Attribute(name, typex)
+            attr_type = typex if typex else None
+            attribute = Attribute(name, attr_type)
             self.attributes.append(attribute)
             return attribute
         else:
@@ -143,11 +143,11 @@ class Type:
             except SemanticError:
                 raise SemanticError(f'Function "{name}" is not defined in {self.name}.')
 
-    def define_method(self, name:str, param_names:list, param_types:list, return_type):
+    def define_method(self, name:str, params:list[Tuple[str, str]], return_type):
         if name in (method.name for method in self.methods):
             raise SemanticError(f'Function "{name}" already defined in {self.name}')
-
-        method = Function(name, param_names, param_types, return_type)
+        
+        method = Function(name, params, return_type)
         self.methods.append(method)
         return method
 
@@ -190,11 +190,11 @@ class Protocol(Type):
         super().__init__(name)
         self.methods_def = []
 
-    def define_method(self, name:str, param_names:list, param_types:list, return_type):
+    def define_method(self, name:str, params:list[Tuple[str, str]], return_type):
         if name in (method.name for method in self.methods_def):
             raise SemanticError(f'Function "{name}" already defined in {self.name}')
 
-        method = FunctionDef(name, param_names, param_types, return_type)
+        method = FunctionDef(name, params, return_type)
         self.methods_def.append(method)
         return method
 
@@ -286,23 +286,40 @@ class Scope:
         self.index += 1
         self.local_types.append((self.index, type_name))
 
-    def get_local_variable(self, var_name: str, current_index = None) -> Union[Variable, SemanticError]:
+    def get_variable(self, var_name: str, current_index = None) -> Union[Variable, None]:
         for index, var in self.local_vars:
             if current_index and index > current_index:
                 continue
             if var_name == var.name:
                 return var
 
-        return self.parent.get_local_variable(var_name, self.index_at_parent) if self.parent else None
+        return self.parent.get_variable(var_name, self.index_at_parent) if self.parent else None
     
-    def get_local_function_info(self, fun_name:str, params_num:int, current_index = None) -> Union[Function, SemanticError]:
+    def get_local_variable(self, var_name: str, current_index = None) -> Union[Variable, None]:
+        for index, var in self.local_vars:
+            if current_index and index > current_index:
+                continue
+            if var_name == var.name:
+                return var
+        return None
+
+    def get_function_info(self, fun_name:str, params_num:int, current_index = None) -> Union[Function, None]:
         for index, fun in self.local_funcs:
             if current_index and index > current_index:
                 continue
             if fun_name == fun.name and len(fun.params) == params_num:
                 return fun
 
-        return self.parent.get_local_function_info(fun_name, params_num, self.index_at_parent) if self.parent else None
+        return self.parent.get_function_info(fun_name, params_num, self.index_at_parent) if self.parent else None
+
+    def get_local_function_info(self, fun_name:str, params_num:int, current_index = None) -> Union[Function, None]:
+        for index, fun in self.local_funcs:
+            if current_index and index > current_index:
+                continue
+            if fun_name == fun.name and len(fun.params) == params_num:
+                return fun
+        return None
+
 
     def get_function(self, name) -> (Tuple[int, Function] | SemanticError):
         for fun in self.local_funcs:
