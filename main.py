@@ -10,7 +10,7 @@ from visitors.SemanticChecker import SemanticChecker
 from visitors.TypeCollector import TypeCollector
 from visitors.TypeBuilder import TypeBuilder
 
-import sys,logging
+import logging
 
 logger = logging.getLogger(__name__)
 
