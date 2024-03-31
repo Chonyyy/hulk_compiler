@@ -1,39 +1,80 @@
 import itertools as itt
 from collections import OrderedDict
-from typing import Tuple, Union
-from typing import Callable
+from typing import Tuple, Union, Any, Callable
+
+from hulk_definitions.ast import Expression
+
 class SemanticError(Exception):
     @property
     def text(self):
         return self.args[0]
 
-class Attribute:
-    def __init__(self, name, typex):
+class Variable:
+    def __init__(
+        self,
+        name: str,
+        type: Union["Type", "Protocol", None] = None,
+        value: tuple[Any, "Type"] = None,
+        *,
+        owner_scope=None,
+    ):
         self.name = name
-        self.type = typex
+        self.type = type
+        self._label = "[var]"
+
+        self.owner_scope = owner_scope
+        self.value = value
+
+    @property
+    def is_mutable():
+        return True
+
+    def set_type(self, type: Union["Type", "Protocol"]):
+        self.type = type
+
+    def set_value(self, value: tuple[Any, "Type"]):
+        self.value = value
 
     def __str__(self):
-        return f'[attrib] {self.name} : {self.type.name};'
+        typename = self.type.name if self.type is not None else "Unknown"
+        return f"{self._label} {self.name} : {typename};"
 
     def __repr__(self):
         return str(self)
 
+
+class Attribute(Variable):
+    def __init__(
+        self,
+        name: str,
+        type: Union["Type", "Protocol", None] = None,
+        value: tuple[Any, "Type"] = None,
+        init_expr: Expression = None,
+    ):
+        super().__init__(name, type, value)
+        self._label = "[attrib]"
+        self.init_expr = init_expr
+
+    def set_init_expr(self, init_expr: Expression):
+        self.init_expr = init_expr
+
+
+class Constant(Variable):
+    def __init__(
+        self, name: str, type: Union["Type", "Protocol"], value: tuple[Any, "Type"]
+    ):
+        super().__init__(name, type, value)
+        self._label = "[const]"
+
+    def set_value(self, value: tuple[Any, "Type"]):
+        raise SemanticError(f"Constant '{self.name}' is inmutable.")
+
+    @property
+    def is_mutable(self):
+        return False
+
+
 class Function:
-    def __init__(self, name, params, return_type):
-        self.name = name
-        self.params = params
-        self.return_type = return_type
-
-    # def __str__(self):
-    #     params = ', '.join(f'{n}:{t.name}' for n,t in zip(self.param_names, self.param_types))
-    #     return f'[method] {self.name}({params}): {self.return_type.name if self.return_type.name else "None"};'
-
-    def __eq__(self, other):
-        return other.name == self.name and \
-            other.return_type == self.return_type and \
-            other.param_types == self.param_types
-
-class FunctionDef:
     def __init__(self, name, params, return_type):
         self.name = name
         self.params = params
@@ -47,6 +88,16 @@ class FunctionDef:
         return other.name == self.name and \
             other.return_type == self.return_type and \
             other.param_types == self.param_types
+    
+class Method:
+    def __init__(
+        self,
+        name: str,
+        params: list[tuple[str, Union["Type", "Protocol", None]]],
+        type: Union["Type", "Protocol", None] = None,
+    ):
+        super().__init__(name, params, type)
+        self._label = "[method]"
 
 class Type:
     def __init__(self, name:str):
@@ -54,7 +105,11 @@ class Type:
         self.attributes = []
         self.methods = []
         self.args = []
+        self.params = OrderedDict()
+        
         self.parent = None
+        self.parent_args = None
+
 
     def conforms(self, other):
         if other.name == "Object":
@@ -77,6 +132,9 @@ class Type:
             raise SemanticError(f'Parent type is already set for {self.name}.')
         self.parent = parent
 
+    def set_parent_args(self, args: list[Expression]):
+        self.parent_args = args
+
     def get_attribute(self, name:str):
         try:
             return next(attr for attr in self.attributes if attr.name == name)
@@ -87,6 +145,17 @@ class Type:
                 return self.parent.get_attribute(name)
             except SemanticError:
                 raise SemanticError(f'Attribute "{name}" is not defined in {self.name}.')
+    
+    def set_params(self, params: list[tuple[str, Union["Type", "Protocol", None]]]):
+        if len(self.params) > 0:
+            raise SemanticError(f"Params are already set for type '{self.name}'.")
+
+        for name, type in params:
+            if name in self.params:
+                raise SemanticError(
+                    f"Param '{name}' is duplicated in constructor of type '{self.name}'."
+                )
+            self.params[name] = type
 
     def define_attribute(self, name:str, typex):
         try:
@@ -109,7 +178,21 @@ class Type:
                 return self.parent.get_argument(name)
             except SemanticError:
                 raise SemanticError(f'Argument "{name}" is not defined in {self.name}.')
+    
+    def clone(self):
+        new_type = Type(self.name)
+        if self.parent is not None:
+            new_type.set_parent(self.parent.clone())
+        new_type.set_params([(n, t) for n, t in self.params.items()])
 
+        new_type.methods = self.methods
+        new_type.attributes = [
+            Attribute(attr.name, attr.type, None, attr.init_expr)
+            for attr in self.attributes
+        ]
+
+        return new_type
+    
     def define_argument(self, name:str, typex):
         try:
             self.get_argument(name)
@@ -119,23 +202,33 @@ class Type:
             raise SemanticError(f'Argument "{name}" is already defined in {self.name}.')
 
     def get_method(self, name:str):
-        try:
-            return next(method for method in self.methods_def if method.name == name)
-        except StopIteration:
-            if self.parent is None:
-                raise SemanticError(f'Function "{name}" is not defined in {self.name}.')
-            try:
-                return self.parent.get_method(name)
-            except SemanticError:
-                raise SemanticError(f'Function "{name}" is not defined in {self.name}.')
+        target = None
+        for attr in self.methods:
+            if attr.name == name:
+                target = attr
+                break
 
-    def define_method(self, name:str, params:list[Tuple[str, str]], return_type):
-        if name in (method.name for method in self.methods):
-            raise SemanticError(f'Function "{name}" already defined in {self.name}')
-        
-        method = Function(name, params, return_type)
-        self.methods.append(method)
-        return method
+        if target is not None:
+            return target
+
+        if self.parent is None:
+            raise SemanticError(f'Method "{name}" is not defined in {self.name}.')
+        try:
+            return self.parent.get_method(name)
+        except SemanticError:
+            raise SemanticError(f'Method "{name}" is not defined in {self.name}.')
+
+    def define_method(self, name:str, params:list[Tuple[str, str]], return_type = None):
+        try:
+            self.get_method(name)
+        except SemanticError:
+            method = Function(name, params, return_type)
+            self.methods.append(method)
+            return method
+        else:
+            raise SemanticError(
+                f"Method '{name}' is already defined in type '{self.name}'."
+            )
 
     def all_attributes(self, clean=True):
         plain = OrderedDict() if self.parent is None else self.parent.all_attributes(False)
@@ -171,27 +264,113 @@ class Type:
     def __repr__(self):
         return str(self)
 
+class MethodSpec:
+    def __init__(
+        self,
+        name: str,
+        params: list[tuple[str, Union["Type", "Protocol"]]],
+        type: Union["Type", "Protocol"],
+    ):
+        self.name = name
+        self.params = OrderedDict(params)
+        self.type = type
+
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
 class Protocol(Type):
-    def __init__(self, name:str):
-        super().__init__(name)
-        self.methods_def = []
+    # def __init__(self, name:str):
+    #     super().__init__(name)
+    #     self.methods_def = []
 
-    def define_method(self, name:str, params:list[Tuple[str, str]], return_type):
-        if name in (method.name for method in self.methods_def):
-            raise SemanticError(f'Function "{name}" already defined in {self.name}')
+    # def define_method(self, name:str, params:list[Tuple[str, str]], return_type):
+    #     if name in (method.name for method in self.methods_def):
+    #         raise SemanticError(f'Function "{name}" already defined in {self.name}')
 
-        method = FunctionDef(name, params, return_type)
-        self.methods_def.append(method)
-        return method
+    #     method = Function(name, params, return_type)
+    #     self.methods_def.append(method)
+    #     return method
 
-    def get_attribute(self, name: str):
-        raise SemanticError(f'Protocol "{self.name}" has no attributes.')
+    # def get_attribute(self, name: str):
+    #     raise SemanticError(f'Protocol "{self.name}" has no attributes.')
     
-    def define_attribute(self, name: str, typex):
-        raise SemanticError(f'Protocol "{self.name}" has no attributes.')
+    # def define_attribute(self, name: str, typex):
+    #     raise SemanticError(f'Protocol "{self.name}" has no attributes.')
 
-    def all_attributes(self, clean=True):
-        raise SemanticError(f'Protocol "{self.name}" has no attributes.')
+    # def all_attributes(self, clean=True):
+    #     raise SemanticError(f'Protocol "{self.name}" has no attributes.')
+
+    def __init__(self, name: str):
+        self.name = name
+        self.parent: list[Protocol] = None
+        self.method_specs: list[MethodSpec] = []
+
+    def _ancestors(self) -> set["Protocol"]:
+        ancestors = set()
+
+        ancestors.add(self.parent)
+        ancestors |= self.parent._ancestors()
+
+        return ancestors
+
+    def _all_method_specs(self) -> set[MethodSpec]:
+        specs = set()
+
+        if self.parent:
+            specs |= self.parent._all_method_specs()
+
+        for spec in self.method_specs:
+            specs.add(spec)
+
+        return specs
+
+    def set_parent(self, parent: "Protocol"):
+        if self.parent:
+            raise SemanticError(f'Protocol {self.name} has already a parent.')
+        else:
+           self.parent = parent
+
+    def get_method(self, name: str):
+        target = None
+        for attr in self.method_specs:
+            if attr.name == name:
+                target = attr
+                break
+
+        if target is not None:
+            return target
+
+        if self.parent is None:
+            raise SemanticError(f'Method "{name}" is not defined in {self.name}.')
+        try:
+            return self.parent.get_method(name)
+        except SemanticError:
+            raise SemanticError(f'Method "{name}" is not defined in {self.name}.')
+
+    def define_method(
+        self,
+        name: str,
+        params: list[tuple[str, Union["Type", "Protocol"]]],
+        type: Union["Type", "Protocol"],
+    ):
+        spec = MethodSpec(name, params, type)
+        if spec not in self._all_method_specs():
+            self.method_specs.append(spec)
+
+    def all_methods(self):
+        return list(self._all_method_specs())
+
+    def extends(self, other):
+        return other in self._ancestors() if other != self else True
+
+    def __eq__(self, other):
+        return isinstance(other, Protocol) and self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
 
 class ErrorType(Type):
     def __init__(self):
@@ -397,6 +576,12 @@ class ScopeInterpreter:
                 return self.local_types[fun_name]
 
         return self.parent.get_local_type(fun_name) if self.parent else None
+    
+    def to_root(self):
+        if self.parent:
+            return self.parent.to_root()
+        else:
+            return self
 
 
 class Context:

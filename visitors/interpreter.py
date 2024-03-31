@@ -1,8 +1,9 @@
 from hulk_definitions.ast import *
-from tools.semantic import Context, SemanticError, Type
+from tools.semantic import Context, SemanticError, Type, Method
 from tools import visitor
 from tools.semantic import Scope, ScopeInterpreter
 from typing import Callable
+from hulk_definitions.types import *
 import math, random
 
 class Interpreter(object):
@@ -10,8 +11,11 @@ class Interpreter(object):
         self.context = context
         self.current_type = None
         self.current_method = None
+        self.type_def = {}
         
         self.invoke = None
+        self.current_type: Type = None
+        self.current_method: Method = None
 
     @visitor.on('node')
     def visit(self, node):
@@ -29,7 +33,6 @@ class Interpreter(object):
         scope.define_function('rand', random.randint)
         scope.define_function('range', range)
         scope.define_protocol('Iterable', self.context.get_protocol('Iterable'))
-        
         for child in node.statements:
            return_last_statement = self.visit(child, scope )
         return return_last_statement[0]
@@ -63,12 +66,12 @@ class Interpreter(object):
     def visit(self, node: Function, scope: ScopeInterpreter, type_def = None):
         body_scope = scope.create_child_scope()
 
-        def fun (*rargs):#TODO: args ?
-            for i in range(len(node.params)if node.params else 0):
+        def fun (*rargs):
+
+            for i in range(len(node.params) if node.params else 0):
                 x = node.params[i][0]
-                    
                 body_scope.define_variable(x, rargs[i][0], rargs[i][1])
-                
+            
             function_body, function_type = self.visit(node.body , body_scope, type_def)
             
             return function_body, function_type #Anyadir el tipo  del retorno.
@@ -122,7 +125,6 @@ class Interpreter(object):
     def visit(self, node, scope: ScopeInterpreter, type_def = None):
         return (math.e, 'Number')
     
-    
     @visitor.when(Print)
     def visit(self, node: Print, scope: ScopeInterpreter, type_def = None):
         args, type = [self.visit(arg, scope, type_def) for arg in node.args][0]
@@ -150,7 +152,7 @@ class Interpreter(object):
     @visitor.when(Pow)
     def visit(self, node: Pow, scope: ScopeInterpreter, type_def = None):
         left_value, left_type = self.visit(node.left, scope, type_def)
-        right_value, right_type = self.visit(node.value, scope, TypeDef)
+        right_value, right_type = self.visit(node.value, scope, type_def)
         return (left_value ** right_value, 'Number')
 
     @visitor.when(Div)
@@ -188,7 +190,6 @@ class Interpreter(object):
         left_value, left_type = self.visit(node.left, scope, type_def)
         right_value, right_type = self.visit(node.value, scope, type_def)
         return (str(left_value) + ' ' + str(right_value), 'String')
-
 
     @visitor.when(Or)
     def visit(self, node: Or, scope: ScopeInterpreter, type_def = None):
@@ -320,97 +321,48 @@ class Interpreter(object):
     def visit(self, node: Var, scope: ScopeInterpreter, type_def = None):
         var = scope.get_local_variable(node.value)
         return var if var else None
+    
+    def _get_safe_type(self, typename: str | None):
+        return self.context.get_protocol_or_type(typename) if typename is not None else typename
 
     @visitor.when(TypeDef)
     def visit(self, node: TypeDef, scope: ScopeInterpreter, type_def = None):
-        #body_scope = scope.create_child_scope()
-        visitor = self
+        self.current_type: Type = self.context.get_type(node.name)
+        child_scope = scope.create_child_scope()
+
+        if node.args:
+            params = [(n, self._get_safe_type(t)) for n, t in node.args]
+            self.current_type.set_params(params)
+            for arg in node.args:
+                if arg[1]:
+                    type = arg[1]
+                else:
+                    type = 'Any'
+                child_scope.define_variable(arg[0], Var('x'), type)
         
-        if node.inheritance:
-            inher = scope.get_local_type(node.inheritance)
-            inst = inher.create_new_instance()
-            class NewType(inher):
-                def __init__(self, params = None):
-                    self.typeScope = scope.create_child_scope()
-                    self.vars = []
-                    self.func = {}
-                    
-                    if len(node.args)if node.args else 0 > 0:
-                        for i in range(len(params) if params else 0):
-                            self.typeScope.define_variable(node.args[i][0], params[i])
-                            self.vars.append((node.args[i][0],params[i]))
-                    
-                    if len(inst.vars)if inst.vars else 0 > 0:
-                        for i in range(len(params) if params else 0):
-                            self.typeScope.define_variable(inst.vars[i][0], params[i])
-                            self.vars.append((inst.vars[i][0], params[i]))
-                    
-                    if node.body:
-                        for x in [x for x in node.body if type(x) is Property]:
-                            if not self.typeScope.get_local_variable(x):
-                                b = visitor.visit(x, self.typeScope, inher)
-                                self.typeScope.define_variable(x.name, b)
-                                scope.define_variable(x.name, b)
-                                self.vars.append((x.name, b))
-                    
-                        for x in [x for x in node.body if type(x) is Function]:
-                            self.func[x.name] = x
-                            if scope.get_local_function(x.name):
-                                visitor.visit(x, self.typeScope, inher)
-                                continue
-                            a = visitor.visit(x, scope, inher)
-                
-                def call(self, name):
-                    if scope.get_local_function(name):
-                        return scope.get_local_function(name)
-                    else:
-                        return scope.get_local_variable(name) 
-                
-                def create_new_instance(params = None):
-                    return NewType(params)
+        if node.type is not None:
+            try:
+                parent_type = self.context.get_type(node.type)
+                self.current_type.set_parent(parent_type)
+            except SemanticError as se:
+                self.errors.append(se.text)
         else:
-            class NewType:
-                def __init__(self, params = None):
-                    self.typeScope = scope.create_child_scope()
-                    self.vars = []
-                    self.func = {}
-                    
-                    if len(node.args)if node.args else 0 > 0:
-                        for i in range(len(params) if params else 0):
-                            self.typeScope.define_variable(node.args[i][0], params[i])
-                            self.vars.append((node.args[i][0],params[i]))
-                    
-                    if node.body:
-                        for x in [x for x in node.body if type(x) is Property]:
-                            if not self.typeScope.get_local_variable(x):
-                                b = visitor.visit(x, self.typeScope, NewType)
-                                self.typeScope.define_variable(x.name, b)
-                                scope.define_variable(x.name, b)
-                                self.vars.append((x.name, b))
-                    
-                        for x in [x for x in node.body if type(x) is Function]:
-                            self.func[x.name] = x
-                            if scope.get_local_function(x.name):
-                                continue
-                            a = visitor.visit(x, scope, NewType)
-                
-                def call(self, name):
-                    if scope.get_local_function(name):
-                        return scope.get_local_function(name)
-                    else:
-                        scope.get_local_variable(name)
-                
-                def create_new_instance(params = None):
-                    return NewType(params)       
-                    
-        scope.define_type(node.name, NewType)
-        NewType()
-        return NewType
-    
-    @visitor.when(Protocol)
-    def visit(self, node, scope: ScopeInterpreter, type_def = None):
-         pass
-    
+            self.current_type.set_parent(OBJECT_TYPE)
+
+        if node.body:
+            for member in node.body:
+                if isinstance(member, Property):
+                    self.visit(member, child_scope)
+                else:
+                    self.current_method = self.current_type.get_method(member.name)
+                    self.visit(member, child_scope)
+                    self.current_method = None
+
+        if node.inner_args:
+            self.current_type.set_parent_args(node.inner_args)
+
+        self.current_type = None
+        
     @visitor.when(Assign)
     def visit(self, node: Assign, scope: ScopeInterpreter, type_def = None):
         value, type = self.visit(node.body, scope)
@@ -506,18 +458,48 @@ class Interpreter(object):
         
     @visitor.when(Base)
     def visit(self, node: Base, scope: ScopeInterpreter, type_def = None):
-        return type_def
+        if self.current_type:
+            pass
+        pass
 
     @visitor.when(Property)
     def visit(self, node: Property, scope: ScopeInterpreter, type_def = None):
         name = node.name
-        body_value = self.visit(node.body, scope)
-        scope.define_variable(name, body_value, node.type)
-        return body_value
+        attr = self.current_type.get_attribute(node.name)
+        attr.set_init_expr(node.value)
+        
+        # body_value, type = self.visit(node.value, scope)
+        # scope.define_variable(name, body_value, type)
 
     @visitor.when(CreateInstance)
     def visit(self, node: CreateInstance, scope: ScopeInterpreter, type_def = None):
-        params_value = [self.visit(param, scope, type_def ) for param in node.params]
-        type_value = scope.get_local_type(node.type)
-        instance = type_value.create_new_instance(params_value)
-        return (instance, type_value)
+        global_scope: ScopeInterpreter = scope.to_root()
+
+        dyn_type: Type = self.context.get_type(node.value)
+
+        arg_values = [self.visit(arg, scope) for arg in node.args]
+        instance: Type = dyn_type.clone()
+
+        while True:
+            child_scope = global_scope.create_child_scope()
+
+            for name, value in zip(instance.params, arg_values):
+                child_scope.define_variable(name, None, value)
+
+            # init instance attrs
+            for attr in instance.attributes:
+                attr.set_value(self.visit(attr.init_expr, child_scope))
+
+            if instance.parent == OBJECT_TYPE:
+                break
+
+            parent_args = (
+                instance.parent_args
+                if instance.parent_args is not None
+                else [Var(name) for name in instance.params]
+            )
+
+            arg_values = [self.visit(arg, child_scope) for arg in parent_args]
+            instance = instance.parent
+
+        return (instance, dyn_type)

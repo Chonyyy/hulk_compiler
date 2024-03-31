@@ -1,7 +1,7 @@
 from typing import Union
 
 from tools.semantic import Type, Protocol
-from names import CURRENT_METHOD_NAME, NEXT_METHOD_NAME, SIZE_METHOD_NAME
+from hulk_definitions.names import CURRENT_METHOD_NAME, NEXT_METHOD_NAME, SIZE_METHOD_NAME
 
 
 class ErrorType(Type):
@@ -154,5 +154,5 @@ class VectorType(Type):
 
 
 ITERABLE_PROTO = Protocol("Iterable")
-ITERABLE_PROTO.add_method_spec(NEXT_METHOD_NAME, [], BOOLEAN_TYPE)
-ITERABLE_PROTO.add_method_spec(CURRENT_METHOD_NAME, [], OBJECT_TYPE)
+ITERABLE_PROTO.define_method(NEXT_METHOD_NAME, [], BOOLEAN_TYPE)
+ITERABLE_PROTO.define_method(CURRENT_METHOD_NAME, [], OBJECT_TYPE)
