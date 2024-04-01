@@ -436,8 +436,24 @@ class Interpreter(object):
 
     @visitor.when(While)
     def visit(self, node: While, scope: ScopeInterpreter, type_def = None):
-        while self.visit(node.stop, scope)[0]:
-            return self.visit(node.value, scope)
+        stop = self.visit(node.stop, scope)[0]
+
+        if not stop:
+            body, body_type = self.visit(node.value, scope)
+            if body_type == 'Number':
+                return (0, body_type)
+            elif body_type == 'String':
+                return ('', body_type)
+            elif body_type == 'Boolean':
+                return (False, body_type)
+            else:
+                return (None, body_type)
+        while stop:
+            body, body_type = self.visit(node.value, scope)
+
+            stop, _ = self.visit(node.stop, scope)
+
+        return body, body_type
 
     @visitor.when(For)
     def visit(self, node: For, scope: ScopeInterpreter, type_def = None):
