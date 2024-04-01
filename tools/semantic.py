@@ -405,6 +405,8 @@ class ScopeInterpreter:
 
         return self.parent.get_variable(name) if self.parent else (None, None)
 
+    def remove_local_variable(self, name):
+        del self.local_vars[name]
 
 class Context:
     def __init__(self):

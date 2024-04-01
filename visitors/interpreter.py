@@ -334,29 +334,34 @@ class Interpreter(object):
                 else:
                     father_scope = self.types[node.type]()
             else:
-                father_scope = definition_scope.create_child_scope()
+                father_scope = (definition_scope.create_child_scope(), "Object")
 
-            class_scope = father_scope.create_child_scope()
+            class_scope = father_scope[0].create_child_scope()
             arg_dict = {}
             if node.args:
                 for i, argument in enumerate(args):
                         definition_scope.local_vars[node.args[i][0]] = (argument[0], argument[1])
                         definition_scope.get_local_variable
-            elif args:
-                for i, argument in enumerate(args):
-                    if argument:
-                        father_scope.local_vars[node.args[i][0]] = (argument[0], argument[1])
-                    else:
-                        break
+            # elif args:
+            #     for i, argument in enumerate(args):
+            #         if argument:
+            #             father_scope.local_vars[node.args[i][0]] = (argument[0], argument[1])
+            #         else:
+            #             break
                 
-            for statemment in node.body:
-                # if isinstance(statemment, Function):
-                #     continue
-                self.visit(statemment, class_scope)
-
+            for statement in node.body:
+                if isinstance(statement, Function):
+                    continue
+                self.visit(statement, class_scope)
+            if node.args:
+                for argument in node.args:
+                    definition_scope.remove_local_variable(argument[0])
             
-            return class_scope, node.name
+            for statement in node.body:
+                if isinstance(statement, Function):
+                    self.visit(statement, class_scope)
 
+            return class_scope, node.name
         self.types[node.name] = fact
 
     @visitor.when(Protocol)
