@@ -397,6 +397,13 @@ class ScopeInterpreter:
                 return self.local_types[fun_name]
 
         return self.parent.get_local_type(fun_name) if self.parent else None
+    
+    def get_variable(self, name):
+        for var in self.local_vars:
+            if name == var:
+                return (self.local_vars[var], self)
+
+        return self.parent.get_variable(name) if self.parent else (None, None)
 
 
 class Context:

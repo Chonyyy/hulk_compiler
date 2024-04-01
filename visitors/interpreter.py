@@ -365,7 +365,9 @@ class Interpreter(object):
     @visitor.when(Assign)
     def visit(self, node: Assign, scope: ScopeInterpreter, type_def = None):
         value, type = self.visit(node.body, scope)
-        scope.define_variable(node.value.value, value, type) 
+        _, nscope = scope.get_variable(node.value.value) 
+        if nscope:
+            nscope.local_vars[node.value.value] = (value, type)
         return (value, type)
 
     @visitor.when(Indexing)
