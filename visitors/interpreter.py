@@ -85,10 +85,11 @@ class Interpreter(object):
         if if_expr_value:
             return self.visit(node.if_body, body_scope)
         
-        for branch in node.branches:
-            v = self.visit(branch, scope)
-            if v:
-                return v
+        if node.branches:
+            for branch in node.branches:
+                v = self.visit(branch, scope)
+                if v:
+                    return v
         
         return self.visit(node.else_body, body_scope)
 
