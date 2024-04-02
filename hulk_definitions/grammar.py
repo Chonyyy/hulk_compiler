@@ -243,13 +243,13 @@ prop %= idx + typed + equal + expr_block, lambda h,s: Property(s[1], s[4], s[2])
 
 method %= idx + opar + arg_list + cpar + arrow + expr, lambda h,s: Function(s[1], s[3], s[6]) #161
 method %= idx + opar + cpar + arrow + expr, lambda h,s: Function(s[1], None, s[5]) #162
-method_block %= idx + opar + arg_list + cpar + expr_block, lambda h,s: Function(s[1], s[3], s[5]) #163
-method_block %= idx + opar + cpar + expr_block, lambda h,s: Function(s[1], None, s[4]) #164
+method_block %= func + idx + opar + arg_list + cpar + expr_block, lambda h,s: Function(s[1], s[3], s[5]) #163
+method_block %= func + idx + opar + cpar + expr_block, lambda h,s: Function(s[1], None, s[4]) #164
 
 method %= idx + opar + arg_list + cpar + typed + arrow + expr, lambda h,s: Function(s[1], s[3], s[7], s[5]) #165
 method %= idx + opar + cpar + typed + arrow + expr, lambda h,s: Function(s[1], None, s[6], s[4]) #166
-method_block %= idx + opar + arg_list + cpar + typed + expr_block, lambda h,s: Function(s[1], s[3], s[6], s[5]) #167
-method_block %= idx + opar + cpar + typed + expr_block, lambda h,s: Function(s[1], None, s[5], s[4]) #168
+method_block %= func + idx + opar + arg_list + cpar + typed + expr_block, lambda h,s: Function(s[1], s[3], s[6], s[5]) #167
+method_block %= func + idx + opar + cpar + typed + expr_block, lambda h,s: Function(s[1], None, s[5], s[4]) #168
 
 typed %= colon + idx, lambda h,s: s[2] #169
 typed %= colon + strx, lambda h,s: s[2] #170
