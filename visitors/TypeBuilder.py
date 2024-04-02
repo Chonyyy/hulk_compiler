@@ -23,8 +23,8 @@ class TypeBuilder(object):
             for child in node.statements:
                 if isinstance(child, TypeDef) or isinstance(child, Protocol):
                     self.visit(child, self.context)
-        else:
-            self.errors.append(SemanticError('Types defined had a circular innheritance.'))
+                else:
+                    self.errors.append(SemanticError('Types defined had a circular innheritance.'))
 
         return self.errors
 

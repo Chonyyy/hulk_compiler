@@ -31,15 +31,15 @@ def main(debug = True, verbose = False, force = False):
 
     for i, file in enumerate(files):
         if file in [
-            # "1_example_expressions.hlk",
+            "1_example_expressions.hlk",
             # "2_example_functions.hlk",
-            # "3_example_variables.hlk",
-            # "4_example_conditionals.hlk",
-            # "5_example_loops.hlk",
-            # "6_example_types.hlk",
-            # "7_example_type_checking.hlk",
-            # "8_example_protocol.hlk",
-            # "9_example_vector.hlk",
+            "3_example_variables.hlk",
+            "4_example_conditionals.hlk",
+            "5_example_loops.hlk",
+            "6_example_types.hlk",
+            "7_example_type_checking.hlk",
+            "8_example_protocol.hlk",
+            "9_example_vector.hlk",
             "11_example_expressions.hlk",
             "12_example_functions.hlk",
             "13_example_variables.hlk",
@@ -100,22 +100,23 @@ def main(debug = True, verbose = False, force = False):
             print('Errors', errors)
 
             # print('=== Building Global Scope ===')
-            # global_scope_builder = GlobalScopeBuilder(context, errors)
-            # global_scope_builder.visit(ast)
-            # global_scope = global_scope_builder.global_scope
-            # print("=== Done ===")
-            # print('Errors', errors)
+            global_scope_builder = GlobalScopeBuilder(context, errors)
+            global_scope_builder.visit(ast)
+            global_scope = global_scope_builder.global_scope
+            print("=== Done ===")
+            print('Errors', errors)
 
+            print('=== Type Checking ===')
+            checker = TypeChecker(context, global_scope,  errors)
+            checker.visit(ast)
+            # context = checker.context
+            
             # print("=== AST Interpreter ===")
             # tree_interpreter = Interpreter(context)
             # tree_interpreter.visit(ast)
 
             # logger.info('=== Type Inference ===')
 
-            logger.info('=== Type Checking ===')
-            checker = TypeChecker(context,  errors)
-            checker.visit(ast)
-            # context = checker.context
             
 
 

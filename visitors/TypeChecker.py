@@ -5,23 +5,24 @@ from tools import visitor
 from tools.semantic import Scope
 
 class TypeChecker(object):
-    def __init__(self, context: Context, errors=[]):
+    def __init__(self, context: Context,scope: Scope, errors=[]):
         self.context = context
         self.current_type = None
         self.current_method = None
         self.errors = errors
+        self.scope = scope
         
     @visitor.on('node')
     def visit(self, node, scope):
         pass
     
     @visitor.when(Program)
-    def visit(self, node: Program, scope: Scope = None):
-        if not scope:
+    def visit(self, node: Program):
+        if not self.scope:
             scope = Scope()
         for child in node.statements:
-            self.visit(child, scope)
-        return scope
+            self.visit(child, self.scope)
+        return self.scope
 
     @visitor.when(Function)
     def visit(self, node: Function, scope: Scope):
@@ -29,44 +30,45 @@ class TypeChecker(object):
         try:
             if node.type:
                 return_type = self.context.get_type(node.type)
-                scope.define_function(node.name, node.params, return_type)
+            else:
+                return_type = self.context.get_type("Object")
         except SemanticError as se:
             self.errors.append(se.text)
 
-        body_scope = scope.create_child_scope()
-        for i in range(0,len(node.params)):
-            body_scope.define_variable(node.params[i][0], node.params[i][1])
-            
         # Verificar los parámetros de la función
         for param_name, param_type in node.params:
             # Asegurarse de que el tipo del parámetro esté definido en el contexto
             try:
-                declared_type = self.context.get_type(param_type)
+                if param_type == None:
+                    declared_type = self.context.get_type("Object")
+                else:
+                    declared_type = self.context.get_type(param_type)
+                
             except SemanticError as se:
                 self.errors.append(se.text)
                 continue
     
     
         # Verificar el cuerpo de la función
-        body_type = self.visit(node.body, body_scope)
+        body_type = self.visit(node.body, scope)
 
-        declared_return_type = None
+        # declared_return_type = None
         # Verificar que el tipo de retorno de la función sea compatible con el tipo declarado
-        if node.type is not None:
-            declared_return_type = self.context.get_type(node.type)
-            if not body_type.conforms(declared_return_type):
-                self.errors.append(f'TypeError: Return type {body_type.name} does not conform to declared return type {node.type}')
+        # if node.type is not None:
+        # declared_return_type = self.context.get_type(node.type)
+        if not body_type.conforms(declared_type):
+            self.errors.append(f'TypeError: Return type {body_type.name} does not conform to declared return type {node.type}')
             
     
         # Devolver el tipo de retorno de la función
-        return declared_return_type
+        return declared_type
     
     
     @visitor.when(Call)
     def visit(self, node: Call, scope: Scope):
         # Obtener la función llamada por su nombre
         try:
-            function = scope.get_local_function_info(node.lex, len(node.args))
+            function = scope.get_local_function_info(node.value, len(node.args))
         except SemanticError as se:
             self.errors.append(se.text)
             return self.context.get_type('ErrorType') # Retornar un tipo de error como marcador de posición
@@ -79,17 +81,23 @@ class TypeChecker(object):
         # Verificar que los tipos de los argumentos sean compatibles con los parámetros de la función
         for arg, param_type in zip(node.args, function.params):
             # arg_type = self.visit(arg, scope)
-            if arg.lex in ["Pi","E"]: #TODO arreglar
-                arg_type = self.context.get_type("Number")
-            else:
-                arg_type = self.context.get_type(scope.get_local_variable(arg.lex))
             
-            param_type = self.context.get_type(param_type[1])
+            try:
+                arg_type = self.context.get_type(scope.get_local_variable(arg.value))
+            except:
+                arg_type = self.context.get_type("Object")
+                
+            try:
+                param_type = self.context.get_type(param_type.name)
+            except:
+                param_type = self.context.get_type("Object")
+            
+           
             if not arg_type.conforms(param_type):
                 self.errors.append(f'TypeError: Argument type {arg_type.name} does not conform to parameter type {param_type.name} in function call {node.idx}')
     
         # Devolver el tipo de retorno de la función
-        return function.function_type
+        return function.return_type
     
     @visitor.when(Block)
     def visit(self, node: Block, scope: Scope):
@@ -97,7 +105,7 @@ class TypeChecker(object):
         # block_scope = scope.create_child_scope()
     
         # Recorrer cada uno de los nodos hijos y realizar el chequeo de tipos
-        for child in node.body:
+        for child in node.value:
             type = self.visit(child, scope)
     
         return type
@@ -132,7 +140,7 @@ class TypeChecker(object):
     def visit(self, node: Plus, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of Plus operation must be of the same type')
     
@@ -154,7 +162,7 @@ class TypeChecker(object):
     def visit(self, node: Star, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of Plus operation must be of the same type')
     
@@ -165,7 +173,7 @@ class TypeChecker(object):
     def visit(self, node: Pow, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of Plus operation must be of the same type')
     
@@ -176,7 +184,7 @@ class TypeChecker(object):
     def visit(self, node: Div, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of Plus operation must be of the same type')
     
@@ -187,7 +195,7 @@ class TypeChecker(object):
     def visit(self, node: Mod, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of Plus operation must be of the same type')
     
@@ -198,7 +206,7 @@ class TypeChecker(object):
     def visit(self, node: Is, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of Plus operation must be of the same type')
     
@@ -209,7 +217,7 @@ class TypeChecker(object):
     def visit(self, node: As, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of Plus operation must be of the same type')
     
@@ -220,7 +228,7 @@ class TypeChecker(object):
     def visit(self, node: At, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of Plus operation must be of the same type')
     
@@ -231,7 +239,7 @@ class TypeChecker(object):
     def visit(self, node: DoubleAt, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of Plus operation must be of the same type')
     
@@ -242,7 +250,7 @@ class TypeChecker(object):
     def visit(self, node: Or, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of Plus operation must be of the same type')
     
@@ -253,7 +261,7 @@ class TypeChecker(object):
     def visit(self, node: And, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of Plus operation must be of the same type')
     
@@ -264,7 +272,7 @@ class TypeChecker(object):
     def visit(self, node: GreaterThan, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of GreaterThan operation must be of the same type')
     
@@ -276,7 +284,7 @@ class TypeChecker(object):
     def visit(self, node: LessThan, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of GreaterThan operation must be of the same type')
     
@@ -287,7 +295,7 @@ class TypeChecker(object):
     def visit(self, node: GreaterEqual, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of GreaterThan operation must be of the same type')
     
@@ -298,7 +306,7 @@ class TypeChecker(object):
     def visit(self, node: LessEqual, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of GreaterThan operation must be of the same type')
     
@@ -309,7 +317,7 @@ class TypeChecker(object):
     def visit(self, node: NotEqual, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of GreaterThan operation must be of the same type')
     
@@ -320,7 +328,7 @@ class TypeChecker(object):
     def visit(self, node: CompareEqual, scope: Scope):
         # Verificar que los operandos de la operación sean del tipo correcto
         left_type = self.visit(node.left, scope)
-        right_type = self.visit(node.right, scope)
+        right_type = self.visit(node.value, scope)
         if not left_type.conforms(right_type):
             self.errors.append(f'TypeError: Operands of GreaterThan operation must be of the same type')
     
@@ -330,7 +338,7 @@ class TypeChecker(object):
     @visitor.when(Not)
     def visit(self, node: Not, scope: Scope):
         # Verificar que el operando de la operación sea del tipo correcto
-        operand_type = self.visit(node.right, scope)
+        operand_type = self.visit(node.value, scope)
         if not operand_type.conforms(self.context.get_type('Bool')):
             self.errors.append(f'TypeError: Operand of Not operation must be of type Bool')
     

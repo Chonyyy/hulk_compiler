@@ -57,7 +57,7 @@ class Type:
         self.args = []
         self.parent = None
 
-    def conforms(self, other):
+    def conforms(self, other: "Type"):
         if other.name == "Object":
             return True
         # Si el tipo actual es el mismo que el otro tipo, entonces conforma
