@@ -5,13 +5,14 @@ type Vector(collection, len){
     start = false;
 
     function Next(){
-        if (current <= len){
+        if (self.current <= self.len){
             self.start := true;
             self.current := self.current + 1;
             self.collection[self.current];
         }
         else self.start := false;
     }
+    
     Current() => if (self.start) self.collection[self.current] else false;
 
     Reset() {
