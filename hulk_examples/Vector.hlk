@@ -1,12 +1,16 @@
-type Vector(collection){
+type Vector(collection, len){
     collection = collection;
+    len = len
     current = -1;
+    start = false
 
-    function current(){
-        if (current  -1){
-            current := current + 1;
-            collection[current]
+    function Next(){
+        if (current <= len){
+            self.start = true;
+            self.current := current + 1;
+            self.collection[current];
         }
+        else self.start := false;
     }
-    next() =>
+    Current() => if (self.start) self.collection[current] else false;
 }
