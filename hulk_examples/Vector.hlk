@@ -1,8 +1,8 @@
 type Vector(collection, len){
     collection = collection;
-    len = len
+    len = len;
     current = -1;
-    start = false
+    start = false;
 
     function Next(){
         if (current <= len){
