@@ -1,6 +1,6 @@
 from typing import Union
 
-from tools.semantic import Type, Protocol
+from tools.semantic import Type, Proto
 from names import CURRENT_METHOD_NAME, NEXT_METHOD_NAME, SIZE_METHOD_NAME
 
 
@@ -91,7 +91,7 @@ class UnionType(Type):
 
     It cannot be typed because its name is lowercase."""
 
-    def __init__(self, *types: Union[Type, Protocol]):
+    def __init__(self, *types: Union[Type, Proto]):
         super().__init__("union")
 
         self.types = set()
@@ -112,13 +112,13 @@ class UnionType(Type):
     def __eq__(self, other):
         return isinstance(other, UnionType) and self.types == other.types
 
-    def __and__(self, other: Union[Type, Protocol]):
+    def __and__(self, other: Union[Type, Proto]):
         if isinstance(other, UnionType):
             return UnionType(*(self.types & other.types))
 
         return self.__and__(UnionType(other))
 
-    def __or__(self, other: Union[Type, Protocol]):
+    def __or__(self, other: Union[Type, Proto]):
         if isinstance(other, UnionType):
             return UnionType(*(self.types | other.types))
 
@@ -137,7 +137,7 @@ class VectorType(Type):
 
     It cannot be typed because its name is lowercase."""
 
-    def __init__(self, item_type: Union[Type, Protocol]):
+    def __init__(self, item_type: Union[Type, Proto]):
         super().__init__(f"vector_of_{item_type.name}")
         self.item_type = item_type
         self.define_method(NEXT_METHOD_NAME, [], BOOLEAN_TYPE)
@@ -153,6 +153,6 @@ class VectorType(Type):
         return isinstance(other, VectorType) and self.item_type == other.item_type
 
 
-ITERABLE_PROTO = Protocol("Iterable")
+ITERABLE_PROTO = Proto("Iterable")
 ITERABLE_PROTO.add_method_spec(NEXT_METHOD_NAME, [], BOOLEAN_TYPE)
 ITERABLE_PROTO.add_method_spec(CURRENT_METHOD_NAME, [], OBJECT_TYPE)

@@ -2,6 +2,7 @@ import itertools as itt
 from collections import OrderedDict
 from typing import Tuple, Union
 from typing import Callable
+from hulk_definitions.ast import TypeDef
 class SemanticError(Exception):
     @property
     def text(self):
@@ -171,7 +172,7 @@ class Type:
     def __repr__(self):
         return str(self)
 
-class Protocol(Type):
+class Proto(Type):
     def __init__(self, name:str):
         super().__init__(name)
         self.methods_def = []
@@ -236,11 +237,12 @@ class Scope:
         self.local_vars: list[Tuple[int, Variable]] = []
         self.local_funcs: list[Tuple[int, Function]] = []
         self.local_types: list[Tuple[int, Type]] = []
-        self.local_protocols: list[Tuple[int, Protocol]] = []
+        self.local_protocols: list[Tuple[int, Proto]] = []
         self.parent: Scope = parent
         self.children: list[Tuple[int, Scope]] = []
         self.index: int = 1
         self.index_at_parent: int = index
+        self.is_function = False
         # self.func_index_at_parent = 0 if parent is None else len(parent.local_funcs)
         # self.type_index_at_parent = 0 if parent is None else len(parent.local_types)
         # self.protocol_index_at_parent = 0 if parent is None else len(parent.local_protocols)
@@ -302,6 +304,14 @@ class Scope:
             if fun_name == fun.name and len(fun.params) == params_num:
                 return fun
         return None
+    
+    def get_variable_and_scope(self, name):
+        for var in self.local_vars:
+            if name == var:
+                return (self.local_vars[var], self)
+
+        return self.parent.get_variable(name) if self.parent else (None, None)
+
 
 
     # def is_var_defined(self, vname):
@@ -325,7 +335,6 @@ class Scope:
     
     # def is_local_func(self, fname, n):
         return self.get_local_function_info(fname, n) is not None
-
 
 class ScopeInterpreter:
     def __init__(self, parent = None, index = 0):
@@ -405,7 +414,6 @@ class ScopeInterpreter:
 
         return self.parent.get_variable(name) if self.parent else (None, None)
 
-
 class Context:
     def __init__(self):
         self.types = {}
@@ -420,7 +428,7 @@ class Context:
     def create_protocol(self, name:str):
         if name in self.protocols:
             raise SemanticError(f'Protocol with the same name ({name}) already in context.')
-        protocolx = self.protocols[name] = Protocol(name)
+        protocolx = self.protocols[name] = Proto(name)
         return protocolx
 
     def get_type(self, name:str):
@@ -446,3 +454,61 @@ class Context:
 
     def __repr__(self):
         return str(self)
+    
+class Graph:
+    def __init__(self, types: list[TypeDef]):
+        self.types = types
+        self.edges = {}
+
+        for t in types:
+            self.edges[t.name] = []
+
+        for t in types:
+            if t.type:
+                self.edges[t.name].append(t.type)
+
+    def __str__(self):
+        s = ""
+        for t in self.types:
+            s += f"{t.name} -> {self.edges[t.type]}\n"
+        return s
+
+    def __repr__(self):
+        return self.__str__()
+
+def topological_sort(types: list[type]):
+        def dfs(node, graph: Graph):
+            global backward_edge
+            visited[node] = True
+            for neighbor in graph.edges[node]:
+                if visited[neighbor]:
+                    backward_edges[neighbor] = True
+                if neighbor and not visited[neighbor]:
+                    dfs(neighbor, graph)
+            order.append(node)
+            indexs_after.append(indexs_before[node])
+    
+        graph = Graph(types)
+    
+        visited = {}
+        indexs_before = {}
+        indexs_after = []
+        backward_edges = {}
+    
+        for i, t in enumerate(graph.types):
+            visited[t.name] = False
+            indexs_before[t.name] = i
+            backward_edges[t.name] = False
+    
+        order = []
+    
+        for t in graph.types:
+            if not visited[t.type]:
+                dfs(t.type, graph)
+    
+        order = order[::-1]
+        indexs_after = indexs_after[::-1]
+        
+        backward_edge = any(backward_edges.values())
+    
+        return [types[i] for i in indexs_after] if not backward_edge else []

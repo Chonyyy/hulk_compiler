@@ -1,28 +1,36 @@
 from hulk_definitions.ast import *
-from tools.semantic import Context, SemanticError, Type
+from tools.semantic import Context, SemanticError, Type, topological_sort, Proto
 from tools import visitor
 from typing import Union
+
 
 class TypeBuilder(object):
     def __init__(self, context: Context, errors=[]):
         self.context = context
         self.errors = errors
-    
+
+        self.current_type: Union[Type, Proto] = None
     @visitor.on('node')
     def visit(self, node):
         pass
     
     @visitor.when(Program)
     def visit(self, node: Program):
-        for child in node.statements:
-            if isinstance(child, TypeDef) or isinstance(child, Protocol):
-                self.visit(child, self.context)
+        types = [item for item in node.statements if isinstance(node, TypeDef)]
+        types = topological_sort(types)
+
+        if len(types) > 0:
+            for child in node.statements:
+                if isinstance(child, TypeDef) or isinstance(child, Protocol):
+                    self.visit(child, self.context)
+        else:
+            self.errors.append(SemanticError('Types defined had a circular innheritance.'))
 
         return self.errors
 
     @visitor.when(TypeDef)
     def visit(self, node: TypeDef, ctx: Context):
-        type_info = ctx.get_type(node.name)
+        type_info: Type = ctx.get_type(node.name)
         try:
             if node.type:
                 parent = ctx.get_type(node.type)
@@ -66,8 +74,6 @@ class TypeBuilder(object):
     @visitor.when(Function)
     def visit(self, node: Function, ctx: Context, current_type: Union[Type, Protocol]):
         try:
-            # Divide the params into names and types from node.params: List[Tuple[str, str]]
-            param_names, param_types = [], []
             return_type = None
             
             if node.type:
@@ -75,3 +81,4 @@ class TypeBuilder(object):
             current_type.define_method(node.name, node.params, return_type)
         except SemanticError as se:
             self.errors.append(se.text)
+
