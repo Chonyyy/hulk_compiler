@@ -9,6 +9,7 @@ from visitors.ScopeGen import GlobalScopeBuilder
 from visitors.SemanticChecker import SemanticChecker
 from visitors.TypeCollector import TypeCollector
 from visitors.TypeBuilder import TypeBuilder
+from visitors.TypeChecker import TypeChecker
 from visitors.interpreter import Interpreter
 
 import logging
@@ -30,7 +31,7 @@ def main(debug = True, verbose = False, force = False):
 
     for i, file in enumerate(files):
         if file in [
-            "1_example_expressions.hlk",
+            # "1_example_expressions.hlk",
             # "2_example_functions.hlk",
             # "3_example_variables.hlk",
             # "4_example_conditionals.hlk",
@@ -38,7 +39,7 @@ def main(debug = True, verbose = False, force = False):
             # "6_example_types.hlk",
             # "7_example_type_checking.hlk",
             # "8_example_protocol.hlk",
-            "9_example_vector.hlk",
+            # "9_example_vector.hlk",
             "11_example_expressions.hlk",
             "12_example_functions.hlk",
             "13_example_variables.hlk",
@@ -49,6 +50,7 @@ def main(debug = True, verbose = False, force = False):
             "18_example_protocol.hlk",
             "19_example_vector.hlk",
             "testing_TypeChecker.hlk",
+            "Vector.hlk",
             "TODO"
         ]:
             continue
@@ -80,8 +82,8 @@ def main(debug = True, verbose = False, force = False):
                 context.create_protocol(bi_protocol)
                 if bi_protocol == "Iterable":
                     iterable_protocol = context.get_protocol(bi_protocol)
-                    iterable_protocol.define_method("next", [], "Object")
-                    iterable_protocol.define_method("current", [], "Object")
+                    iterable_protocol["Iterable"].define_method("next", [], "Object")
+                    iterable_protocol["Iterable"].define_method("current", [], "Object")
 
             print('=== Collecting Types ===')
             collector = TypeCollector(context, errors)
@@ -97,24 +99,23 @@ def main(debug = True, verbose = False, force = False):
             print("=== Done ===")
             print('Errors', errors)
 
-            print('=== Building Global Scope ===')
-            global_scope_builder = GlobalScopeBuilder(context, errors)
-            global_scope_builder.visit(ast)
-            global_scope = global_scope_builder.global_scope
-            print("=== Done ===")
-            print('Errors', errors)
+            # print('=== Building Global Scope ===')
+            # global_scope_builder = GlobalScopeBuilder(context, errors)
+            # global_scope_builder.visit(ast)
+            # global_scope = global_scope_builder.global_scope
+            # print("=== Done ===")
+            # print('Errors', errors)
 
-            print("=== AST Interpreter ===")
-            tree_interpreter = Interpreter(context)
-            tree_interpreter.visit(ast)
+            # print("=== AST Interpreter ===")
+            # tree_interpreter = Interpreter(context)
+            # tree_interpreter.visit(ast)
 
             # logger.info('=== Type Inference ===')
 
-            # logger.info('=== Type Checking ===')
-            # checker = TypeChecker(context,  errors)
-            # checker.visit(ast)
+            logger.info('=== Type Checking ===')
+            checker = TypeChecker(context,  errors)
+            checker.visit(ast)
             # context = checker.context
-            # global_scope = checker.scope
             
 
 
