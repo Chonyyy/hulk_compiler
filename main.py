@@ -49,15 +49,20 @@ def main(debug = True, verbose = False, force = False):
             "18_example_protocol.hlk",
             "19_example_vector.hlk",
             "testing_TypeChecker.hlk",
-            "TODO"
+            # "TODO",
+            'Vector.hlk'
         ]:
             continue
         with open(f'./hulk_examples/{file}', 'r') as f:
+            file_vector = open(f'./hulk_examples/Vector.hlk', 'r')
             print(f'=== Reading file: {file} ===')
             text = f.read()
-            
+            v_text = file_vector.read()
             logger.info('=== Tokenizing Text ===')
             tokens = LEXER(text)
+            v_tokens = LEXER(v_text)
+
+            tokens = v_tokens[:-1] + tokens
             right_parse, operations = my_parser(tokens)
             
             logger.info(f'=== Generating AST for file: {file} ===')
@@ -76,12 +81,12 @@ def main(debug = True, verbose = False, force = False):
 
             for bi_type in built_in_types:
                 context.create_type(bi_type)
-            for bi_protocol in built_in_protocols:
-                context.create_protocol(bi_protocol)
-                if bi_protocol == "Iterable":
-                    iterable_protocol = context.get_protocol(bi_protocol)
-                    iterable_protocol.define_method("next", [], "Object")
-                    iterable_protocol.define_method("current", [], "Object")
+            # for bi_protocol in built_in_protocols:
+            #     context.create_protocol(bi_protocol)
+            #     if bi_protocol == "Iterable":
+            #         iterable_protocol = context.get_protocol(bi_protocol)
+            #         iterable_protocol.define_method("Next", [], "Object")
+            #         iterable_protocol.define_method("Current", [], "Object")
 
             print('=== Collecting Types ===')
             collector = TypeCollector(context, errors)

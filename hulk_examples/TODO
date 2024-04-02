@@ -1,6 +1,8 @@
+{  
     let iterable = range(0, 10) in
         while (iterable.next())
             let x = iterable.current() in
                 print(x);
 
     for (x in range(0, 10)) print(x);
+}

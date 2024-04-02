@@ -94,19 +94,19 @@ class GlobalScopeBuilder(object):
     
     @visitor.when(Branch)
     def visit(self, node: Branch, scope: Scope, defining_type: str = None):
-        raise Exception('Error: Branch not implemented')
+        pass
     
     @visitor.when(Not)
     def visit(self, node: Not, scope: Scope, defining_type: str = None):
-        raise Exception('Error: Not not implemented')
+        pass
     
     @visitor.when(UnaryMinus)
     def visit(self, node: UnaryMinus, scope: Scope, defining_type: str = None):
-        raise Exception('Error: UnaryMinus not implemented')
+        pass
     
     @visitor.when(NotEqual)
     def visit(self, node: NotEqual, scope: Scope, defining_type: str = None):
-        raise Exception('Error: NotEqual not implemented')
+        pass
     
     @visitor.when(Number)
     def visit(self, node: Number, scope: Scope, defining_type: str = None):
