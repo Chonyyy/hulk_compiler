@@ -31,13 +31,13 @@ def main(debug = True, verbose = False, force = False):
     for i, file in enumerate(files):
         if file in [
             "1_example_expressions.hlk",
-            # "2_example_functions.hlk",
-            # "3_example_variables.hlk",
-            # "4_example_conditionals.hlk",
-            # "5_example_loops.hlk",
-            # "6_example_types.hlk",
-            # "7_example_type_checking.hlk",
-            # "8_example_protocol.hlk",
+            "2_example_functions.hlk",
+            "3_example_variables.hlk",
+            "4_example_conditionals.hlk",
+            "5_example_loops.hlk",
+            "6_example_types.hlk",
+            "7_example_type_checking.hlk",
+            "8_example_protocol.hlk",
             "9_example_vector.hlk",
             "11_example_expressions.hlk",
             "12_example_functions.hlk",
@@ -80,8 +80,8 @@ def main(debug = True, verbose = False, force = False):
                 context.create_protocol(bi_protocol)
                 if bi_protocol == "Iterable":
                     iterable_protocol = context.get_protocol(bi_protocol)
-                    iterable_protocol.define_method("next", [], "Object")
-                    iterable_protocol.define_method("current", [], "Object")
+                    iterable_protocol["Iterable"].define_method("next", [], "Object")
+                    iterable_protocol["Iterable"].define_method("current", [], "Object")
 
             print('=== Collecting Types ===')
             collector = TypeCollector(context, errors)
