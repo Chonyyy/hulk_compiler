@@ -174,9 +174,7 @@ class Interpreter(object):
 
     @visitor.when(As)
     def visit(self, node: As, scope: ScopeInterpreter, func_name = None, parent_scope = None):
-        left_value, left_type = self.visit(node.left, scope, func_name, parent_scope)
-        right_value,  right_type = self.visit(node.value, scope, func_name, parent_scope)
-        return left_value == right_value
+        return scope.get_variable(node.left)
 
     @visitor.when(At)
     def visit(self, node: At, scope: ScopeInterpreter, func_name = None, parent_scope = None):
