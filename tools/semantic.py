@@ -433,7 +433,7 @@ class Context:
 
     def get_protocol(self, name:str):
         try:
-            return self.protocols[name]
+            return self.protocols 
         except KeyError:
             raise SemanticError(f'Protocol "{name}" is not defined.')
 

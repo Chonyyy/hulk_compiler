@@ -43,7 +43,4 @@ type Knight inherits Person {
         print("x: " @ pt.getX() @ "; y: " @ pt.getY());
     let pt = new PointSecond(3,4) in
         print("x: " @ pt.getX() @ "; y: " @ pt.getY());
-
-    let pt = new PolarPoint(3,4) in
-        print("rho: " @ pt.rho());
 }
