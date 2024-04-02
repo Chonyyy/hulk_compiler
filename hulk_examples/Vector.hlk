@@ -13,4 +13,9 @@ type Vector(collection, len){
         else self.start := false;
     }
     Current() => if (self.start) self.collection[current] else false;
+
+    Reset() {
+        self.start = false;
+        self.current = -1;
+    }
 }
