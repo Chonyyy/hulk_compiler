@@ -1,0 +1,12 @@
+type Vector(collection){
+    collection = collection;
+    current = -1;
+
+    function current(){
+        if (current  -1){
+            current := current + 1;
+            collection[current]
+        }
+    }
+    next() =>
+}
