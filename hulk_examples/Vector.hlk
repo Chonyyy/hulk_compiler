@@ -6,7 +6,7 @@ type Vector(collection, len){
 
     function Next(){
         if (current <= len){
-            self.start = true;
+            self.start := true;
             self.current := current + 1;
             self.collection[current];
         }
@@ -15,7 +15,7 @@ type Vector(collection, len){
     Current() => if (self.start) self.collection[current] else false;
 
     Reset() {
-        self.start = false;
-        self.current = -1;
+        self.start := false;
+        self.current := -1;
     }
 }
