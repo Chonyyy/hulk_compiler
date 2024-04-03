@@ -19,10 +19,8 @@ class Lexer:
         parser = LR1Parser(rgx_gramar, "./regex_parser.dat")
         for n, (token_type, regex) in enumerate(table):
             logger.debug(f'Building regex for {token_type} with regex : {regex}')
-            # Your code here!!!
-            # - Remember to tag the final states with the token_type and priority.
-            # - <State>.tag might be useful for that purpose ;-)
-            dfa = Regex(regex, parser).automaton #TODO: Minimize ?
+            
+            dfa = Regex(regex, parser).automaton
             start_state, states = State.from_nfa(dfa, get_states= True)
             for state in dfa.finals:
                 final_state = states[state]

@@ -9,6 +9,7 @@ from visitors.ScopeGen import GlobalScopeBuilder
 from visitors.SemanticChecker import SemanticChecker
 from visitors.TypeCollector import TypeCollector
 from visitors.TypeBuilder import TypeBuilder
+from visitors.TypeChecker import TypeChecker
 from visitors.interpreter import Interpreter
 
 import logging
@@ -36,8 +37,8 @@ def main(debug = True, verbose = False, force = False):
             # "4_example_conditionals.hlk",
             # "5_example_loops.hlk",
             # "6_example_types.hlk",
-            # "7_example_type_checking.hlk",
-            # "8_example_protocol.hlk",
+            "7_example_type_checking.hlk",
+            "8_example_protocol.hlk",
             "9_example_vector.hlk",
             "11_example_expressions.hlk",
             "12_example_functions.hlk",
@@ -65,8 +66,8 @@ def main(debug = True, verbose = False, force = False):
             logger.info(f'=== Generating AST for file: {file} ===')
             ast = evaluate_reverse_parse(right_parse, operations, tokens)
             
-            logger.info('=== Visualizing AST ===')
-            formatter = FormatVisitor()
+            # logger.info('=== Visualizing AST ===')
+            # formatter = FormatVisitor()
             # tree = formatter.visit(ast)
             # print(tree)
             
@@ -99,24 +100,27 @@ def main(debug = True, verbose = False, force = False):
             print("=== Done ===")
             print('Errors', errors)
 
-            print('=== Building Global Scope ===')
+            # print('=== Building Global Scope ===')
             global_scope_builder = GlobalScopeBuilder(context, errors)
             global_scope_builder.visit(ast)
             global_scope = global_scope_builder.global_scope
             print("=== Done ===")
             print('Errors', errors)
-
-            print("=== AST Interpreter ===")
+            
+          
+            print('=== Type Checking ===')
+            checker = TypeChecker(context, global_scope,  errors)
+            checker.visit(ast)
+            context = checker.context
+            print("=== Done ===")
+            print('Errors', errors)
+            
+            # print("=== AST Interpreter ===")
             tree_interpreter = Interpreter(context)
             tree_interpreter.visit(ast)
 
             # logger.info('=== Type Inference ===')
 
-            # logger.info('=== Type Checking ===')
-            # checker = TypeChecker(context,  errors)
-            # checker.visit(ast)
-            # context = checker.context
-            # global_scope = checker.scope
             
 
 
