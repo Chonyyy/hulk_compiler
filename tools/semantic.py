@@ -9,21 +9,26 @@ class SemanticError(Exception):
         return self.args[0]
 
 class Attribute:
-    def __init__(self, name, typex):
+    def __init__(self, name, type):
         self.name = name
-        self.type = typex
+        self.type = type
 
     def __str__(self):
         return f'[attrib] {self.name} : {self.type.name};'
 
     def __repr__(self):
         return str(self)
+    
+    def set_type(self, type):
+        self.type = type
 
 class Function:
     def __init__(self, name, params, return_type):
         self.name = name
-        self.params = params
+        self.params: list[list[str, Type]] = []
         self.return_type = return_type
+
+        self._init_params(params)
 
     # def __str__(self):
     #     params = ', '.join(f'{n}:{t.name}' for n,t in zip(self.param_names, self.param_types))
@@ -31,8 +36,25 @@ class Function:
 
     def __eq__(self, other):
         return other.name == self.name and \
-            other.return_type == self.return_type and \
-            other.param_types == self.param_types
+            other.return_type == self.return_type  and \
+            len(other.params) == len(self.params)
+
+    def set_param_type(self, name, type):
+        is_here = False
+        for param in self.params:
+            if param[0] == name:
+                param[1] = type
+                is_here = True
+        if not is_here:
+            raise SemanticError(f'Function {self.name} have not a param named {name}.')
+                
+
+    def _init_params(self, params):
+        for param in params:
+            self.params[param] = None
+
+    def set_type(self, type):
+        self.return_type = type
 
 class FunctionDef:
     def __init__(self, name, params, return_type):
@@ -52,8 +74,8 @@ class FunctionDef:
 class Type:
     def __init__(self, name:str):
         self.name = name
-        self.attributes = []
-        self.methods = []
+        self.attributes: list[list[str, Attribute]] = []
+        self.methods: list[list[str, Function]] = []
         self.args = []
         self.parent = None
 
@@ -77,6 +99,15 @@ class Type:
         if self.parent is not None:
             raise SemanticError(f'Parent type is already set for {self.name}.')
         self.parent = parent
+
+    def set_param_type(self, name, type):
+        assign = False
+        for param in self.args:
+            if param[0] == name:
+                param[1] = type
+                assign = True
+        if not assign:
+            raise SemanticError(f'Type {self.name} has not a param named {name}')
 
     def get_attribute(self, name:str):
         try:
@@ -232,6 +263,9 @@ class Variable:
         self.name = name
         self.var_type = var_type
 
+    def set_type(self, type):
+        self.var_type = type
+
 class Scope:
     def __init__(self, parent = None, index = 0):
         self.local_vars: list[Tuple[int, Variable]] = []
@@ -243,9 +277,6 @@ class Scope:
         self.index: int = 1
         self.index_at_parent: int = index
         self.is_function = False
-        # self.func_index_at_parent = 0 if parent is None else len(parent.local_funcs)
-        # self.type_index_at_parent = 0 if parent is None else len(parent.local_types)
-        # self.protocol_index_at_parent = 0 if parent is None else len(parent.local_protocols)
         
     def create_child_scope(self) -> "Scope":
         self.index += 1
@@ -270,6 +301,15 @@ class Scope:
     def define_type(self, type_name: str) -> None:
         self.index += 1
         self.local_types.append((self.index, type_name))
+
+    def find_function(self, name):
+        for item in self.local_funcs:
+            if item[1].name == name:
+                return item[1]
+            elif self.parent:
+                return self.parent.find_function(name)
+            else:
+                raise SemanticError(f'Function {name} is not defined.')
 
     def get_variable(self, var_name: str, current_index = None) -> Union[Variable, None]:
         for index, var in self.local_vars:
@@ -306,13 +346,17 @@ class Scope:
         return None
     
     def get_variable_and_scope(self, name):
-        for var in self.local_vars:
-            if name == var:
-                return (self.local_vars[var], self)
+        for item in self.local_vars:
+            if name == item[1].name:
+                return (item[1], self)
 
         return self.parent.get_variable(name) if self.parent else (None, None)
 
-
+    def to_root(self):
+        if self.parent: 
+            return self.parent.to_root()
+        else:
+            return self
 
     # def is_var_defined(self, vname):
     #     if vname not in [var[0] for var in self.local_vars]:
@@ -417,10 +461,9 @@ class ScopeInterpreter:
     def remove_local_variable(self, name):
         del self.local_vars[name]
 
-
 class Context:
     def __init__(self):
-        self.types = {}
+        self.types: dict[str, Type] = {}
         self.protocols = {}
 
     def create_type(self, name:str):

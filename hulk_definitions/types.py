@@ -1,7 +1,30 @@
 from typing import Union
+from typing import Any
 
 from tools.semantic import Type, Proto
-from names import CURRENT_METHOD_NAME, NEXT_METHOD_NAME, SIZE_METHOD_NAME
+from .names import (
+    CURRENT_METHOD_NAME,
+    NEXT_METHOD_NAME,
+    SIZE_METHOD_NAME,
+    INSTANCE_NAME,
+    AT_METHOD_NAME,
+    SETAT_METHOD_NAME,
+)
+from . import ast
+from hulk_definitions.grammar import plus, gte, dequal, true, false, modx
+
+
+def allow_type(type: Union[Type, Proto], type_or_proto: Union[Type, Proto]):
+    if isinstance(type, Proto) and type_or_proto == OBJECT_TYPE:
+        return True
+    elif isinstance(type, Proto) and isinstance(type_or_proto, Proto):
+        return type.extends(type_or_proto)
+    elif isinstance(type, Type) and isinstance(type_or_proto, Proto):
+        return type.implements(type_or_proto)
+    elif isinstance(type, Type) and isinstance(type_or_proto, Type):
+        return type.conforms_to(type_or_proto)
+    else:
+        return False
 
 
 class ErrorType(Type):
@@ -23,6 +46,9 @@ class ObjectType(Type):
         super().__init__("Object")
 
     def inherit_params(self):
+        pass
+
+    def set_parent(self, parent: Type):
         pass
 
 
@@ -67,7 +93,12 @@ class StringType(Type):
 STRING_TYPE = StringType()
 STRING_TYPE.set_parent(OBJECT_TYPE)
 
+
 class FunctionType(Type):
+    """Function type is used only for type inference and type checking
+    of identifiers representing functions, like `print` or `rand`.
+
+    It cannot be typed because its name is lowercase."""
 
     def __init__(self):
         super().__init__("function")
@@ -75,10 +106,6 @@ class FunctionType(Type):
     @property
     def is_inheritable(self):
         return False
-    
-    @property
-    def is_callable(self):
-        return True
 
 
 FUNCTION_TYPE = FunctionType()
@@ -131,11 +158,23 @@ class UnionType(Type):
         return iter(self.types)
 
 
+def union_type(*types: Type) -> UnionType | Type:
+    ut = UnionType(*types)
+    if len(ut) == 1:
+        t, *_ = ut
+        return t
+
+    return ut
+
+
 class VectorType(Type):
     """Vector type is used only for type inference and type checking
     of vectors, mapped iterables and indexing.
 
     It cannot be typed because its name is lowercase."""
+
+    ARG_INDEX_NAME = "i"
+    ARG_VALUE_NAME = "v"
 
     def __init__(self, item_type: Union[Type, Proto]):
         super().__init__(f"vector_of_{item_type.name}")
@@ -143,6 +182,14 @@ class VectorType(Type):
         self.define_method(NEXT_METHOD_NAME, [], BOOLEAN_TYPE)
         self.define_method(CURRENT_METHOD_NAME, [], item_type)
         self.define_method(SIZE_METHOD_NAME, [], NUMBER_TYPE)
+        self.define_method(
+            AT_METHOD_NAME, [(self.ARG_INDEX_NAME, NUMBER_TYPE)], item_type
+        )
+        self.define_method(
+            SETAT_METHOD_NAME,
+            [(self.ARG_INDEX_NAME, NUMBER_TYPE), (self.ARG_VALUE_NAME, item_type)],
+            item_type,
+        )
         self.set_parent(OBJECT_TYPE)
 
     @property
