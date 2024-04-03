@@ -31,7 +31,26 @@ class Interpreter(object):
         scope.define_function('rand', random.randint)
         scope.define_function('range', range)
         scope.define_protocol('Iterable', self.context.get_protocol('Iterable'))
+
+        # collection = Property('collection', Var("collection"), None)
+        # len = Property("len", Var("len"), None)
+        # current = Property('current', UnaryMinus(1.0), None)
+        # start = Property('start', Bool(False), None)
+        # if_xpr_left = LessEqual(
+        #     Invoke(prop = Var("current"), value = Var("self")),
+        #     Invoke(prop = Var("len"), value = Var("self"))
+        #     )
         
+        # if_body = Block([
+        #     Assign
+        # ])
+        # block_val = [Conditional()]
+        # next_func_block = Block(block_val)
+        # next_fun = Function('Next', None, "<body>", None)
+        # current_fun = Function('Current', None, "<body>", None)
+        # reset_fun = Function('Reset', None, "<body>", None)
+        # args = [('collection', None), ('len', "Number")]
+        # vector_class = TypeDef("Vector","<body>","<args>")
         for child in node.statements:
            return_last_statement = self.visit(child, scope )
         return return_last_statement[0]

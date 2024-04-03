@@ -30,14 +30,14 @@ def main(debug = True, verbose = False, force = False):
 
     for i, file in enumerate(files):
         if file in [
-            "1_example_expressions.hlk",
-            "2_example_functions.hlk",
-            "3_example_variables.hlk",
-            "4_example_conditionals.hlk",
-            "5_example_loops.hlk",
-            "6_example_types.hlk",
-            "7_example_type_checking.hlk",
-            "8_example_protocol.hlk",
+            # "1_example_expressions.hlk",
+            # "2_example_functions.hlk",
+            # "3_example_variables.hlk",
+            # "4_example_conditionals.hlk",
+            # "5_example_loops.hlk",
+            # "6_example_types.hlk",
+            # "7_example_type_checking.hlk",
+            # "8_example_protocol.hlk",
             "9_example_vector.hlk",
             "11_example_expressions.hlk",
             "12_example_functions.hlk",
@@ -76,7 +76,7 @@ def main(debug = True, verbose = False, force = False):
             logger.info('=== Collecting Types ===')
             errors = []
             context = Context()
-            built_in_types = ["Object", "Number", "String", "Boolean", "Vector", "Dinamic"]
+            built_in_types = ["Object", "Number", "String", "Boolean", "Vector"]
             built_in_protocols = ["Iterable"]
 
             for bi_type in built_in_types:

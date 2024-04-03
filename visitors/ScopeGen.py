@@ -102,7 +102,7 @@ class GlobalScopeBuilder(object):
     
     @visitor.when(UnaryMinus)
     def visit(self, node: UnaryMinus, scope: Scope, defining_type: str = None):
-        pass
+        self.visit(node.value, scope)
     
     @visitor.when(NotEqual)
     def visit(self, node: NotEqual, scope: Scope, defining_type: str = None):
