@@ -358,6 +358,9 @@ class ScopeInterpreter:
         self.index: int = 1
         self.index_at_parent: int = index
         
+    def remove_local_variable(self, name):
+        del self.local_vars[name]
+        
     def create_child_scope(self) -> "ScopeInterpreter":
         self.index += 1
 

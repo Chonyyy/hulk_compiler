@@ -294,11 +294,11 @@ class GlobalScopeBuilder(object):
 
     @visitor.when(Rand)
     def visit(self, node: Rand, scope: Scope, defining_type: str = None):
-        if not scope.get_function_info(node.value, len(node.args)):
+        if not scope.get_function_info(node.value, len(node.args)if node.args else 0):
             self.errors.append(f'Function {node.value} not defined')
-
-        for arg in node.args:
-            self.visit(arg, scope)
+        if node.args:
+            for arg in node.args:
+                self.visit(arg, scope)
 
     @visitor.when(Cos)
     def visit(self, node: Cos, scope: Scope, defining_type: str = None):

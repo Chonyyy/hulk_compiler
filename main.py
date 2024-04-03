@@ -37,8 +37,8 @@ def main(debug = True, verbose = False, force = False):
             # "4_example_conditionals.hlk",
             # "5_example_loops.hlk",
             # "6_example_types.hlk",
-            "7_example_type_checking.hlk",
-            "8_example_protocol.hlk",
+            # "7_example_type_checking.hlk",
+            # "8_example_protocol.hlk",
             "9_example_vector.hlk",
             "11_example_expressions.hlk",
             "12_example_functions.hlk",
@@ -74,7 +74,7 @@ def main(debug = True, verbose = False, force = False):
             logger.info('=== Collecting Types ===')
             errors = []
             context = Context()
-            built_in_types = ["Object", "Number", "String", "Boolean", "Vector"]
+            built_in_types = ["Object", "Number", "String", "Boolean", "Vector", "Dinamic"]
             built_in_protocols = ["Iterable"]
 
             for bi_type in built_in_types:
@@ -83,8 +83,8 @@ def main(debug = True, verbose = False, force = False):
                 context.create_protocol(bi_protocol)
                 if bi_protocol == "Iterable":
                     iterable_protocol = context.get_protocol(bi_protocol)
-                    iterable_protocol["Iterable"].define_method("next", [], "Object")
-                    iterable_protocol["Iterable"].define_method("current", [], "Object")
+                    iterable_protocol.define_method("next", [], "Object")
+                    iterable_protocol.define_method("current", [], "Object")
 
             print('=== Collecting Types ===')
             collector = TypeCollector(context, errors)
@@ -109,11 +109,11 @@ def main(debug = True, verbose = False, force = False):
             
           
             print('=== Type Checking ===')
-            checker = TypeChecker(context, global_scope,  errors)
-            checker.visit(ast)
-            context = checker.context
-            print("=== Done ===")
-            print('Errors', errors)
+            # checker = TypeChecker(context, global_scope,  errors)
+            # checker.visit(ast)
+            # context = checker.context
+            # print("=== Done ===")
+            # print('Errors', errors)
             
             # print("=== AST Interpreter ===")
             tree_interpreter = Interpreter(context)
