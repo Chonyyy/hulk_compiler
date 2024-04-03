@@ -7,6 +7,7 @@ from tools.semantic import Context, Scope
 from visitors.Formatter import FormatVisitor
 from visitors.ScopeGen import GlobalScopeBuilder
 from visitors.SemanticChecker import SemanticChecker
+from visitors.TypeInferer import TypeInferer
 from visitors.TypeCollector import TypeCollector
 from visitors.TypeBuilder import TypeBuilder
 from visitors.interpreter import Interpreter
@@ -85,8 +86,8 @@ def main(debug = True, verbose = False, force = False):
                 context.create_protocol(bi_protocol)
                 if bi_protocol == "Iterable":
                     iterable_protocol = context.get_protocol(bi_protocol)
-                    iterable_protocol["Iterable"].define_method("next", [], "Object")
-                    iterable_protocol["Iterable"].define_method("current", [], "Object")
+                    iterable_protocol.define_method("next", [], "Object")
+                    iterable_protocol.define_method("current", [], "Object")
 
             print('=== Collecting Types ===')
             collector = TypeCollector(context, errors)
@@ -106,6 +107,12 @@ def main(debug = True, verbose = False, force = False):
             global_scope_builder = GlobalScopeBuilder(context, errors)
             global_scope_builder.visit(ast)
             global_scope = global_scope_builder.global_scope
+            print("=== Done ===")
+            print('Errors', errors)
+
+            print('=== Type Inference ===')
+            type_inferer = TypeInferer(context, global_scope, errors)
+            type_inferer.visit(ast, type_inferer.context, type_inferer.scope)
             print("=== Done ===")
             print('Errors', errors)
 

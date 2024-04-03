@@ -47,14 +47,13 @@ class Function:
                 is_here = True
         if not is_here:
             raise SemanticError(f'Function {self.name} have not a param named {name}.')
-                
-
-    def _init_params(self, params):
-        for param in params:
-            self.params[param] = None
 
     def set_type(self, type):
         self.return_type = type
+
+    def _init_params(self, params):
+        for param in params:
+            self.params.append([param, None])
 
 class FunctionDef:
     def __init__(self, name, params, return_type):
@@ -486,7 +485,7 @@ class Context:
 
     def get_protocol(self, name:str):
         try:
-            return self.protocols 
+            return self.protocols[name] 
         except KeyError:
             raise SemanticError(f'Protocol "{name}" is not defined.')
 

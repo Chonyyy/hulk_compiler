@@ -40,15 +40,15 @@ class TypeInferer(object):
         pass
     
     @visitor.when(Number)
-    def visit(self, node: Number):
+    def visit(self, node: Number, ctx: Context, scope: Scope):
         return NUMBER_TYPE
     
     @visitor.when(Str)
-    def visit(self, node: Str):
+    def visit(self, node: Str, ctx: Context, scope: Scope):
         return STRING_TYPE
     
     @visitor.when(Bool)
-    def visit(self, node: Bool):
+    def visit(self, node: Bool, ctx: Context, scope: Scope):
         return BOOLEAN_TYPE
     
     @visitor.when(Function)
@@ -492,7 +492,7 @@ class TypeInferer(object):
     
     @visitor.when(TypeDef)
     def visit(self, node: TypeDef, ctx: Context, scope: Scope):
-        type: Type = ctx.get_protocol_or_type(node.type, ctx)
+        type: Type = ctx.get_protocol_or_type(node.name)
         self.current_type = type
 
         child_scope = scope.create_child_scope()
@@ -546,10 +546,6 @@ class TypeInferer(object):
             self.current_method = None
 
         self.current_type = None
-    
-    @visitor.when(Protocol)
-    def visit(self, node: Protocol, ctx: Context):
-        pass
 
     @visitor.when(Assign)
     def visit(self, node: Assign, ctx: Context, scope: Scope):
@@ -562,43 +558,43 @@ class TypeInferer(object):
         return vt
     
     @visitor.when(Pi)
-    def visit(self, node: Pi, ctx: Context):
+    def visit(self, node: Pi, ctx: Context, scope: Scope):
         return NUMBER_TYPE
     
     @visitor.when(E)
-    def visit(self, node: E, ctx: Context):
+    def visit(self, node: E, ctx: Context, scope: Scope):
         return NUMBER_TYPE
 
     @visitor.when(Sin)
-    def visit(self, node: Sin, ctx: Context):
+    def visit(self, node: Sin, ctx: Context, scope: Scope):
         return NUMBER_TYPE
     
     @visitor.when(Cos)
-    def visit(self, node: Cos, ctx: Context):
+    def visit(self, node: Cos, ctx: Context, scope: Scope):
         return NUMBER_TYPE
    
     @visitor.when(Rand)
-    def visit(self, node: Rand, ctx: Context):
+    def visit(self, node: Rand, ctx: Context, scope: Scope):
         return NUMBER_TYPE
 
     @visitor.when(Exp)
-    def visit(self, node: Exp, ctx: Context):
+    def visit(self, node: Exp, ctx: Context, scope: Scope):
         return NUMBER_TYPE
 
     @visitor.when(Log)
-    def visit(self, node: Log, ctx: Context):
+    def visit(self, node: Log, ctx: Context, scope: Scope):
         return NUMBER_TYPE
 
     @visitor.when(Print)
-    def visit(self, node: Print, ctx: Context):
+    def visit(self, node: Print, ctx: Context, scope: Scope):
         return STRING_TYPE
 
     @visitor.when(Base)
-    def visit(self, node: Base, ctx: Context):
+    def visit(self, node: Base, ctx: Context, scope: Scope):
         return NUMBER_TYPE
 
     @visitor.when(Property)
-    def visit(self, node: Property, ctx: Context):
+    def visit(self, node: Property, ctx: Context, scope: Scope):
         pass
 
     @visitor.when(CreateInstance)

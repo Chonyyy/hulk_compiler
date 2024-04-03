@@ -199,7 +199,3 @@ class VectorType(Type):
     def __eq__(self, other):
         return isinstance(other, VectorType) and self.item_type == other.item_type
 
-
-ITERABLE_PROTO = Proto("Iterable")
-ITERABLE_PROTO.add_method_spec(NEXT_METHOD_NAME, [], BOOLEAN_TYPE)
-ITERABLE_PROTO.add_method_spec(CURRENT_METHOD_NAME, [], OBJECT_TYPE)

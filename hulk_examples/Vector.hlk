@@ -20,4 +20,3 @@ type Vector(collection, len){
         self.current := -1;
     }
 }
-42;
