@@ -58,6 +58,8 @@ class Type:
         self.parent = None
 
     def conforms(self, other: "Type"):
+        if self.name == 'Dinamic' or other.name == 'Dinamic':
+            return True
         if other.name == "Object":
             return True
         # Si el tipo actual es el mismo que el otro tipo, entonces conforma
@@ -246,7 +248,16 @@ class Scope:
         # self.func_index_at_parent = 0 if parent is None else len(parent.local_funcs)
         # self.type_index_at_parent = 0 if parent is None else len(parent.local_types)
         # self.protocol_index_at_parent = 0 if parent is None else len(parent.local_protocols)
+    
+    def __iter__(self):
+        yield self
         
+        for _, child_scope in self.children:
+            yield from child_scope
+        
+    def remove_local_variable(self, name):
+        del self.local_vars[name]
+
     def create_child_scope(self) -> "Scope":
         self.index += 1
 
@@ -414,8 +425,6 @@ class ScopeInterpreter:
 
         return self.parent.get_variable(name) if self.parent else (None, None)
 
-    def remove_local_variable(self, name):
-        del self.local_vars[name]
 
 
 class Context:
@@ -443,7 +452,7 @@ class Context:
 
     def get_protocol(self, name:str):
         try:
-            return self.protocols 
+            return self.protocols[name]
         except KeyError:
             raise SemanticError(f'Protocol "{name}" is not defined.')
 

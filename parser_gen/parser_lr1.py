@@ -17,8 +17,6 @@ def expand(item, firsts):
     lookaheads = ContainerSet()
     
     prev = item.Preview()
-    # for preview in prev:
-    #     lookaheads.extend(firsts[preview[0]])
 
     for preview in prev:
         for i in range(len(preview)):
@@ -27,7 +25,7 @@ def expand(item, firsts):
                 break
             elif preview[i].IsNonTerminal:
                 lookaheads.extend(firsts[preview[i]])
-                if not any(item.IsEpsilon for item in preview[i].productions):# TODO: me parece que los IsEpsilon se estan guardando mal porque X se va a epsilon y aqui me da false
+                if not any(item.IsEpsilon for item in preview[i].productions):
                     break
         
     assert not lookaheads.contains_epsilon

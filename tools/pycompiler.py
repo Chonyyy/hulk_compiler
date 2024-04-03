@@ -253,7 +253,7 @@ class Sentence(object):
         raise TypeError(other)
 
     def __or__(self, other):
-        #TODO: continue type annotation and docstring
+        
         if isinstance(other, Sentence):
             return SentenceList(self, other)
 

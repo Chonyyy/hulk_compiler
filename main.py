@@ -32,11 +32,11 @@ def main(debug = True, verbose = False, force = False):
     for i, file in enumerate(files):
         if file in [
             "1_example_expressions.hlk",
-            # "2_example_functions.hlk",
+            "2_example_functions.hlk",
             "3_example_variables.hlk",
             "4_example_conditionals.hlk",
             "5_example_loops.hlk",
-            "6_example_types.hlk",
+            # "6_example_types.hlk",
             "7_example_type_checking.hlk",
             "8_example_protocol.hlk",
             "9_example_vector.hlk",
@@ -65,8 +65,8 @@ def main(debug = True, verbose = False, force = False):
             logger.info(f'=== Generating AST for file: {file} ===')
             ast = evaluate_reverse_parse(right_parse, operations, tokens)
             
-            logger.info('=== Visualizing AST ===')
-            formatter = FormatVisitor()
+            # logger.info('=== Visualizing AST ===')
+            # formatter = FormatVisitor()
             # tree = formatter.visit(ast)
             # print(tree)
             
@@ -82,8 +82,8 @@ def main(debug = True, verbose = False, force = False):
                 context.create_protocol(bi_protocol)
                 if bi_protocol == "Iterable":
                     iterable_protocol = context.get_protocol(bi_protocol)
-                    iterable_protocol["Iterable"].define_method("next", [], "Object")
-                    iterable_protocol["Iterable"].define_method("current", [], "Object")
+                    iterable_protocol.define_method("next", [], "Object")
+                    iterable_protocol.define_method("current", [], "Object")
 
             print('=== Collecting Types ===')
             collector = TypeCollector(context, errors)
@@ -105,15 +105,18 @@ def main(debug = True, verbose = False, force = False):
             global_scope = global_scope_builder.global_scope
             print("=== Done ===")
             print('Errors', errors)
-
+            
+          
             print('=== Type Checking ===')
             checker = TypeChecker(context, global_scope,  errors)
             checker.visit(ast)
-            # context = checker.context
+            context = checker.context
+            print("=== Done ===")
+            print('Errors', errors)
             
             # print("=== AST Interpreter ===")
-            # tree_interpreter = Interpreter(context)
-            # tree_interpreter.visit(ast)
+            tree_interpreter = Interpreter(context)
+            tree_interpreter.visit(ast)
 
             # logger.info('=== Type Inference ===')
 

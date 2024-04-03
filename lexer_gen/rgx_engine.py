@@ -9,7 +9,7 @@ def regex_tokenizer(text:str, G:Grammar, skip_whitespaces=True):
     tokens = []
     # > fixed_tokens = ???
     # Your code here!!!
-    fixed_tokens = "| * ( ) ε".split() #TODO: ADD BACKSLASH TO ESCAPE SPECIAL CHARACTERS
+    fixed_tokens = "| * ( ) ε".split() 
     # End of my input
     escape = False
     for char in text:

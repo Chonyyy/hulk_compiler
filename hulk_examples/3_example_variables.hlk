@@ -10,33 +10,33 @@
                 print(text @ number)
             )
         );
-    let a = 6, b = a * 7 in print(b);
-    let a = 6 in
-        let b = a * 7 in
-            print(b);
-    let a = 5, b = 10, c = 20 in {
-        print(a+b);
-        print(b*c);
-        print(c/a);
+    let a1 = 6, b1 = a1 * 7 in print(b1);
+    let a2 = 6 in
+        let b2 = a2 * 7 in
+            print(b2);
+    let a3 = 5, b3 = 10, c3 = 20 in {
+        print(a3 + b3);
+        print(b3 * c3);
+        print(c3 / a3);
     }
-    let a = (let b = 6 in b * 7) in print(a);
-    print(let b = 6 in b * 7);
-    let a = 20 in {
-        let a = 42 in print(a);
-        print(a);
+    let a4 = (let b4 = 6 in b4 * 7) in print(a4);
+    print(let b6 = 6 in b6 * 7);
+    let a7 = 20 in {
+        let a7 = 42 in print(a7);
+        print(a7);
     }
-    let a = 7, a = 7 * 6 in print(a);
-    let a = 7 in
-        let a = 7 * 6 in
-            print(a);
-    let a = 0 in {
-        print(a);
-        a := 1;
-        print(a);
+    let a8 = 7, a8 = 7 * 6 in print(a8);
+    let a9 = 7 in
+        let a9 = 7 * 6 in
+            print(a9);
+    let a10 = 0 in {
+        print(a10);
+        a10 := 1;
+        print(a10);
     }
-    let a = 0 in
-        let b = a := 1 in {
-            print(a);
-            print(b);
+    let a11 = 0 in
+        let b11 = a11 := 1 in {
+            print(a11);
+            print(b11);
         };
 }

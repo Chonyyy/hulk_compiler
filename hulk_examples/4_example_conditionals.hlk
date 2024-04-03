@@ -1,28 +1,28 @@
 {
-    let a = 42 in if (a % 2 == 0) print("Even") else print("odd");
-    let a = 42 in print(if (a % 2 == 0) "even" else "odd");
-    let a = 42 in
-        if (a % 2 == 0) {
-            print(a);
+    let a1 = 42 in if (a1 % 2 == 0) print("Even") else print("odd");
+    let a2 = 42 in print(if (a2 % 2 == 0) "even" else "odd");
+    let a3 = 42 in
+        if (a3 % 2 == 0) {
+            print(a3);
             print("Even");
         }
         else print("Odd");
-    let a = 42, let mod = a % 3 in
+    let a4 = 42, let mod1 = a4 % 3 in
         print(
-            if (mod == 0) "Magic"
-            elif (mod % 3 == 1) "Woke"
+            if (mod1 == 0) "Magic"
+            elif (mod1 % 3 == 1) "Woke"
             else "Dumb"
         );
-    let a = 43, let mod = a % 3 in
+    let a5 = 43, let mod2 = a5 % 3 in
         print(
-            if (mod == 0) "Magic"
-            elif (mod % 3 == 1) "Woke"
+            if (mod2 == 0) "Magic"
+            elif (mod2 % 3 == 1) "Woke"
             else "Dumb"
         );
-    let a = 44, let mod = a % 3 in
+    let a6 = 44, let mod3 = a6 % 3 in
         print(
-            if (mod == 0) "Magic"
-            elif (mod % 3 == 1) "Woke"
+            if (mod3 == 0) "Magic"
+            elif (mod3 % 3 == 1) "Woke"
             else "Dumb"
         );
 }

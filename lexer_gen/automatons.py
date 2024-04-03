@@ -1,9 +1,6 @@
-#TODO: Organize and polish all the code.
-#FIXME: All the import shenanigans
 from lexer_gen.utils import ContainerSet
 from lexer_gen.utils import DisjointSet
 import pydot
-#FIXME: Fix operations between automatas. Closure is the most correct one.
 
 #region Automaton implementations
 
@@ -523,9 +520,6 @@ def state_minimization(automaton):
     return partition
 
 def automaton_minimization(automaton):
-    #(a|b)*abb
-    # partition = state_minimization(automaton)
-    #TODO: DELETE THIS!!!! TESTING PORPUSSES ONLY:
     partition = DisjointSet(*range(automaton.states))
     partition.merge([0, 2])
     
