@@ -1,5 +1,5 @@
 protocol Hashable {
-    hash(): Number{
+    hash(){
     };
 }
 protocol Equatable extends Hashable {
@@ -7,7 +7,7 @@ protocol Equatable extends Hashable {
 }
 type Person {
 
-    hash() : Number{
+    function hash(){
         1;
     }
 }

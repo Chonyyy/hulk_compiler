@@ -6,6 +6,7 @@ class TypeCollector(object):
     def __init__(self, context: Context, errors=[]):
         self.context = context
         self.errors = errors
+        
     
     @visitor.on('node')
     def visit(self, node):
