@@ -396,7 +396,7 @@ class Interpreter(object):
     @visitor.when(Indexing)
     def visit(self, node: Indexing, scope: ScopeInterpreter, func_name = None, parent_scope = None):
         name_value, _ = self.visit(node.value, scope, func_name, parent_scope)
-        index_value, _ = int(self.visit(node.index, scope, func_name, parent_scope))
+        index_value = int(self.visit(node.index, scope, func_name, parent_scope)[0])
         return name_value[index_value]
 
     @visitor.when(Sin)
@@ -493,11 +493,11 @@ class Interpreter(object):
                 body_scope.define_variable(node.item, item, 'Number')
                 value = self.visit(node.value, body_scope, func_name, parent_scope)
         else:
-            for item in self.visit(node.collection, scope, func_name, parent_scope):
+            for item in self.visit(node.collection, scope, func_name, parent_scope)[0]:
                 body_scope = scope.create_child_scope()
-                body_scope.define_variable(node.item, item, node.item.type)
-                value = self.visit(node.value, body_scope, func_name, parent_scope)
-        return value    
+                body_scope.define_variable(node.item, item[0], item[1])
+                value, type = self.visit(node.value, body_scope, func_name, parent_scope)
+        return (value, type)   
         
     @visitor.when(Base)
     def visit(self, node: Base, scope: ScopeInterpreter, func_name = None, parent_scope: ScopeInterpreter = None):

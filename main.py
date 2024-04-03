@@ -31,15 +31,15 @@ def main(debug = True, verbose = False, force = False):
 
     for i, file in enumerate(files):
         if file in [
-            # "1_example_expressions.hlk",
-            # "2_example_functions.hlk",
-            # "3_example_variables.hlk",
-            # "4_example_conditionals.hlk",
-            # "5_example_loops.hlk",
-            # "6_example_types.hlk",
-            # "7_example_type_checking.hlk",
-            # "8_example_protocol.hlk",
-            "9_example_vector.hlk",
+            "1_example_expressions.hlk",
+            "2_example_functions.hlk",
+            "3_example_variables.hlk",
+            "4_example_conditionals.hlk",
+            "5_example_loops.hlk",
+            "6_example_types.hlk",
+            "7_example_type_checking.hlk",
+            "8_example_protocol.hlk",
+            # "9_example_vector.hlk",
             "11_example_expressions.hlk",
             "12_example_functions.hlk",
             "13_example_variables.hlk",
@@ -50,8 +50,8 @@ def main(debug = True, verbose = False, force = False):
             "18_example_protocol.hlk",
             "19_example_vector.hlk",
             "testing_TypeChecker.hlk",
-            # "TODO",
-            'Vector.hlk'
+            "TODO",
+            # 'Vector.hlk'
         ]:
             continue
         with open(f'./hulk_examples/{file}', 'r') as f:
@@ -111,10 +111,10 @@ def main(debug = True, verbose = False, force = False):
             print('Errors', errors)
 
             print('=== Type Inference ===')
-            type_inferer = TypeInferer(context, global_scope, errors)
-            type_inferer.visit(ast, type_inferer.context, type_inferer.scope)
-            print("=== Done ===")
-            print('Errors', errors)
+            # type_inferer = TypeInferer(context, global_scope, errors)
+            # type_inferer.visit(ast, type_inferer.context, type_inferer.scope)
+            # print("=== Done ===")
+            # print('Errors', errors)
 
             print("=== AST Interpreter ===")
             tree_interpreter = Interpreter(context)

@@ -2,12 +2,14 @@ protocol Hashable {
     hash(){
     };
 }
+
 protocol Equatable extends Hashable {
     equals(other: Object): Boolean;
 }
+
 type Person {
 
-    function hash(){
+    hash(){
         1;
     }
 }
